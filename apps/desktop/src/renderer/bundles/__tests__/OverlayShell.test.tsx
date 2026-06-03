@@ -79,21 +79,23 @@ describe('OverlayShell', () => {
     expect(container.innerHTML).toContain('data-testid="relative-component"');
   });
 
-  it('renders Delta Bar (placeholder) component for ?overlay=delta', async () => {
+  it('renders Delta Bar component for ?overlay=delta', async () => {
     setUrl('/?overlay=delta');
     await act(async () => {
       root.render(<OverlayShell />);
     });
-    // The actual Delta Bar component lands in T3; the manifest currently maps
-    // 'delta' to a placeholder so the shell can route to it today.
+    // Delta Bar was added in T3 and the bundle manifest (bundles/default/index.ts)
+    // wires it under the 'delta' key — OverlayShell must route to it.
     expect(container.innerHTML).toContain('data-testid="delta-component"');
   });
 
-  it('renders Stream Alerts (placeholder) component for ?overlay=stream-alerts', async () => {
+  it('renders Stream Alerts component for ?overlay=stream-alerts', async () => {
     setUrl('/?overlay=stream-alerts');
     await act(async () => {
       root.render(<OverlayShell />);
     });
+    // Stream Alerts was added in T5 and the bundle manifest wires it under
+    // the 'stream-alerts' key — OverlayShell must route to it.
     expect(container.innerHTML).toContain('data-testid="stream-alerts-component"');
   });
 
