@@ -73,3 +73,66 @@
   display: inline-block;
   vertical-align: middle;
 }
+
+/* ── Delta Bar ─────────────────────────────────────────────────────────── */
+
+.delta-overlay {
+  padding: 0.5rem 0.75rem;
+}
+
+.delta-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 220px;
+}
+
+.delta-track {
+  position: relative;
+  flex: 1;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.delta-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 4px;
+  transition: width 200ms ease, left 200ms ease, right 200ms ease;
+}
+
+.delta-fill--positive {
+  background: var(--hf-delta-slow, #ef4444);
+  left: 50%;
+}
+
+.delta-fill--negative {
+  background: var(--hf-delta-fast, #22c55e);
+  right: 50%;
+}
+
+.delta-center-line {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  left: 50%;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.4);
+  transform: translateX(-0.5px);
+}
+
+.delta-value {
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 0.875rem;
+  font-weight: 600;
+  min-width: 64px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.delta-value--positive { color: var(--hf-delta-slow, #ef4444); }
+.delta-value--negative { color: var(--hf-delta-fast, #22c55e); }
+.delta-value--neutral { color: rgba(255, 255, 255, 0.5); }

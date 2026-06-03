@@ -403,3 +403,127 @@ export const SeedData = {
     });
   },
 };
+
+// ── Deterministic helpers (T4: stream-alerts detector) ──────────────
+//
+// The SeedData.* methods above use Math.random() which is fine for visual
+// previews but breaks test repeatability. Tests for useAlertDetector need
+// exact positions, laps, and session types to assert overtake/pole/fastest_lap
+// detection. Use this helper whenever a test needs a known starting state.
+
+export interface DeterministicRaceOptions {
+  playerPosition: number;
+  totalVehicles?: number;
+  sessionType?: 'Practice' | 'Qualifying' | 'Race';
+  isConnected?: boolean;
+  lap?: { isSessionBest?: boolean; lastLaptime?: number; bestLaptime?: number };
+}
+
+export function deterministicRaceState(opts: DeterministicRaceOptions): Telemetry {
+  const total = opts.totalVehicles ?? 30;
+  const isConnected = opts.isConnected ?? true;
+  const vehicles: VehicleData[] = [];
+
+  for (let i = 1; i <= total; i++) {
+    vehicles.push({
+      id: 1000 + i,
+      driverName: `Driver ${i}`,
+      carNumber: `#${i}`,
+      teamName: 'Team',
+      position: i,
+      classPosition: i,
+      gap: i === opts.playerPosition ? 0 : Math.abs(i - opts.playerPosition) * 0.5,
+      gapType: 'seconds',
+      lastLaptime: opts.lap?.lastLaptime ?? 105_000,
+      bestLaptime: opts.lap?.bestLaptime ?? 102_000,
+      sectorTimes: [28_000, 30_000, 28_000],
+      speed: 200,
+      isPlayer: i === opts.playerPosition,
+      isPitting: false,
+      tyreCompound: 'Medium',
+      fuelRemaining: 80,
+      color: i <= total / 2 ? '#e10600' : '#00d2be',
+    });
+  }
+
+  return {
+    sim: 'iracing',
+    timestamp: 1_700_000_000_000,
+    isConnected,
+    player: {
+      speed: 200,
+      rpm: 5000,
+      gear: 4,
+      isOnTrack: true,
+      isInPit: false,
+      isPitting: false,
+      position: opts.playerPosition,
+      classPosition: opts.playerPosition,
+      lapDistance: 1000,
+      lapCount: 10,
+      driverName: `Driver ${opts.playerPosition}`,
+      carNumber: `#${opts.playerPosition}`,
+      teamName: 'Team',
+    },
+    engine: {
+      rpm: 5000,
+      maxRpm: 9500,
+      fuelLevel: 50,
+      fuelCapacity: 100,
+      fuelPressure: 0,
+      waterTemp: 0,
+      oilTemp: 0,
+      oilPressure: 0,
+      engineWarnings: 0,
+    },
+    tyres: {
+      fl: { temp: 0, pressure: 0, wear: 0 },
+      fr: { temp: 0, pressure: 0, wear: 0 },
+      rl: { temp: 0, pressure: 0, wear: 0 },
+      rr: { temp: 0, pressure: 0, wear: 0 },
+    },
+    lap: {
+      currentLap: 10,
+      totalLaps: 20,
+      lastLaptime: opts.lap?.lastLaptime ?? 105_000,
+      bestLaptime: opts.lap?.bestLaptime ?? 102_000,
+      sector: 1,
+      sector1: 28_000,
+      sector2: 30_000,
+      sector3: 28_000,
+      estimatedLaptime: 105_000,
+      delta: 0,
+      isPersonalBest: false,
+      isSessionBest: opts.lap?.isSessionBest ?? false,
+    },
+    session: {
+      type: opts.sessionType ?? 'Race',
+      state: 'running',
+      timeRemaining: 1200,
+      timeElapsed: 1800,
+      totalLaps: 25,
+      flags: [],
+      trackName: 'Test',
+      trackLength: 5000,
+      weather: {
+        airTemp: 22,
+        trackTemp: 28,
+        humidity: 45,
+        precipitation: 0,
+        windSpeed: 5,
+        windDirection: 180,
+      },
+    },
+    vehicles,
+    track: { name: 'Test', length: 5000, sectors: [0, 0] },
+    inputs: { throttle: 0, brake: 0, clutch: 0, steering: 0 },
+    weather: {
+      airTemp: 22,
+      trackTemp: 28,
+      humidity: 45,
+      precipitation: 0,
+      windSpeed: 5,
+      windDirection: 180,
+    },
+  };
+}
