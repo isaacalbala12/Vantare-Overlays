@@ -3,25 +3,27 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { createRoot } from 'react-dom/client';
 import { act } from 'react';
-import OverlayShell from '../OverlayShell';
 
 // ── Mocks ──────────────────────────────────────────────────────────
 
-// Mock overlay components (paths relative to test file in __tests__/)
-vi.mock('../Standings', () => ({
-  default: (props: Record<string, unknown>) => (
-    <div data-testid="standings-component" {...props} />
-  ),
+// Mock the bundle registry so the shell test is decoupled from the actual
+// bundle manifest, file moves, and component code. The shell only cares that
+// the registry returns a `Bundle` shape with the four OverlayId keys.
+vi.mock('../registry', () => ({
+  loadBundle: vi.fn(async () => ({
+    id: 'default',
+    name: 'Default',
+    components: {
+      standings: () => <div data-testid="standings-component" />,
+      relative: () => <div data-testid="relative-component" />,
+      delta: () => <div data-testid="delta-component" />,
+      'stream-alerts': () => <div data-testid="stream-alerts-component" />,
+    },
+  })),
+  __resetBundleCache: vi.fn(),
 }));
 
-vi.mock('../Relative', () => ({
-  default: (props: Record<string, unknown>) => (
-    <div data-testid="relative-component" {...props} />
-  ),
-}));
-
-// Mock CSS import
-vi.mock('../overlay.css', () => ({}));
+import OverlayShell from '../../overlays/OverlayShell';
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -77,6 +79,24 @@ describe('OverlayShell', () => {
     expect(container.innerHTML).toContain('data-testid="relative-component"');
   });
 
+  it('renders Delta Bar (placeholder) component for ?overlay=delta', async () => {
+    setUrl('/?overlay=delta');
+    await act(async () => {
+      root.render(<OverlayShell />);
+    });
+    // The actual Delta Bar component lands in T3; the manifest currently maps
+    // 'delta' to a placeholder so the shell can route to it today.
+    expect(container.innerHTML).toContain('data-testid="delta-component"');
+  });
+
+  it('renders Stream Alerts (placeholder) component for ?overlay=stream-alerts', async () => {
+    setUrl('/?overlay=stream-alerts');
+    await act(async () => {
+      root.render(<OverlayShell />);
+    });
+    expect(container.innerHTML).toContain('data-testid="stream-alerts-component"');
+  });
+
   it('returns null when no overlay param is present', async () => {
     setUrl('/');
     await act(async () => {
@@ -109,19 +129,5 @@ describe('OverlayShell', () => {
       root.render(<OverlayShell />);
     });
     expect(document.body.classList.contains('overlay-mode')).toBe(false);
-  });
-
-  // ── Props ──────────────────────────────────────────────────────────────────
-
-  it('Standings component renders when routed (no telemetry prop passed by shell)', async () => {
-    // NOTE: Current OverlayShell implementation renders <OverlayComponent /> without
-    // passing telemetry. Standings handles undefined telemetry via its empty state.
-    // This test verifies the routing wiring is correct; telemetry prop passing
-    // would require modifying OverlayShell (out of scope for this task).
-    setUrl('/?overlay=standings');
-    await act(async () => {
-      root.render(<OverlayShell />);
-    });
-    expect(container.innerHTML).toContain('data-testid="standings-component"');
   });
 });

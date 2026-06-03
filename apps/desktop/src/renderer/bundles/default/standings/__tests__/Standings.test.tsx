@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, rerender } from '@testing-library/react';
 import { renderToString } from 'react-dom/server';
 import Standings from '../Standings';
-import { SeedData } from '../../../main/sim/mock-telemetry-seeder';
+import { SeedData } from '../../../../__fixtures__/mock-telemetry-seeder';
 import type { Telemetry, VehicleData } from '@vantare/sim-core';
 
 // ── Mocks ──────────────────────────────────────────────────────────

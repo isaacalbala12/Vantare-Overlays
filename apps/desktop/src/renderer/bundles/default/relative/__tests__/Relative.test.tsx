@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderToString } from 'react-dom/server';
 import Relative from '../Relative';
-import { SeedData } from '../../../main/sim/mock-telemetry-seeder';
+import { SeedData } from '../../../../__fixtures__/mock-telemetry-seeder';
 import type { Telemetry } from '@vantare/sim-core';
 
 // ── Mocks ──────────────────────────────────────────────────────────

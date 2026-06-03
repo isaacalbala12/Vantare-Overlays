@@ -1,15 +1,15 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import Standings from './Standings';
-import { SeedData } from '../../main/sim/mock-telemetry-seeder';
+import Relative from './Relative';
+import { SeedData } from '../../../__fixtures__/mock-telemetry-seeder';
 
 // ── Wrapper layout ────────────────────────────────────────────────────────
-// Standings is a full-height overlay meant to sit on a 1920x1080 canvas.
-// The wrapper centers the panel and gives it room to breathe so the table
-// renders at a sensible scale in the Storybook iframe.
+// Relative is a compact 7-row overlay. The wrapper gives it room to show
+// all rows with the player in the center, against a dark background that
+// matches the streaming context where the overlay normally appears.
 
-const meta: Meta<typeof Standings> = {
-  title: 'Overlays/Standings',
-  component: Standings,
+const meta: Meta<typeof Relative> = {
+  title: 'Overlays/Relative',
+  component: Relative,
   decorators: [
     (Story) => (
       <div
@@ -20,7 +20,7 @@ const meta: Meta<typeof Standings> = {
             'linear-gradient(135deg, #0a0a0f 0%, #1a0a14 50%, #0a0a0f 100%)',
         }}
       >
-        <div style={{ maxWidth: 720, margin: '0 auto' }}>
+        <div style={{ maxWidth: 520, margin: '0 auto' }}>
           <Story />
         </div>
       </div>
@@ -33,7 +33,7 @@ const meta: Meta<typeof Standings> = {
 
 export default meta;
 
-type Story = StoryObj<typeof Standings>;
+type Story = StoryObj<typeof Relative>;
 
 // ── Stories ───────────────────────────────────────────────────────────────
 
@@ -50,7 +50,7 @@ export const empty: Story = {
   },
 };
 
-export const playerAtFront: Story = {
+export const leading: Story = {
   args: {
     telemetry: SeedData.playerAtFront(),
   },

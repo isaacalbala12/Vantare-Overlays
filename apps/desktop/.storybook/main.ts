@@ -2,7 +2,7 @@ import { mergeConfig } from 'vite';
 import path from 'path';
 
 export default {
-  stories: ['../src/renderer/overlays/**/*.stories.@(ts|tsx)'],
+  stories: ['../src/renderer/{overlays,bundles}/**/*.stories.@(ts|tsx)'],
   addons: ['@storybook/addon-essentials'],
   framework: {
     name: '@storybook/react-vite',
