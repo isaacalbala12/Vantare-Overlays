@@ -136,3 +136,37 @@
 .delta-value--positive { color: var(--hf-delta-slow, #ef4444); }
 .delta-value--negative { color: var(--hf-delta-fast, #22c55e); }
 .delta-value--neutral { color: rgba(255, 255, 255, 0.5); }
+
+/* ── Stream Alerts ─────────────────────────────────────────────────────────── */
+
+.stream-alert-shell {
+  display: inline-block;
+  cursor: pointer;
+  user-select: none;
+  min-width: 200px;
+}
+
+.stream-alert-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.stream-alert-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--hf-accent, #fbbf24);
+}
+
+.stream-alert-message {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+[data-alert-type='pole'] .stream-alert-label { color: #fbbf24; }
+[data-alert-type='fastest_lap'] .stream-alert-label { color: #a78bfa; }
+[data-alert-type='overtake'] .stream-alert-label { color: #22c55e; }

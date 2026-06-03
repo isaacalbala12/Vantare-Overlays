@@ -2,6 +2,7 @@ import type { Bundle } from '../types';
 import Standings from './standings/Standings';
 import Relative from './relative/Relative';
 import DeltaBar from './delta/DeltaBar';
+import StreamAlerts from './stream-alerts/StreamAlerts';
 import './styles.css';
 import './animations.css';
 
@@ -12,9 +13,7 @@ const bundle: Bundle = {
     standings: Standings,
     relative: Relative,
     delta: DeltaBar,
-    // stream-alerts is a placeholder until T5 ships its component.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    'stream-alerts': Standings as any, // TODO(sprint-4a-t5): replace with StreamAlerts
+    'stream-alerts': StreamAlerts,
   },
 };
 
