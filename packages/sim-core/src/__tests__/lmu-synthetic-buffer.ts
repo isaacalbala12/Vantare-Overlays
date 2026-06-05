@@ -7,7 +7,6 @@ function wStr(buf: Buffer, off: number, str: string, max: number) {
   buf[off + l] = 0;
 }
 
-// Offsets inside LMUVehicleTelemetry for struct fields not in generated file
 const VT_LOCAL_VEL = 184;
 const VT_WHEELS_OFF = 848;
 const WHEEL_SLOT = 260;
@@ -18,12 +17,20 @@ export interface ExpectedValues {
   playerSpeed: number; playerGear: number; playerRpm: number; playerFuel: number;
   vehicles: Array<{ id: number; name: string; place: number }>;
   wheelTemp0: number;
+  gameVersion: number;
 }
 
 export function buildSyntheticLMUBuffer(): { buffer: Buffer; expected: ExpectedValues } {
   const buf = Buffer.alloc(LMU_OBJECT_OUT_SIZE, 0);
 
-  // ─── SCORING INFO (all offsets are absolute) ───
+  // ─── GENERIC ───
+  const G = LMU.GENERIC as any;
+  buf.writeInt32LE(12345, G.OFFSET + G.GAME_VERSION);
+  buf.writeFloatLE(0.5, G.OFFSET + G.FFB_TORQUE);
+  buf.writeUInt32LE(1, G.OFFSET + G.EVENT_SME_UPDATE_SCORING);
+  buf.writeUInt32LE(1, G.OFFSET + G.EVENT_SME_UPDATE_TELEMETRY);
+
+  // ─── SCORING INFO ───
   const SI = LMU.SCORING.SCORING_INFO as any;
   wStr(buf, SI.MTRACKNAME.OFFSET, "Spa", 64);
   buf.writeInt32LE(10, SI.MSESSION);
@@ -69,7 +76,6 @@ export function buildSyntheticLMUBuffer(): { buffer: Buffer; expected: ExpectedV
   // ─── PLAYER TELEMETRY ───
   const VT = LMU.VEHICLE_TELEMETRY as any;
   const po = T.TELEM_INFO.OFFSET + 0 * T.TELEM_INFO.STRIDE;
-
   buf.writeInt32LE(0, po + VT.ID);
   buf.writeDoubleLE(0.016, po + VT.DELTA_TIME);
   buf.writeDoubleLE(1234.5, po + VT.ELAPSED_TIME);
@@ -97,6 +103,7 @@ export function buildSyntheticLMUBuffer(): { buffer: Buffer; expected: ExpectedV
   return {
     buffer: buf,
     expected: {
+      gameVersion: 12345,
       trackName: "Spa", session: 10, gamePhase: 5,
       numVehicles: 3, playerName: "TestDriver",
       playerSpeed: 15, playerGear: 4, playerRpm: 7200, playerFuel: 45.2,
@@ -109,9 +116,9 @@ export function buildSyntheticLMUBuffer(): { buffer: Buffer; expected: ExpectedV
 export function extractScoringInfo(buf: Buffer) {
   const SI = LMU.SCORING.SCORING_INFO as any;
   return {
+    gamePhase: buf[SI.MGAMEPHASE],
     trackName: buf.toString("utf8", SI.MTRACKNAME.OFFSET, SI.MTRACKNAME.OFFSET + 64).replace(/\0/g, "").trim(),
     session: buf.readInt32LE(SI.MSESSION),
-    gamePhase: buf[SI.MGAMEPHASE],
     numVehicles: buf.readInt32LE(SI.MNUMVEHICLES),
   };
 }
@@ -147,3 +154,4 @@ export function extractVehicleAt(buf: Buffer, idx: number): { name: string; plac
     place: buf[off + VS.PLACE],
   };
 }
+
