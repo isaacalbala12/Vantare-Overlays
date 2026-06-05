@@ -1,0 +1,59 @@
+{
+  "active_plan": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\.omo\\plans\\sprint5a-multi-sim.md",
+  "started_at": "2026-06-05T08:35:00.000Z",
+  "session_ids": [
+    "opencode:ses_173e6f365ffeQm0UfxI7zqLwGy"
+  ],
+  "plan_name": "sprint5a-multi-sim",
+  "session_origins": {},
+  "task_sessions": {
+    "todo:1": {
+      "task_key": "todo:1",
+      "task_label": "1",
+      "task_title": "Move adapters to desktop/main + fix critical bugs",
+      "session_id": "opencode:ses_169135e3bffeRRGC6cDN041ZYT",
+      "agent": "Sisyphus-Junior",
+      "category": "deep",
+      "started_at": "2026-06-05T08:37:31.048Z",
+      "status": "completed",
+      "updated_at": "2026-06-05T08:47:45.140Z",
+      "ended_at": "2026-06-05T08:47:45.140Z",
+      "elapsed_ms": 614092
+    }
+  },
+  "schema_version": 2,
+  "active_work_id": "sprint5a-multi-sim",
+  "works": {
+    "sprint5a-multi-sim": {
+      "work_id": "sprint5a-multi-sim",
+      "active_plan": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\.omo\\plans\\sprint5a-multi-sim.md",
+      "plan_name": "sprint5a-multi-sim",
+      "started_at": "2026-06-05T08:35:00.000Z",
+      "session_ids": [
+        "opencode:ses_173e6f365ffeQm0UfxI7zqLwGy"
+      ],
+      "agent": "atlas",
+      "task_sessions": {
+        "todo:1": {
+          "task_key": "todo:1",
+          "task_label": "1",
+          "task_title": "Move adapters to desktop/main + fix critical bugs",
+          "session_id": "opencode:ses_169135e3bffeRRGC6cDN041ZYT",
+          "agent": "Sisyphus-Junior",
+          "category": "deep",
+          "started_at": "2026-06-05T08:37:31.048Z",
+          "status": "completed",
+          "updated_at": "2026-06-05T08:47:45.140Z",
+          "ended_at": "2026-06-05T08:47:45.140Z",
+          "elapsed_ms": 614092
+        }
+      },
+      "status": "active",
+      "session_origins": {},
+      "updated_at": "2026-06-05T08:47:45.140Z"
+    }
+  },
+  "agent": "atlas",
+  "updated_at": "2026-06-05T08:47:45.140Z",
+  "status": "active"
+}

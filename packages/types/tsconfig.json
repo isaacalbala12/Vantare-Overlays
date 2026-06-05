@@ -1,0 +1,42 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "../../",
+    "paths": {
+      "@shared/types/profile": [
+        "./shared/types/profile.ts"
+      ],
+      "@shared/types/settings": [
+        "./shared/types/settings.ts"
+      ],
+      "@vantare/sim-core": [
+        "./packages/types/node_modules/@vantare/sim-core/dist"
+      ],
+      "@vantare/auth": [
+        "./packages/types/node_modules/@vantare/auth/dist"
+      ],
+      "@shared/types/theme": [
+        "./shared/types/theme.ts"
+      ],
+      "@shared/types/bridge": [
+        "./shared/types/bridge.ts"
+      ],
+      "@vantare/ui-core": [
+        "./packages/ui-core/src"
+      ],
+      "@vantare/ui-core/*": [
+        "./packages/ui-core/src/*"
+      ]
+    },
+    "module": "ESNext",
+    "moduleResolution": "bundler"
+  },
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}

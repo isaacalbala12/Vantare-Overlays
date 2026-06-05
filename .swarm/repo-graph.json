@@ -1,0 +1,2776 @@
+{
+  "schema_version": "1.0.0",
+  "workspaceRoot": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays",
+  "nodes": {
+    "C:/Users/isaac/Desktop/Vantare-Overlays/apps/desktop/src/main/auth/license.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\main\\auth\\license.ts",
+      "moduleName": "apps/desktop/src/main/auth/license.ts",
+      "exports": [
+        "AuthService",
+        "AuthService.init"
+      ],
+      "imports": [
+        "@vantare/auth"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T08:18:17.142Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/apps/desktop/src/main/index.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\main\\index.ts",
+      "moduleName": "apps/desktop/src/main/index.ts",
+      "exports": [],
+      "imports": [
+        "electron",
+        "path",
+        "./ipc/handlers",
+        "./windows/overlay-manager",
+        "./server/http-server",
+        "./sim/sim-manager",
+        "./auth/license",
+        "./updates/auto-updater"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T08:50:31.372Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/apps/desktop/src/main/ipc/handlers.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\main\\ipc\\handlers.ts",
+      "moduleName": "apps/desktop/src/main/ipc/handlers.ts",
+      "exports": [
+        "setSimManager",
+        "registerIpcHandlers"
+      ],
+      "imports": [
+        "electron",
+        "electron-store",
+        "@vantare/auth",
+        "electron"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T08:19:22.795Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/apps/desktop/src/main/server/http-server.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\main\\server\\http-server.ts",
+      "moduleName": "apps/desktop/src/main/server/http-server.ts",
+      "exports": [
+        "HttpServer",
+        "HttpServer.start",
+        "HttpServer.if",
+        "HttpServer.if",
+        "HttpServer.resolve",
+        "HttpServer.broadcastTelemetry",
+        "HttpServer.stop"
+      ],
+      "imports": [
+        "http",
+        "electron"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T08:50:31.536Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/apps/desktop/src/main/sim/__tests__/sim-manager.test.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\main\\sim\\__tests__\\sim-manager.test.ts",
+      "moduleName": "apps/desktop/src/main/sim/__tests__/sim-manager.test.ts",
+      "exports": [],
+      "imports": [
+        "vitest",
+        "electron",
+        "../sim-manager"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T14:45:05.446Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/apps/desktop/src/main/sim/adapters/base.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\main\\sim\\adapters\\base.ts",
+      "moduleName": "apps/desktop/src/main/sim/adapters/base.ts",
+      "exports": [],
+      "imports": [],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:52:51.760Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/apps/desktop/src/main/sim/sim-manager.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\main\\sim\\sim-manager.ts",
+      "moduleName": "apps/desktop/src/main/sim/sim-manager.ts",
+      "exports": [
+        "TelemetryCallback",
+        "SimManager",
+        "SimManager.isMockActive",
+        "SimManager.constructor",
+        "SimManager.setOnTelemetryCallback",
+        "SimManager.setMainWindow",
+        "SimManager.start",
+        "SimManager.if",
+        "SimManager.if",
+        "SimManager.connected",
+        "SimManager.name",
+        "SimManager.type",
+        "SimManager.isMock",
+        "SimManager.getTelemetry",
+        "SimManager.if",
+        "SimManager.stop",
+        "SimManager.if",
+        "SimManager.clearInterval",
+        "SimManager.if",
+        "SimManager.clearInterval"
+      ],
+      "imports": [
+        "electron",
+        "@vantare/sim-core"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T08:21:02.157Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/apps/desktop/src/main/updates/auto-updater.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\main\\updates\\auto-updater.ts",
+      "moduleName": "apps/desktop/src/main/updates/auto-updater.ts",
+      "exports": [
+        "AutoUpdater",
+        "AutoUpdater.constructor",
+        "AutoUpdater.checkForUpdates"
+      ],
+      "imports": [
+        "electron"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-01T20:42:22.381Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/apps/desktop/src/main/windows/overlay-manager.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\main\\windows\\overlay-manager.ts",
+      "moduleName": "apps/desktop/src/main/windows/overlay-manager.ts",
+      "exports": [
+        "OverlayManager",
+        "OverlayManager.constructor",
+        "OverlayManager.registerOverlay",
+        "OverlayManager.show",
+        "OverlayManager.if",
+        "OverlayManager.x",
+        "OverlayManager.y",
+        "OverlayManager.width",
+        "OverlayManager.height",
+        "OverlayManager.show",
+        "OverlayManager.frame",
+        "OverlayManager.transparent",
+        "OverlayManager.alwaysOnTop",
+        "OverlayManager.resizable",
+        "OverlayManager.skipTaskbar",
+        "OverlayManager.webPreferences",
+        "OverlayManager.preload",
+        "OverlayManager.contextIsolation",
+        "OverlayManager.nodeIntegration",
+        "OverlayManager.sandbox",
+        "OverlayManager.if",
+        "OverlayManager.query",
+        "OverlayManager.hide",
+        "OverlayManager.setPosition",
+        "OverlayManager.if",
+        "OverlayManager.setSize",
+        "OverlayManager.if",
+        "OverlayManager.getAll",
+        "OverlayManager.id",
+        "OverlayManager.name",
+        "OverlayManager.visible",
+        "OverlayManager.x",
+        "OverlayManager.y",
+        "OverlayManager.width",
+        "OverlayManager.height",
+        "OverlayManager.destroy"
+      ],
+      "imports": [
+        "electron",
+        "path"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-01T20:42:15.510Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/apps/desktop/src/preload/index.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\preload\\index.ts",
+      "moduleName": "apps/desktop/src/preload/index.ts",
+      "exports": [],
+      "imports": [
+        "electron"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-01T20:41:56.834Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/apps/desktop/src/renderer/App.tsx": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\App.tsx",
+      "moduleName": "apps/desktop/src/renderer/App.tsx",
+      "exports": [
+        "App"
+      ],
+      "imports": [
+        "react"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T08:22:07.096Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/apps/desktop/src/renderer/main.tsx": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\main.tsx",
+      "moduleName": "apps/desktop/src/renderer/main.tsx",
+      "exports": [],
+      "imports": [
+        "react",
+        "react-dom/client",
+        "./App",
+        "./styles/globals.css"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-01T20:41:58.523Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/apps/desktop/src/renderer/shared/__tests__/components.test.tsx": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\shared\\__tests__\\components.test.tsx",
+      "moduleName": "apps/desktop/src/renderer/shared/__tests__/components.test.tsx",
+      "exports": [],
+      "imports": [
+        "vitest",
+        "react",
+        "../components"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:35:09.217Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/apps/desktop/src/renderer/shared/__tests__/hooks.test.tsx": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\shared\\__tests__\\hooks.test.tsx",
+      "moduleName": "apps/desktop/src/renderer/shared/__tests__/hooks.test.tsx",
+      "exports": [],
+      "imports": [
+        "vitest",
+        "../hooks/useConnectionStatus",
+        "../hooks/useOverlayConfig"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:33:05.534Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/apps/desktop/src/renderer/shared/__tests__/store.test.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\shared\\__tests__\\store.test.ts",
+      "moduleName": "apps/desktop/src/renderer/shared/__tests__/store.test.ts",
+      "exports": [],
+      "imports": [
+        "vitest",
+        "../stores/app-store"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:31:29.123Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/apps/desktop/src/renderer/shared/components/ErrorMessage.tsx": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\shared\\components\\ErrorMessage.tsx",
+      "moduleName": "apps/desktop/src/renderer/shared/components/ErrorMessage.tsx",
+      "exports": [
+        "ErrorMessage"
+      ],
+      "imports": [],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:30:14.229Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/apps/desktop/src/renderer/shared/components/index.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\shared\\components\\index.ts",
+      "moduleName": "apps/desktop/src/renderer/shared/components/index.ts",
+      "exports": [],
+      "imports": [
+        "./OverlayContainer",
+        "./LoadingSpinner",
+        "./ErrorMessage",
+        "./StatusIndicator"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:30:14.642Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/apps/desktop/src/renderer/shared/components/LoadingSpinner.tsx": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\shared\\components\\LoadingSpinner.tsx",
+      "moduleName": "apps/desktop/src/renderer/shared/components/LoadingSpinner.tsx",
+      "exports": [],
+      "imports": [],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:29:57.366Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/apps/desktop/src/renderer/shared/components/OverlayContainer.tsx": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\shared\\components\\OverlayContainer.tsx",
+      "moduleName": "apps/desktop/src/renderer/shared/components/OverlayContainer.tsx",
+      "exports": [
+        "OverlayContainer"
+      ],
+      "imports": [
+        "react"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:34:06.181Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/apps/desktop/src/renderer/shared/components/StatusIndicator.tsx": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\shared\\components\\StatusIndicator.tsx",
+      "moduleName": "apps/desktop/src/renderer/shared/components/StatusIndicator.tsx",
+      "exports": [
+        "StatusIndicator"
+      ],
+      "imports": [],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:34:36.458Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/apps/desktop/src/renderer/shared/hooks/index.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\shared\\hooks\\index.ts",
+      "moduleName": "apps/desktop/src/renderer/shared/hooks/index.ts",
+      "exports": [],
+      "imports": [
+        "./useConnectionStatus",
+        "./useOverlayConfig"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:30:34.341Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/apps/desktop/src/renderer/shared/hooks/useConnectionStatus.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\shared\\hooks\\useConnectionStatus.ts",
+      "moduleName": "apps/desktop/src/renderer/shared/hooks/useConnectionStatus.ts",
+      "exports": [
+        "useConnectionStatus"
+      ],
+      "imports": [
+        "react"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:30:32.554Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/apps/desktop/src/renderer/shared/hooks/useOverlayConfig.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\shared\\hooks\\useOverlayConfig.ts",
+      "moduleName": "apps/desktop/src/renderer/shared/hooks/useOverlayConfig.ts",
+      "exports": [
+        "useOverlayConfig"
+      ],
+      "imports": [
+        "react"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:30:33.780Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/apps/desktop/src/renderer/shared/stores/app-store.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\shared\\stores\\app-store.ts",
+      "moduleName": "apps/desktop/src/renderer/shared/stores/app-store.ts",
+      "exports": [
+        "useAppStore"
+      ],
+      "imports": [
+        "zustand"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:30:35.676Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/apps/desktop/src/renderer/shared/stores/index.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\shared\\stores\\index.ts",
+      "moduleName": "apps/desktop/src/renderer/shared/stores/index.ts",
+      "exports": [],
+      "imports": [
+        "./app-store"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:30:36.092Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/apps/desktop/src/renderer/themes/__tests__/themes.test.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\themes\\__tests__\\themes.test.ts",
+      "moduleName": "apps/desktop/src/renderer/themes/__tests__/themes.test.ts",
+      "exports": [],
+      "imports": [
+        "vitest",
+        "../dark.json",
+        "../blood.json",
+        "../midnight.json"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T08:06:14.411Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/apps/desktop/src/renderer/themes/index.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\themes\\index.ts",
+      "moduleName": "apps/desktop/src/renderer/themes/index.ts",
+      "exports": [
+        "builtInThemes"
+      ],
+      "imports": [
+        "./dark.json",
+        "./blood.json",
+        "./midnight.json"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:30:38.282Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/apps/desktop/vite.config.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\vite.config.ts",
+      "moduleName": "apps/desktop/vite.config.ts",
+      "exports": [
+        "defineConfig"
+      ],
+      "imports": [
+        "vite",
+        "@vitejs/plugin-react",
+        "@tailwindcss/vite",
+        "vite-plugin-electron",
+        "vite-plugin-electron-renderer",
+        "path"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T08:54:58.102Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/apps/desktop/vite.main.config.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\vite.main.config.ts",
+      "moduleName": "apps/desktop/vite.main.config.ts",
+      "exports": [
+        "defineConfig"
+      ],
+      "imports": [
+        "vite",
+        "path"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-01T20:40:52.411Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/apps/desktop/vite.preload.config.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\vite.preload.config.ts",
+      "moduleName": "apps/desktop/vite.preload.config.ts",
+      "exports": [
+        "defineConfig"
+      ],
+      "imports": [
+        "vite",
+        "path"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-01T20:40:53.392Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/apps/desktop/vite.renderer.config.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\vite.renderer.config.ts",
+      "moduleName": "apps/desktop/vite.renderer.config.ts",
+      "exports": [
+        "defineConfig"
+      ],
+      "imports": [
+        "vite",
+        "@vitejs/plugin-react",
+        "@tailwindcss/vite",
+        "path"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T08:52:18.210Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/apps/desktop/vitest.config.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\vitest.config.ts",
+      "moduleName": "apps/desktop/vitest.config.ts",
+      "exports": [
+        "defineConfig"
+      ],
+      "imports": [
+        "vitest/config",
+        "path"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:58:58.372Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/auth/src/__tests__/auth.test.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\auth\\src\\__tests__\\auth.test.ts",
+      "moduleName": "packages/auth/src/__tests__/auth.test.ts",
+      "exports": [],
+      "imports": [
+        "vitest",
+        "../index.ts"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:48:59.431Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/auth/src/__tests__/smoke.test.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\auth\\src\\__tests__\\smoke.test.ts",
+      "moduleName": "packages/auth/src/__tests__/smoke.test.ts",
+      "exports": [],
+      "imports": [
+        "vitest"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:12:35.813Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/auth/src/index.d.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\auth\\src\\index.d.ts",
+      "moduleName": "packages/auth/src/index.d.ts",
+      "exports": [
+        "AuthResult",
+        "AuthUser",
+        "LicenseStatus"
+      ],
+      "imports": [],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:20:10.059Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/auth/src/index.js": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\auth\\src\\index.js",
+      "moduleName": "packages/auth/src/index.js",
+      "exports": [
+        "AuthService"
+      ],
+      "imports": [],
+      "language": "javascript",
+      "mtime": "2026-06-02T07:20:10.057Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/auth/src/index.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\auth\\src\\index.ts",
+      "moduleName": "packages/auth/src/index.ts",
+      "exports": [
+        "LicenseTier",
+        "AuthUser",
+        "AuthResult",
+        "LicenseStatus",
+        "AuthService",
+        "AuthService.if",
+        "AuthService.if",
+        "AuthService.if"
+      ],
+      "imports": [],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:50:18.138Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/auth/vitest.config.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\auth\\vitest.config.ts",
+      "moduleName": "packages/auth/vitest.config.ts",
+      "exports": [
+        "defineConfig"
+      ],
+      "imports": [
+        "vitest/config"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:17:47.301Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/__tests__/normalizer.test.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\__tests__\\normalizer.test.ts",
+      "moduleName": "packages/sim-core/src/__tests__/normalizer.test.ts",
+      "exports": [],
+      "imports": [
+        "vitest",
+        "../normalizer"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:40:41.363Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/__tests__/smoke.test.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\__tests__\\smoke.test.ts",
+      "moduleName": "packages/sim-core/src/__tests__/smoke.test.ts",
+      "exports": [],
+      "imports": [
+        "vitest"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:12:34.246Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/adapters/base.d.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\adapters\\base.d.ts",
+      "moduleName": "packages/sim-core/src/adapters/base.d.ts",
+      "exports": [
+        "SimAdapter"
+      ],
+      "imports": [],
+      "language": "typescript",
+      "mtime": "2026-06-02T08:33:49.788Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/adapters/base.js": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\adapters\\base.js",
+      "moduleName": "packages/sim-core/src/adapters/base.js",
+      "exports": [],
+      "imports": [],
+      "language": "javascript",
+      "mtime": "2026-06-02T08:33:49.785Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/adapters/base.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\adapters\\base.ts",
+      "moduleName": "packages/sim-core/src/adapters/base.ts",
+      "exports": [
+        "SimAdapter"
+      ],
+      "imports": [],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:12:26.441Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/adapters/index.d.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\adapters\\index.d.ts",
+      "moduleName": "packages/sim-core/src/adapters/index.d.ts",
+      "exports": [],
+      "imports": [],
+      "language": "typescript",
+      "mtime": "2026-06-02T08:33:49.791Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/adapters/index.js": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\adapters\\index.js",
+      "moduleName": "packages/sim-core/src/adapters/index.js",
+      "exports": [],
+      "imports": [],
+      "language": "javascript",
+      "mtime": "2026-06-02T08:33:49.790Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/adapters/index.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\adapters\\index.ts",
+      "moduleName": "packages/sim-core/src/adapters/index.ts",
+      "exports": [],
+      "imports": [],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:19:48.212Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/calculations/__tests__/delta.test.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\calculations\\__tests__\\delta.test.ts",
+      "moduleName": "packages/sim-core/src/calculations/__tests__/delta.test.ts",
+      "exports": [],
+      "imports": [
+        "vitest",
+        "../delta"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:29:52.067Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/calculations/__tests__/fuel.test.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\calculations\\__tests__\\fuel.test.ts",
+      "moduleName": "packages/sim-core/src/calculations/__tests__/fuel.test.ts",
+      "exports": [],
+      "imports": [
+        "vitest",
+        "../fuel"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:29:48.133Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/calculations/__tests__/gap.test.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\calculations\\__tests__\\gap.test.ts",
+      "moduleName": "packages/sim-core/src/calculations/__tests__/gap.test.ts",
+      "exports": [],
+      "imports": [
+        "vitest",
+        "../gap"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:34:06.398Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/calculations/__tests__/sector.test.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\calculations\\__tests__\\sector.test.ts",
+      "moduleName": "packages/sim-core/src/calculations/__tests__/sector.test.ts",
+      "exports": [],
+      "imports": [
+        "vitest",
+        "../sector"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:30:15.743Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/calculations/delta.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\calculations\\delta.ts",
+      "moduleName": "packages/sim-core/src/calculations/delta.ts",
+      "exports": [
+        "calculateDeltaToBest",
+        "calculateDeltaToLeader",
+        "calculateDeltaToCar",
+        "calculateDeltaSector"
+      ],
+      "imports": [],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:31:13.126Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/calculations/fuel.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\calculations\\fuel.ts",
+      "moduleName": "packages/sim-core/src/calculations/fuel.ts",
+      "exports": [
+        "calculateFuelPerLap",
+        "calculateLapsRemaining",
+        "calculateFuelToEnd",
+        "calculateRecommendedFuelSave",
+        "calculateStintLength"
+      ],
+      "imports": [],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:31:12.730Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/calculations/gap.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\calculations\\gap.ts",
+      "moduleName": "packages/sim-core/src/calculations/gap.ts",
+      "exports": [
+        "calculateGapSeconds",
+        "calculateGapLaps",
+        "calculateClassGap",
+        "formatGap"
+      ],
+      "imports": [],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:33:54.116Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/calculations/index.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\calculations\\index.ts",
+      "moduleName": "packages/sim-core/src/calculations/index.ts",
+      "exports": [],
+      "imports": [
+        "./fuel",
+        "./delta",
+        "./gap",
+        "./sector"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:31:37.345Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/calculations/sector.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\calculations\\sector.ts",
+      "moduleName": "packages/sim-core/src/calculations/sector.ts",
+      "exports": [
+        "getCurrentSector",
+        "calculateSectorDelta",
+        "calculateBestSectors"
+      ],
+      "imports": [],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:33:06.078Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/index.d.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\index.d.ts",
+      "moduleName": "packages/sim-core/src/index.d.ts",
+      "exports": [],
+      "imports": [
+        "./normalizer",
+        "./types",
+        "./adapters",
+        "./mock"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T08:33:49.866Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/index.js": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\index.js",
+      "moduleName": "packages/sim-core/src/index.js",
+      "exports": [],
+      "imports": [
+        "./normalizer",
+        "./types",
+        "./adapters",
+        "./mock"
+      ],
+      "language": "javascript",
+      "mtime": "2026-06-02T08:33:49.865Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/index.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\index.ts",
+      "moduleName": "packages/sim-core/src/index.ts",
+      "exports": [],
+      "imports": [
+        "./normalizer",
+        "./types",
+        "./adapters",
+        "./mock"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:59:40.404Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/mock/__tests__/ac-mock.test.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\__tests__\\ac-mock.test.ts",
+      "moduleName": "packages/sim-core/src/mock/__tests__/ac-mock.test.ts",
+      "exports": [],
+      "imports": [
+        "vitest",
+        "../ac-mock"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:30:14.718Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/mock/__tests__/iracing-mock.test.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\__tests__\\iracing-mock.test.ts",
+      "moduleName": "packages/sim-core/src/mock/__tests__/iracing-mock.test.ts",
+      "exports": [],
+      "imports": [
+        "vitest",
+        "../iracing-mock"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:29:49.067Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/mock/__tests__/lmu-mock.test.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\__tests__\\lmu-mock.test.ts",
+      "moduleName": "packages/sim-core/src/mock/__tests__/lmu-mock.test.ts",
+      "exports": [],
+      "imports": [
+        "vitest",
+        "../lmu-mock"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:29:54.611Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/mock/__tests__/mock-factory.test.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\__tests__\\mock-factory.test.ts",
+      "moduleName": "packages/sim-core/src/mock/__tests__/mock-factory.test.ts",
+      "exports": [],
+      "imports": [
+        "vitest",
+        "../mock-sim-factory"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:30:16.426Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/mock/__tests__/scenarios.test.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\__tests__\\scenarios.test.ts",
+      "moduleName": "packages/sim-core/src/mock/__tests__/scenarios.test.ts",
+      "exports": [],
+      "imports": [
+        "vitest",
+        "../scenarios"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:29:30.011Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/mock/ac-mock.d.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\ac-mock.d.ts",
+      "moduleName": "packages/sim-core/src/mock/ac-mock.d.ts",
+      "exports": [],
+      "imports": [],
+      "language": "typescript",
+      "mtime": "2026-06-02T08:33:49.857Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/mock/ac-mock.js": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\ac-mock.js",
+      "moduleName": "packages/sim-core/src/mock/ac-mock.js",
+      "exports": [
+        "ACMock",
+        "ACMock.constructor",
+        "ACMock.setScenario",
+        "ACMock.if",
+        "ACMock.if",
+        "ACMock.getAvailableSims",
+        "ACMock.getData",
+        "ACMock.sim",
+        "ACMock.timestamp",
+        "ACMock.isConnected",
+        "ACMock.player",
+        "ACMock.isOnTrack",
+        "ACMock.isInPit",
+        "ACMock.isPitting",
+        "ACMock.position",
+        "ACMock.classPosition",
+        "ACMock.lapDistance",
+        "ACMock.lapCount",
+        "ACMock.driverName",
+        "ACMock.carNumber",
+        "ACMock.teamName",
+        "ACMock.engine",
+        "ACMock.maxRpm",
+        "ACMock.fuelLevel",
+        "ACMock.fuelCapacity",
+        "ACMock.fuelPressure",
+        "ACMock.waterTemp",
+        "ACMock.oilTemp",
+        "ACMock.oilPressure",
+        "ACMock.engineWarnings",
+        "ACMock.tyres",
+        "ACMock.fl",
+        "ACMock.fr",
+        "ACMock.rl",
+        "ACMock.rr",
+        "ACMock.lap",
+        "ACMock.currentLap",
+        "ACMock.totalLaps",
+        "ACMock.lastLaptime",
+        "ACMock.bestLaptime",
+        "ACMock.sector",
+        "ACMock.sector1",
+        "ACMock.sector2",
+        "ACMock.sector3",
+        "ACMock.estimatedLaptime",
+        "ACMock.delta",
+        "ACMock.isPersonalBest",
+        "ACMock.isSessionBest",
+        "ACMock.session",
+        "ACMock.type",
+        "ACMock.state",
+        "ACMock.timeRemaining",
+        "ACMock.timeElapsed",
+        "ACMock.totalLaps",
+        "ACMock.trackName",
+        "ACMock.weather",
+        "ACMock.airTemp",
+        "ACMock.trackTemp",
+        "ACMock.humidity",
+        "ACMock.precipitation",
+        "ACMock.windSpeed",
+        "ACMock.windDirection",
+        "ACMock.vehicles",
+        "ACMock.track",
+        "ACMock.name",
+        "ACMock.length",
+        "ACMock.sectors",
+        "ACMock.inputs",
+        "ACMock.throttle",
+        "ACMock.brake",
+        "ACMock.clutch",
+        "ACMock.steering",
+        "ACMock.weather",
+        "ACMock.airTemp",
+        "ACMock.trackTemp",
+        "ACMock.humidity",
+        "ACMock.precipitation",
+        "ACMock.windSpeed",
+        "ACMock.windDirection",
+        "ACMock.getConfig",
+        "ACMock.generateSpeed",
+        "ACMock.if",
+        "ACMock.generateRpm",
+        "ACMock.if",
+        "ACMock.generateGear",
+        "ACMock.if",
+        "ACMock.generateFlags",
+        "ACMock.generateVehicles",
+        "ACMock.for",
+        "ACMock.id",
+        "ACMock.driverName",
+        "ACMock.carNumber",
+        "ACMock.teamName",
+        "ACMock.position",
+        "ACMock.classPosition",
+        "ACMock.gap",
+        "ACMock.gapType",
+        "ACMock.lastLaptime",
+        "ACMock.bestLaptime",
+        "ACMock.sectorTimes",
+        "ACMock.speed",
+        "ACMock.isPlayer",
+        "ACMock.isPitting",
+        "ACMock.tyreCompound",
+        "ACMock.fuelRemaining",
+        "ACMock.color",
+        "ACMock.getDriverColor",
+        "ACMock.advanceFuel",
+        "ACMock.if",
+        "ACMock.advanceLap",
+        "ACMock.if",
+        "ACMock.advancePosition"
+      ],
+      "imports": [
+        "./scenarios",
+        "./random"
+      ],
+      "language": "javascript",
+      "mtime": "2026-06-02T08:33:49.855Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/mock/ac-mock.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\ac-mock.ts",
+      "moduleName": "packages/sim-core/src/mock/ac-mock.ts",
+      "exports": [
+        "ACMock",
+        "ACMock.constructor",
+        "ACMock.setScenario",
+        "ACMock.if",
+        "ACMock.if",
+        "ACMock.getAvailableSims",
+        "ACMock.getData",
+        "ACMock.totalLaps",
+        "ACMock.isPersonalBest",
+        "ACMock.isSessionBest",
+        "ACMock.timeRemaining",
+        "ACMock.totalLaps",
+        "ACMock.for",
+        "ACMock.gap",
+        "ACMock.isPlayer",
+        "ACMock.if",
+        "ACMock.if"
+      ],
+      "imports": [
+        "./scenarios",
+        "./random"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:34:39.408Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/mock/index.d.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\index.d.ts",
+      "moduleName": "packages/sim-core/src/mock/index.d.ts",
+      "exports": [],
+      "imports": [
+        "./scenarios",
+        "./iracing-mock",
+        "./lmu-mock",
+        "./ac-mock",
+        "./mock-sim-factory",
+        "./random"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T08:33:49.863Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/mock/index.js": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\index.js",
+      "moduleName": "packages/sim-core/src/mock/index.js",
+      "exports": [],
+      "imports": [
+        "./scenarios",
+        "./iracing-mock",
+        "./lmu-mock",
+        "./ac-mock",
+        "./mock-sim-factory",
+        "./random"
+      ],
+      "language": "javascript",
+      "mtime": "2026-06-02T08:33:49.862Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/mock/index.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\index.ts",
+      "moduleName": "packages/sim-core/src/mock/index.ts",
+      "exports": [],
+      "imports": [
+        "./scenarios",
+        "./iracing-mock",
+        "./lmu-mock",
+        "./ac-mock",
+        "./mock-sim-factory",
+        "./random"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:32:20.808Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/mock/iracing-mock.d.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\iracing-mock.d.ts",
+      "moduleName": "packages/sim-core/src/mock/iracing-mock.d.ts",
+      "exports": [],
+      "imports": [],
+      "language": "typescript",
+      "mtime": "2026-06-02T08:33:49.830Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/mock/iracing-mock.js": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\iracing-mock.js",
+      "moduleName": "packages/sim-core/src/mock/iracing-mock.js",
+      "exports": [
+        "IRacingMock",
+        "IRacingMock.constructor",
+        "IRacingMock.setScenario",
+        "IRacingMock.if",
+        "IRacingMock.if",
+        "IRacingMock.getAvailableSims",
+        "IRacingMock.getData",
+        "IRacingMock.sim",
+        "IRacingMock.timestamp",
+        "IRacingMock.isConnected",
+        "IRacingMock.player",
+        "IRacingMock.isOnTrack",
+        "IRacingMock.isInPit",
+        "IRacingMock.isPitting",
+        "IRacingMock.position",
+        "IRacingMock.classPosition",
+        "IRacingMock.lapDistance",
+        "IRacingMock.lapCount",
+        "IRacingMock.driverName",
+        "IRacingMock.carNumber",
+        "IRacingMock.teamName",
+        "IRacingMock.engine",
+        "IRacingMock.maxRpm",
+        "IRacingMock.fuelLevel",
+        "IRacingMock.fuelCapacity",
+        "IRacingMock.fuelPressure",
+        "IRacingMock.waterTemp",
+        "IRacingMock.oilTemp",
+        "IRacingMock.oilPressure",
+        "IRacingMock.engineWarnings",
+        "IRacingMock.tyres",
+        "IRacingMock.fl",
+        "IRacingMock.fr",
+        "IRacingMock.rl",
+        "IRacingMock.rr",
+        "IRacingMock.lap",
+        "IRacingMock.currentLap",
+        "IRacingMock.totalLaps",
+        "IRacingMock.lastLaptime",
+        "IRacingMock.bestLaptime",
+        "IRacingMock.sector",
+        "IRacingMock.sector1",
+        "IRacingMock.sector2",
+        "IRacingMock.sector3",
+        "IRacingMock.estimatedLaptime",
+        "IRacingMock.delta",
+        "IRacingMock.isPersonalBest",
+        "IRacingMock.isSessionBest",
+        "IRacingMock.session",
+        "IRacingMock.type",
+        "IRacingMock.state",
+        "IRacingMock.timeRemaining",
+        "IRacingMock.timeElapsed",
+        "IRacingMock.totalLaps",
+        "IRacingMock.trackName",
+        "IRacingMock.trackLength",
+        "IRacingMock.weather",
+        "IRacingMock.airTemp",
+        "IRacingMock.trackTemp",
+        "IRacingMock.humidity",
+        "IRacingMock.precipitation",
+        "IRacingMock.windSpeed",
+        "IRacingMock.windDirection",
+        "IRacingMock.vehicles",
+        "IRacingMock.track",
+        "IRacingMock.name",
+        "IRacingMock.length",
+        "IRacingMock.sectors",
+        "IRacingMock.inputs",
+        "IRacingMock.throttle",
+        "IRacingMock.brake",
+        "IRacingMock.clutch",
+        "IRacingMock.steering",
+        "IRacingMock.weather",
+        "IRacingMock.airTemp",
+        "IRacingMock.trackTemp",
+        "IRacingMock.humidity",
+        "IRacingMock.precipitation",
+        "IRacingMock.windSpeed",
+        "IRacingMock.windDirection",
+        "IRacingMock.getConfig",
+        "IRacingMock.generateSpeed",
+        "IRacingMock.if",
+        "IRacingMock.generateRpm",
+        "IRacingMock.if",
+        "IRacingMock.generateGear",
+        "IRacingMock.if",
+        "IRacingMock.generateLapDistance",
+        "IRacingMock.if",
+        "IRacingMock.generateFlags",
+        "IRacingMock.active",
+        "IRacingMock.generateVehicles",
+        "IRacingMock.for",
+        "IRacingMock.id",
+        "IRacingMock.driverName",
+        "IRacingMock.carNumber",
+        "IRacingMock.teamName",
+        "IRacingMock.position",
+        "IRacingMock.classPosition",
+        "IRacingMock.gap",
+        "IRacingMock.gapType",
+        "IRacingMock.lastLaptime",
+        "IRacingMock.bestLaptime",
+        "IRacingMock.sectorTimes",
+        "IRacingMock.speed",
+        "IRacingMock.isPitting",
+        "IRacingMock.tyreCompound",
+        "IRacingMock.fuelRemaining",
+        "IRacingMock.color",
+        "IRacingMock.getDriverColor",
+        "IRacingMock.advanceFuel",
+        "IRacingMock.if",
+        "IRacingMock.advanceLap",
+        "IRacingMock.if",
+        "IRacingMock.advancePosition"
+      ],
+      "imports": [
+        "./scenarios",
+        "./random"
+      ],
+      "language": "javascript",
+      "mtime": "2026-06-02T08:33:49.826Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/mock/iracing-mock.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\iracing-mock.ts",
+      "moduleName": "packages/sim-core/src/mock/iracing-mock.ts",
+      "exports": [
+        "IRacingMock",
+        "IRacingMock.constructor",
+        "IRacingMock.setScenario",
+        "IRacingMock.if",
+        "IRacingMock.if",
+        "IRacingMock.getAvailableSims",
+        "IRacingMock.getData",
+        "IRacingMock.sim",
+        "IRacingMock.timestamp",
+        "IRacingMock.isConnected",
+        "IRacingMock.player",
+        "IRacingMock.isOnTrack",
+        "IRacingMock.isInPit",
+        "IRacingMock.isPitting",
+        "IRacingMock.position",
+        "IRacingMock.classPosition",
+        "IRacingMock.lapDistance",
+        "IRacingMock.lapCount",
+        "IRacingMock.driverName",
+        "IRacingMock.carNumber",
+        "IRacingMock.teamName",
+        "IRacingMock.engine",
+        "IRacingMock.maxRpm",
+        "IRacingMock.fuelLevel",
+        "IRacingMock.fuelCapacity",
+        "IRacingMock.fuelPressure",
+        "IRacingMock.waterTemp",
+        "IRacingMock.oilTemp",
+        "IRacingMock.oilPressure",
+        "IRacingMock.engineWarnings",
+        "IRacingMock.tyres",
+        "IRacingMock.fl",
+        "IRacingMock.fr",
+        "IRacingMock.rl",
+        "IRacingMock.rr",
+        "IRacingMock.lap",
+        "IRacingMock.currentLap",
+        "IRacingMock.totalLaps",
+        "IRacingMock.lastLaptime",
+        "IRacingMock.bestLaptime",
+        "IRacingMock.sector",
+        "IRacingMock.sector1",
+        "IRacingMock.sector2",
+        "IRacingMock.sector3",
+        "IRacingMock.estimatedLaptime",
+        "IRacingMock.delta",
+        "IRacingMock.isPersonalBest",
+        "IRacingMock.isSessionBest",
+        "IRacingMock.session",
+        "IRacingMock.type",
+        "IRacingMock.state",
+        "IRacingMock.timeRemaining",
+        "IRacingMock.timeElapsed",
+        "IRacingMock.totalLaps",
+        "IRacingMock.trackName",
+        "IRacingMock.trackLength",
+        "IRacingMock.weather",
+        "IRacingMock.airTemp",
+        "IRacingMock.trackTemp",
+        "IRacingMock.humidity",
+        "IRacingMock.precipitation",
+        "IRacingMock.windSpeed",
+        "IRacingMock.windDirection",
+        "IRacingMock.vehicles",
+        "IRacingMock.track",
+        "IRacingMock.name",
+        "IRacingMock.length",
+        "IRacingMock.sectors",
+        "IRacingMock.inputs",
+        "IRacingMock.throttle",
+        "IRacingMock.brake",
+        "IRacingMock.clutch",
+        "IRacingMock.steering",
+        "IRacingMock.weather",
+        "IRacingMock.airTemp",
+        "IRacingMock.trackTemp",
+        "IRacingMock.humidity",
+        "IRacingMock.precipitation",
+        "IRacingMock.windSpeed",
+        "IRacingMock.windDirection",
+        "IRacingMock.active",
+        "IRacingMock.for",
+        "IRacingMock.id",
+        "IRacingMock.driverName",
+        "IRacingMock.carNumber",
+        "IRacingMock.teamName",
+        "IRacingMock.position",
+        "IRacingMock.classPosition",
+        "IRacingMock.gap",
+        "IRacingMock.gapType",
+        "IRacingMock.lastLaptime",
+        "IRacingMock.bestLaptime",
+        "IRacingMock.sectorTimes",
+        "IRacingMock.speed",
+        "IRacingMock.isPitting",
+        "IRacingMock.tyreCompound",
+        "IRacingMock.fuelRemaining",
+        "IRacingMock.color",
+        "IRacingMock.if",
+        "IRacingMock.if"
+      ],
+      "imports": [
+        "./scenarios",
+        "./random"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:35:28.740Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/mock/lmu-mock.d.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\lmu-mock.d.ts",
+      "moduleName": "packages/sim-core/src/mock/lmu-mock.d.ts",
+      "exports": [],
+      "imports": [],
+      "language": "typescript",
+      "mtime": "2026-06-02T08:33:49.845Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/mock/lmu-mock.js": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\lmu-mock.js",
+      "moduleName": "packages/sim-core/src/mock/lmu-mock.js",
+      "exports": [
+        "LMUMock",
+        "LMUMock.constructor",
+        "LMUMock.setScenario",
+        "LMUMock.if",
+        "LMUMock.if",
+        "LMUMock.getAvailableSims",
+        "LMUMock.getData",
+        "LMUMock.sim",
+        "LMUMock.timestamp",
+        "LMUMock.isConnected",
+        "LMUMock.player",
+        "LMUMock.isOnTrack",
+        "LMUMock.isInPit",
+        "LMUMock.isPitting",
+        "LMUMock.position",
+        "LMUMock.classPosition",
+        "LMUMock.lapDistance",
+        "LMUMock.lapCount",
+        "LMUMock.driverName",
+        "LMUMock.carNumber",
+        "LMUMock.teamName",
+        "LMUMock.engine",
+        "LMUMock.maxRpm",
+        "LMUMock.fuelLevel",
+        "LMUMock.fuelCapacity",
+        "LMUMock.fuelPressure",
+        "LMUMock.waterTemp",
+        "LMUMock.oilTemp",
+        "LMUMock.oilPressure",
+        "LMUMock.engineWarnings",
+        "LMUMock.tyres",
+        "LMUMock.fl",
+        "LMUMock.fr",
+        "LMUMock.rl",
+        "LMUMock.rr",
+        "LMUMock.lap",
+        "LMUMock.currentLap",
+        "LMUMock.totalLaps",
+        "LMUMock.lastLaptime",
+        "LMUMock.bestLaptime",
+        "LMUMock.sector",
+        "LMUMock.sector1",
+        "LMUMock.sector2",
+        "LMUMock.sector3",
+        "LMUMock.estimatedLaptime",
+        "LMUMock.delta",
+        "LMUMock.isPersonalBest",
+        "LMUMock.isSessionBest",
+        "LMUMock.session",
+        "LMUMock.type",
+        "LMUMock.state",
+        "LMUMock.timeRemaining",
+        "LMUMock.timeElapsed",
+        "LMUMock.totalLaps",
+        "LMUMock.trackName",
+        "LMUMock.weather",
+        "LMUMock.airTemp",
+        "LMUMock.trackTemp",
+        "LMUMock.humidity",
+        "LMUMock.precipitation",
+        "LMUMock.windSpeed",
+        "LMUMock.windDirection",
+        "LMUMock.vehicles",
+        "LMUMock.track",
+        "LMUMock.name",
+        "LMUMock.length",
+        "LMUMock.sectors",
+        "LMUMock.inputs",
+        "LMUMock.throttle",
+        "LMUMock.brake",
+        "LMUMock.clutch",
+        "LMUMock.steering",
+        "LMUMock.weather",
+        "LMUMock.airTemp",
+        "LMUMock.trackTemp",
+        "LMUMock.humidity",
+        "LMUMock.precipitation",
+        "LMUMock.windSpeed",
+        "LMUMock.windDirection",
+        "LMUMock.getConfig",
+        "LMUMock.generateSpeed",
+        "LMUMock.if",
+        "LMUMock.generateRpm",
+        "LMUMock.if",
+        "LMUMock.generateGear",
+        "LMUMock.if",
+        "LMUMock.generateFlags",
+        "LMUMock.generateVehicles",
+        "LMUMock.for",
+        "LMUMock.id",
+        "LMUMock.driverName",
+        "LMUMock.carNumber",
+        "LMUMock.teamName",
+        "LMUMock.position",
+        "LMUMock.classPosition",
+        "LMUMock.gap",
+        "LMUMock.gapType",
+        "LMUMock.lastLaptime",
+        "LMUMock.bestLaptime",
+        "LMUMock.sectorTimes",
+        "LMUMock.speed",
+        "LMUMock.isPlayer",
+        "LMUMock.isPitting",
+        "LMUMock.tyreCompound",
+        "LMUMock.fuelRemaining",
+        "LMUMock.color",
+        "LMUMock.getDriverColor",
+        "LMUMock.advanceFuel",
+        "LMUMock.if",
+        "LMUMock.advanceLap",
+        "LMUMock.if",
+        "LMUMock.advancePosition"
+      ],
+      "imports": [
+        "./scenarios",
+        "./random"
+      ],
+      "language": "javascript",
+      "mtime": "2026-06-02T08:33:49.842Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/mock/lmu-mock.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\lmu-mock.ts",
+      "moduleName": "packages/sim-core/src/mock/lmu-mock.ts",
+      "exports": [
+        "LMUMock",
+        "LMUMock.constructor",
+        "LMUMock.setScenario",
+        "LMUMock.if",
+        "LMUMock.if",
+        "LMUMock.getAvailableSims",
+        "LMUMock.getData",
+        "LMUMock.sim",
+        "LMUMock.timestamp",
+        "LMUMock.isConnected",
+        "LMUMock.player",
+        "LMUMock.isOnTrack",
+        "LMUMock.isInPit",
+        "LMUMock.isPitting",
+        "LMUMock.position",
+        "LMUMock.classPosition",
+        "LMUMock.lapDistance",
+        "LMUMock.lapCount",
+        "LMUMock.driverName",
+        "LMUMock.carNumber",
+        "LMUMock.teamName",
+        "LMUMock.engine",
+        "LMUMock.maxRpm",
+        "LMUMock.fuelLevel",
+        "LMUMock.fuelCapacity",
+        "LMUMock.fuelPressure",
+        "LMUMock.waterTemp",
+        "LMUMock.oilTemp",
+        "LMUMock.oilPressure",
+        "LMUMock.engineWarnings",
+        "LMUMock.tyres",
+        "LMUMock.fl",
+        "LMUMock.fr",
+        "LMUMock.rl",
+        "LMUMock.rr",
+        "LMUMock.lap",
+        "LMUMock.currentLap",
+        "LMUMock.totalLaps",
+        "LMUMock.lastLaptime",
+        "LMUMock.bestLaptime",
+        "LMUMock.sector",
+        "LMUMock.sector1",
+        "LMUMock.sector2",
+        "LMUMock.sector3",
+        "LMUMock.estimatedLaptime",
+        "LMUMock.delta",
+        "LMUMock.isPersonalBest",
+        "LMUMock.isSessionBest",
+        "LMUMock.session",
+        "LMUMock.type",
+        "LMUMock.state",
+        "LMUMock.timeRemaining",
+        "LMUMock.timeElapsed",
+        "LMUMock.totalLaps",
+        "LMUMock.trackName",
+        "LMUMock.weather",
+        "LMUMock.airTemp",
+        "LMUMock.trackTemp",
+        "LMUMock.humidity",
+        "LMUMock.precipitation",
+        "LMUMock.windSpeed",
+        "LMUMock.windDirection",
+        "LMUMock.vehicles",
+        "LMUMock.track",
+        "LMUMock.name",
+        "LMUMock.length",
+        "LMUMock.sectors",
+        "LMUMock.inputs",
+        "LMUMock.throttle",
+        "LMUMock.brake",
+        "LMUMock.clutch",
+        "LMUMock.steering",
+        "LMUMock.weather",
+        "LMUMock.airTemp",
+        "LMUMock.trackTemp",
+        "LMUMock.humidity",
+        "LMUMock.precipitation",
+        "LMUMock.windSpeed",
+        "LMUMock.windDirection",
+        "LMUMock.for",
+        "LMUMock.id",
+        "LMUMock.driverName",
+        "LMUMock.carNumber",
+        "LMUMock.teamName",
+        "LMUMock.position",
+        "LMUMock.classPosition",
+        "LMUMock.gap",
+        "LMUMock.gapType",
+        "LMUMock.lastLaptime",
+        "LMUMock.bestLaptime",
+        "LMUMock.sectorTimes",
+        "LMUMock.speed",
+        "LMUMock.isPlayer",
+        "LMUMock.isPitting",
+        "LMUMock.tyreCompound",
+        "LMUMock.fuelRemaining",
+        "LMUMock.color",
+        "LMUMock.if",
+        "LMUMock.if"
+      ],
+      "imports": [
+        "./scenarios",
+        "./random"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:34:32.329Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/mock/mock-provider.d.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\mock-provider.d.ts",
+      "moduleName": "packages/sim-core/src/mock/mock-provider.d.ts",
+      "exports": [
+        "MockScenario",
+        "SimInfo",
+        "MockProvider"
+      ],
+      "imports": [],
+      "language": "typescript",
+      "mtime": "2026-06-02T08:33:49.794Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/mock/mock-provider.js": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\mock-provider.js",
+      "moduleName": "packages/sim-core/src/mock/mock-provider.js",
+      "exports": [],
+      "imports": [],
+      "language": "javascript",
+      "mtime": "2026-06-02T08:33:49.792Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/mock/mock-provider.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\mock-provider.ts",
+      "moduleName": "packages/sim-core/src/mock/mock-provider.ts",
+      "exports": [
+        "MockScenario",
+        "SimInfo",
+        "MockProvider"
+      ],
+      "imports": [],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:28:50.378Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/mock/mock-sim-factory.d.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\mock-sim-factory.d.ts",
+      "moduleName": "packages/sim-core/src/mock/mock-sim-factory.d.ts",
+      "exports": [],
+      "imports": [],
+      "language": "typescript",
+      "mtime": "2026-06-02T08:33:49.860Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/mock/mock-sim-factory.js": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\mock-sim-factory.js",
+      "moduleName": "packages/sim-core/src/mock/mock-sim-factory.js",
+      "exports": [
+        "MockSimFactory",
+        "MockSimFactory.switch",
+        "MockSimFactory.if"
+      ],
+      "imports": [
+        "./iracing-mock",
+        "./lmu-mock",
+        "./ac-mock"
+      ],
+      "language": "javascript",
+      "mtime": "2026-06-02T08:33:49.858Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/mock/mock-sim-factory.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\mock-sim-factory.ts",
+      "moduleName": "packages/sim-core/src/mock/mock-sim-factory.ts",
+      "exports": [
+        "MockSimFactory",
+        "MockSimFactory.switch",
+        "MockSimFactory.if"
+      ],
+      "imports": [
+        "./iracing-mock",
+        "./lmu-mock",
+        "./ac-mock"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:32:19.918Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/mock/random.d.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\random.d.ts",
+      "moduleName": "packages/sim-core/src/mock/random.d.ts",
+      "exports": [],
+      "imports": [],
+      "language": "typescript",
+      "mtime": "2026-06-02T08:33:49.810Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/mock/random.js": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\random.js",
+      "moduleName": "packages/sim-core/src/mock/random.js",
+      "exports": [
+        "SeededRandom",
+        "SeededRandom.constructor",
+        "SeededRandom.next",
+        "SeededRandom.nextInt",
+        "SeededRandom.nextFloat",
+        "SeededRandom.reset",
+        "SeededRandom.getCallCount"
+      ],
+      "imports": [],
+      "language": "javascript",
+      "mtime": "2026-06-02T08:33:49.807Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/mock/random.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\random.ts",
+      "moduleName": "packages/sim-core/src/mock/random.ts",
+      "exports": [
+        "SeededRandom",
+        "SeededRandom.constructor",
+        "SeededRandom.next",
+        "SeededRandom.nextInt",
+        "SeededRandom.nextFloat",
+        "SeededRandom.reset",
+        "SeededRandom.getCallCount"
+      ],
+      "imports": [],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:30:28.352Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/mock/scenarios.d.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\scenarios.d.ts",
+      "moduleName": "packages/sim-core/src/mock/scenarios.d.ts",
+      "exports": [
+        "ScenarioConfig"
+      ],
+      "imports": [],
+      "language": "typescript",
+      "mtime": "2026-06-02T08:33:49.800Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/mock/scenarios.js": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\scenarios.js",
+      "moduleName": "packages/sim-core/src/mock/scenarios.js",
+      "exports": [
+        "SCENARIO_CONFIGS"
+      ],
+      "imports": [],
+      "language": "javascript",
+      "mtime": "2026-06-02T08:33:49.797Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/mock/scenarios.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\scenarios.ts",
+      "moduleName": "packages/sim-core/src/mock/scenarios.ts",
+      "exports": [
+        "ScenarioConfig",
+        "SCENARIO_CONFIGS"
+      ],
+      "imports": [],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:28:54.970Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/normalizer.d.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\normalizer.d.ts",
+      "moduleName": "packages/sim-core/src/normalizer.d.ts",
+      "exports": [],
+      "imports": [],
+      "language": "typescript",
+      "mtime": "2026-06-02T08:33:49.783Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/normalizer.js": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\normalizer.js",
+      "moduleName": "packages/sim-core/src/normalizer.js",
+      "exports": [
+        "SimNormalizer",
+        "SimNormalizer.normalize",
+        "SimNormalizer.if",
+        "SimNormalizer.switch",
+        "SimNormalizer.normalizeVehicles",
+        "SimNormalizer.normalizeVehicle",
+        "SimNormalizer.id",
+        "SimNormalizer.driverName",
+        "SimNormalizer.carNumber",
+        "SimNormalizer.teamName",
+        "SimNormalizer.position",
+        "SimNormalizer.classPosition",
+        "SimNormalizer.gap",
+        "SimNormalizer.gapType",
+        "SimNormalizer.lastLaptime",
+        "SimNormalizer.bestLaptime",
+        "SimNormalizer.sectorTimes",
+        "SimNormalizer.speed",
+        "SimNormalizer.isPlayer",
+        "SimNormalizer.isPitting",
+        "SimNormalizer.tyreCompound",
+        "SimNormalizer.fuelRemaining",
+        "SimNormalizer.color"
+      ],
+      "imports": [
+        "zod"
+      ],
+      "language": "javascript",
+      "mtime": "2026-06-02T08:33:49.780Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/normalizer.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\normalizer.ts",
+      "moduleName": "packages/sim-core/src/normalizer.ts",
+      "exports": [
+        "SimNormalizer",
+        "SimNormalizer.normalize",
+        "SimNormalizer.if",
+        "SimNormalizer.switch",
+        "SimNormalizer.normalizeVehicles",
+        "SimNormalizer.id",
+        "SimNormalizer.driverName",
+        "SimNormalizer.carNumber",
+        "SimNormalizer.teamName",
+        "SimNormalizer.position",
+        "SimNormalizer.classPosition",
+        "SimNormalizer.gap",
+        "SimNormalizer.gapType",
+        "SimNormalizer.lastLaptime",
+        "SimNormalizer.bestLaptime",
+        "SimNormalizer.sectorTimes",
+        "SimNormalizer.speed",
+        "SimNormalizer.isPlayer",
+        "SimNormalizer.isPitting",
+        "SimNormalizer.tyreCompound",
+        "SimNormalizer.fuelRemaining",
+        "SimNormalizer.color"
+      ],
+      "imports": [
+        "zod"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:40:05.930Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/types/index.d.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\types\\index.d.ts",
+      "moduleName": "packages/sim-core/src/types/index.d.ts",
+      "exports": [
+        "Telemetry",
+        "PlayerData",
+        "VehicleData",
+        "EngineData",
+        "TyreData",
+        "TyreInfo",
+        "LapData",
+        "SessionData",
+        "Flag",
+        "TrackData",
+        "InputData",
+        "WeatherData",
+        "SimType",
+        "SimState",
+        "Session"
+      ],
+      "imports": [],
+      "language": "typescript",
+      "mtime": "2026-06-02T08:33:49.750Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/types/index.js": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\types\\index.js",
+      "moduleName": "packages/sim-core/src/types/index.js",
+      "exports": [],
+      "imports": [],
+      "language": "javascript",
+      "mtime": "2026-06-02T08:33:49.738Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/types/index.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\types\\index.ts",
+      "moduleName": "packages/sim-core/src/types/index.ts",
+      "exports": [
+        "Telemetry",
+        "PlayerData",
+        "VehicleData",
+        "EngineData",
+        "TyreData",
+        "TyreInfo",
+        "LapData",
+        "SessionData",
+        "Flag",
+        "TrackData",
+        "InputData",
+        "WeatherData",
+        "SimType",
+        "SimState",
+        "Session"
+      ],
+      "imports": [],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:59:48.803Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/src/types/sim-specific/index.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\types\\sim-specific\\index.ts",
+      "moduleName": "packages/sim-core/src/types/sim-specific/index.ts",
+      "exports": [
+        "IRacingRawTelemetry",
+        "LMURawTelemetry",
+        "ACRawTelemetry",
+        "TireData",
+        "LMUTyres",
+        "ACTyres",
+        "ACTyre",
+        "LMULap",
+        "TeamRawData",
+        "LMUSession",
+        "ACSession"
+      ],
+      "imports": [],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:14:13.862Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/sim-core/vitest.config.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\vitest.config.ts",
+      "moduleName": "packages/sim-core/vitest.config.ts",
+      "exports": [
+        "defineConfig"
+      ],
+      "imports": [
+        "vitest/config"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:17:46.552Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/types/src/index.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\types\\src\\index.ts",
+      "moduleName": "packages/types/src/index.ts",
+      "exports": [],
+      "imports": [],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:16:32.108Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/ui-core/src/__tests__/smoke.test.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\ui-core\\src\\__tests__\\smoke.test.ts",
+      "moduleName": "packages/ui-core/src/__tests__/smoke.test.ts",
+      "exports": [],
+      "imports": [
+        "vitest"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:12:35.003Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/ui-core/src/components/DeltaIndicator.tsx": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\ui-core\\src\\components\\DeltaIndicator.tsx",
+      "moduleName": "packages/ui-core/src/components/DeltaIndicator.tsx",
+      "exports": [
+        "DeltaIndicator"
+      ],
+      "imports": [],
+      "language": "typescript",
+      "mtime": "2026-06-01T20:42:41.681Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/ui-core/src/components/GlassPanel.tsx": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\ui-core\\src\\components\\GlassPanel.tsx",
+      "moduleName": "packages/ui-core/src/components/GlassPanel.tsx",
+      "exports": [
+        "GlassPanel"
+      ],
+      "imports": [
+        "react"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-01T20:42:41.676Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/ui-core/src/components/index.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\ui-core\\src\\components\\index.ts",
+      "moduleName": "packages/ui-core/src/components/index.ts",
+      "exports": [],
+      "imports": [
+        "./GlassPanel",
+        "./TimeDisplay",
+        "./PositionBadge",
+        "./DeltaIndicator"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-01T20:42:41.683Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/ui-core/src/components/PositionBadge.tsx": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\ui-core\\src\\components\\PositionBadge.tsx",
+      "moduleName": "packages/ui-core/src/components/PositionBadge.tsx",
+      "exports": [
+        "PositionBadge"
+      ],
+      "imports": [],
+      "language": "typescript",
+      "mtime": "2026-06-01T20:42:41.679Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/ui-core/src/components/TimeDisplay.tsx": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\ui-core\\src\\components\\TimeDisplay.tsx",
+      "moduleName": "packages/ui-core/src/components/TimeDisplay.tsx",
+      "exports": [
+        "TimeDisplay"
+      ],
+      "imports": [],
+      "language": "typescript",
+      "mtime": "2026-06-01T20:42:41.677Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/ui-core/src/global.d.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\ui-core\\src\\global.d.ts",
+      "moduleName": "packages/ui-core/src/global.d.ts",
+      "exports": [],
+      "imports": [],
+      "language": "typescript",
+      "mtime": "2026-06-02T08:50:31.813Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/ui-core/src/hooks/index.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\ui-core\\src\\hooks\\index.ts",
+      "moduleName": "packages/ui-core/src/hooks/index.ts",
+      "exports": [],
+      "imports": [
+        "./useTelemetry",
+        "./useSimState",
+        "./useTheme"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-01T20:42:41.686Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/ui-core/src/hooks/useSimState.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\ui-core\\src\\hooks\\useSimState.ts",
+      "moduleName": "packages/ui-core/src/hooks/useSimState.ts",
+      "exports": [
+        "useSimState"
+      ],
+      "imports": [
+        "react"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-01T20:42:41.675Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/ui-core/src/hooks/useTelemetry.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\ui-core\\src\\hooks\\useTelemetry.ts",
+      "moduleName": "packages/ui-core/src/hooks/useTelemetry.ts",
+      "exports": [
+        "useTelemetry"
+      ],
+      "imports": [
+        "react"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-01T20:42:41.673Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/ui-core/src/hooks/useTheme.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\ui-core\\src\\hooks\\useTheme.ts",
+      "moduleName": "packages/ui-core/src/hooks/useTheme.ts",
+      "exports": [
+        "useTheme"
+      ],
+      "imports": [
+        "react"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-01T20:42:41.675Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/ui-core/src/index.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\ui-core\\src\\index.ts",
+      "moduleName": "packages/ui-core/src/index.ts",
+      "exports": [],
+      "imports": [
+        "./hooks/useTelemetry",
+        "./hooks/useSimState",
+        "./hooks/useTheme",
+        "./components/GlassPanel",
+        "./components/TimeDisplay",
+        "./components/PositionBadge",
+        "./components/DeltaIndicator",
+        "./stores/telemetry-store"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T14:38:40.649Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/ui-core/src/stores/__tests__/telemetry-store.test.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\ui-core\\src\\stores\\__tests__\\telemetry-store.test.ts",
+      "moduleName": "packages/ui-core/src/stores/__tests__/telemetry-store.test.ts",
+      "exports": [],
+      "imports": [
+        "vitest",
+        "../telemetry-store"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T14:37:20.930Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/ui-core/src/stores/telemetry-store.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\ui-core\\src\\stores\\telemetry-store.ts",
+      "moduleName": "packages/ui-core/src/stores/telemetry-store.ts",
+      "exports": [
+        "TelemetryState",
+        "createTelemetryStore",
+        "useTelemetryStore",
+        "selectPlayer",
+        "selectEngine",
+        "selectTyres",
+        "selectLap",
+        "selectSession",
+        "selectVehicles",
+        "selectTrack",
+        "selectInputs",
+        "selectWeather",
+        "selectConnected",
+        "selectIsMock",
+        "FuelCalculations",
+        "selectFuelCalculations",
+        "GapCalculations",
+        "selectGapCalculations",
+        "DeltaCalculations",
+        "selectDeltaCalculations"
+      ],
+      "imports": [
+        "zustand",
+        "@vantare/sim-core/calculations",
+        "@vantare/sim-core/calculations",
+        "@vantare/sim-core/calculations",
+        "@vantare/sim-core/calculations"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T14:38:11.956Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/packages/ui-core/vitest.config.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\ui-core\\vitest.config.ts",
+      "moduleName": "packages/ui-core/vitest.config.ts",
+      "exports": [
+        "defineConfig"
+      ],
+      "imports": [
+        "vitest/config"
+      ],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:17:48.035Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/shared/types/bridge.d.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\shared\\types\\bridge.d.ts",
+      "moduleName": "shared/types/bridge.d.ts",
+      "exports": [
+        "VantareBridge",
+        "OverlayWindowInfo",
+        "UpdateInfo"
+      ],
+      "imports": [],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:21:30.869Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/shared/types/bridge.js": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\shared\\types\\bridge.js",
+      "moduleName": "shared/types/bridge.js",
+      "exports": [],
+      "imports": [],
+      "language": "javascript",
+      "mtime": "2026-06-02T07:21:30.860Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/shared/types/bridge.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\shared\\types\\bridge.ts",
+      "moduleName": "shared/types/bridge.ts",
+      "exports": [
+        "VantareBridge",
+        "OverlayWindowInfo",
+        "UpdateInfo"
+      ],
+      "imports": [],
+      "language": "typescript",
+      "mtime": "2026-06-01T20:41:19.392Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/shared/types/index.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\shared\\types\\index.ts",
+      "moduleName": "shared/types/index.ts",
+      "exports": [],
+      "imports": [],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:12:54.625Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/shared/types/profile.d.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\shared\\types\\profile.d.ts",
+      "moduleName": "shared/types/profile.d.ts",
+      "exports": [
+        "Profile",
+        "OverlayConfig"
+      ],
+      "imports": [],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:21:30.856Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/shared/types/profile.js": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\shared\\types\\profile.js",
+      "moduleName": "shared/types/profile.js",
+      "exports": [],
+      "imports": [],
+      "language": "javascript",
+      "mtime": "2026-06-02T07:21:30.853Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/shared/types/profile.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\shared\\types\\profile.ts",
+      "moduleName": "shared/types/profile.ts",
+      "exports": [
+        "OverlayConfig"
+      ],
+      "imports": [],
+      "language": "typescript",
+      "mtime": "2026-06-01T20:41:19.393Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/shared/types/settings.d.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\shared\\types\\settings.d.ts",
+      "moduleName": "shared/types/settings.d.ts",
+      "exports": [
+        "Settings"
+      ],
+      "imports": [],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:21:30.852Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/shared/types/settings.js": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\shared\\types\\settings.js",
+      "moduleName": "shared/types/settings.js",
+      "exports": [],
+      "imports": [],
+      "language": "javascript",
+      "mtime": "2026-06-02T07:21:30.846Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/shared/types/settings.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\shared\\types\\settings.ts",
+      "moduleName": "shared/types/settings.ts",
+      "exports": [],
+      "imports": [],
+      "language": "typescript",
+      "mtime": "2026-06-01T20:41:19.393Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/shared/types/theme.d.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\shared\\types\\theme.d.ts",
+      "moduleName": "shared/types/theme.d.ts",
+      "exports": [
+        "Theme"
+      ],
+      "imports": [],
+      "language": "typescript",
+      "mtime": "2026-06-02T07:21:30.859Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/shared/types/theme.js": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\shared\\types\\theme.js",
+      "moduleName": "shared/types/theme.js",
+      "exports": [],
+      "imports": [],
+      "language": "javascript",
+      "mtime": "2026-06-02T07:21:30.857Z"
+    },
+    "C:/Users/isaac/Desktop/Vantare-Overlays/shared/types/theme.ts": {
+      "filePath": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\shared\\types\\theme.ts",
+      "moduleName": "shared/types/theme.ts",
+      "exports": [],
+      "imports": [],
+      "language": "typescript",
+      "mtime": "2026-06-01T20:41:19.394Z"
+    }
+  },
+  "edges": [
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\main\\index.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\main\\auth\\license.ts",
+      "importSpecifier": "./auth/license",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\main\\index.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\main\\ipc\\handlers.ts",
+      "importSpecifier": "./ipc/handlers",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\main\\index.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\main\\server\\http-server.ts",
+      "importSpecifier": "./server/http-server",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\main\\index.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\main\\sim\\sim-manager.ts",
+      "importSpecifier": "./sim/sim-manager",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\main\\index.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\main\\updates\\auto-updater.ts",
+      "importSpecifier": "./updates/auto-updater",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\main\\index.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\main\\windows\\overlay-manager.ts",
+      "importSpecifier": "./windows/overlay-manager",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\main\\sim\\__tests__\\sim-manager.test.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\main\\sim\\sim-manager.ts",
+      "importSpecifier": "../sim-manager",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\main.tsx",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\App.tsx",
+      "importSpecifier": "./App",
+      "importType": "default"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\main.tsx",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\styles\\globals.css",
+      "importSpecifier": "./styles/globals.css",
+      "importType": "sideeffect"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\shared\\__tests__\\components.test.tsx",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\shared\\components",
+      "importSpecifier": "../components",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\shared\\__tests__\\hooks.test.tsx",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\shared\\hooks\\useConnectionStatus.ts",
+      "importSpecifier": "../hooks/useConnectionStatus",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\shared\\__tests__\\hooks.test.tsx",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\shared\\hooks\\useOverlayConfig.ts",
+      "importSpecifier": "../hooks/useOverlayConfig",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\shared\\__tests__\\store.test.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\shared\\stores\\app-store.ts",
+      "importSpecifier": "../stores/app-store",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\shared\\components\\index.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\shared\\components\\ErrorMessage.tsx",
+      "importSpecifier": "./ErrorMessage",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\shared\\components\\index.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\shared\\components\\LoadingSpinner.tsx",
+      "importSpecifier": "./LoadingSpinner",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\shared\\components\\index.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\shared\\components\\OverlayContainer.tsx",
+      "importSpecifier": "./OverlayContainer",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\shared\\components\\index.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\shared\\components\\StatusIndicator.tsx",
+      "importSpecifier": "./StatusIndicator",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\shared\\hooks\\index.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\shared\\hooks\\useConnectionStatus.ts",
+      "importSpecifier": "./useConnectionStatus",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\shared\\hooks\\index.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\shared\\hooks\\useOverlayConfig.ts",
+      "importSpecifier": "./useOverlayConfig",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\shared\\stores\\index.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\shared\\stores\\app-store.ts",
+      "importSpecifier": "./app-store",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\themes\\__tests__\\themes.test.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\themes\\blood.json",
+      "importSpecifier": "../blood.json",
+      "importType": "default"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\themes\\__tests__\\themes.test.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\themes\\dark.json",
+      "importSpecifier": "../dark.json",
+      "importType": "default"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\themes\\__tests__\\themes.test.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\themes\\midnight.json",
+      "importSpecifier": "../midnight.json",
+      "importType": "default"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\themes\\index.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\themes\\blood.json",
+      "importSpecifier": "./blood.json",
+      "importType": "default"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\themes\\index.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\themes\\dark.json",
+      "importSpecifier": "./dark.json",
+      "importType": "default"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\themes\\index.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\apps\\desktop\\src\\renderer\\themes\\midnight.json",
+      "importSpecifier": "./midnight.json",
+      "importType": "default"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\auth\\src\\__tests__\\auth.test.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\auth\\src\\index.ts",
+      "importSpecifier": "../index.ts",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\__tests__\\normalizer.test.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\normalizer.ts",
+      "importSpecifier": "../normalizer",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\calculations\\__tests__\\delta.test.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\calculations\\delta.ts",
+      "importSpecifier": "../delta",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\calculations\\__tests__\\fuel.test.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\calculations\\fuel.ts",
+      "importSpecifier": "../fuel",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\calculations\\__tests__\\gap.test.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\calculations\\gap.ts",
+      "importSpecifier": "../gap",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\calculations\\__tests__\\sector.test.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\calculations\\sector.ts",
+      "importSpecifier": "../sector",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\calculations\\index.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\calculations\\delta.ts",
+      "importSpecifier": "./delta",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\calculations\\index.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\calculations\\fuel.ts",
+      "importSpecifier": "./fuel",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\calculations\\index.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\calculations\\gap.ts",
+      "importSpecifier": "./gap",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\calculations\\index.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\calculations\\sector.ts",
+      "importSpecifier": "./sector",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\index.d.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\adapters",
+      "importSpecifier": "./adapters",
+      "importType": "namespace"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\index.d.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock",
+      "importSpecifier": "./mock",
+      "importType": "namespace"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\index.d.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\normalizer.ts",
+      "importSpecifier": "./normalizer",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\index.d.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\types",
+      "importSpecifier": "./types",
+      "importType": "namespace"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\index.js",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\adapters",
+      "importSpecifier": "./adapters",
+      "importType": "namespace"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\index.js",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock",
+      "importSpecifier": "./mock",
+      "importType": "namespace"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\index.js",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\normalizer.ts",
+      "importSpecifier": "./normalizer",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\index.js",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\types",
+      "importSpecifier": "./types",
+      "importType": "namespace"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\index.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\adapters",
+      "importSpecifier": "./adapters",
+      "importType": "namespace"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\index.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock",
+      "importSpecifier": "./mock",
+      "importType": "namespace"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\index.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\normalizer.ts",
+      "importSpecifier": "./normalizer",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\index.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\types",
+      "importSpecifier": "./types",
+      "importType": "namespace"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\__tests__\\ac-mock.test.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\ac-mock.ts",
+      "importSpecifier": "../ac-mock",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\__tests__\\iracing-mock.test.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\iracing-mock.ts",
+      "importSpecifier": "../iracing-mock",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\__tests__\\lmu-mock.test.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\lmu-mock.ts",
+      "importSpecifier": "../lmu-mock",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\__tests__\\mock-factory.test.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\mock-sim-factory.ts",
+      "importSpecifier": "../mock-sim-factory",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\__tests__\\scenarios.test.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\scenarios.ts",
+      "importSpecifier": "../scenarios",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\ac-mock.js",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\random.ts",
+      "importSpecifier": "./random",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\ac-mock.js",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\scenarios.ts",
+      "importSpecifier": "./scenarios",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\ac-mock.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\random.ts",
+      "importSpecifier": "./random",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\ac-mock.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\scenarios.ts",
+      "importSpecifier": "./scenarios",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\index.d.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\ac-mock.ts",
+      "importSpecifier": "./ac-mock",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\index.d.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\iracing-mock.ts",
+      "importSpecifier": "./iracing-mock",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\index.d.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\lmu-mock.ts",
+      "importSpecifier": "./lmu-mock",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\index.d.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\mock-sim-factory.ts",
+      "importSpecifier": "./mock-sim-factory",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\index.d.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\random.ts",
+      "importSpecifier": "./random",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\index.d.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\scenarios.ts",
+      "importSpecifier": "./scenarios",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\index.js",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\ac-mock.ts",
+      "importSpecifier": "./ac-mock",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\index.js",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\iracing-mock.ts",
+      "importSpecifier": "./iracing-mock",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\index.js",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\lmu-mock.ts",
+      "importSpecifier": "./lmu-mock",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\index.js",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\mock-sim-factory.ts",
+      "importSpecifier": "./mock-sim-factory",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\index.js",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\random.ts",
+      "importSpecifier": "./random",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\index.js",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\scenarios.ts",
+      "importSpecifier": "./scenarios",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\index.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\ac-mock.ts",
+      "importSpecifier": "./ac-mock",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\index.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\iracing-mock.ts",
+      "importSpecifier": "./iracing-mock",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\index.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\lmu-mock.ts",
+      "importSpecifier": "./lmu-mock",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\index.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\mock-sim-factory.ts",
+      "importSpecifier": "./mock-sim-factory",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\index.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\random.ts",
+      "importSpecifier": "./random",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\index.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\scenarios.ts",
+      "importSpecifier": "./scenarios",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\iracing-mock.js",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\random.ts",
+      "importSpecifier": "./random",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\iracing-mock.js",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\scenarios.ts",
+      "importSpecifier": "./scenarios",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\iracing-mock.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\random.ts",
+      "importSpecifier": "./random",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\iracing-mock.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\scenarios.ts",
+      "importSpecifier": "./scenarios",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\lmu-mock.js",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\random.ts",
+      "importSpecifier": "./random",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\lmu-mock.js",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\scenarios.ts",
+      "importSpecifier": "./scenarios",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\lmu-mock.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\random.ts",
+      "importSpecifier": "./random",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\lmu-mock.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\scenarios.ts",
+      "importSpecifier": "./scenarios",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\mock-sim-factory.js",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\ac-mock.ts",
+      "importSpecifier": "./ac-mock",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\mock-sim-factory.js",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\iracing-mock.ts",
+      "importSpecifier": "./iracing-mock",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\mock-sim-factory.js",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\lmu-mock.ts",
+      "importSpecifier": "./lmu-mock",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\mock-sim-factory.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\ac-mock.ts",
+      "importSpecifier": "./ac-mock",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\mock-sim-factory.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\iracing-mock.ts",
+      "importSpecifier": "./iracing-mock",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\mock-sim-factory.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\sim-core\\src\\mock\\lmu-mock.ts",
+      "importSpecifier": "./lmu-mock",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\ui-core\\src\\components\\index.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\ui-core\\src\\components\\DeltaIndicator.tsx",
+      "importSpecifier": "./DeltaIndicator",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\ui-core\\src\\components\\index.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\ui-core\\src\\components\\GlassPanel.tsx",
+      "importSpecifier": "./GlassPanel",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\ui-core\\src\\components\\index.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\ui-core\\src\\components\\PositionBadge.tsx",
+      "importSpecifier": "./PositionBadge",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\ui-core\\src\\components\\index.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\ui-core\\src\\components\\TimeDisplay.tsx",
+      "importSpecifier": "./TimeDisplay",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\ui-core\\src\\hooks\\index.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\ui-core\\src\\hooks\\useSimState.ts",
+      "importSpecifier": "./useSimState",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\ui-core\\src\\hooks\\index.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\ui-core\\src\\hooks\\useTelemetry.ts",
+      "importSpecifier": "./useTelemetry",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\ui-core\\src\\hooks\\index.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\ui-core\\src\\hooks\\useTheme.ts",
+      "importSpecifier": "./useTheme",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\ui-core\\src\\index.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\ui-core\\src\\components\\DeltaIndicator.tsx",
+      "importSpecifier": "./components/DeltaIndicator",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\ui-core\\src\\index.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\ui-core\\src\\components\\GlassPanel.tsx",
+      "importSpecifier": "./components/GlassPanel",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\ui-core\\src\\index.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\ui-core\\src\\components\\PositionBadge.tsx",
+      "importSpecifier": "./components/PositionBadge",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\ui-core\\src\\index.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\ui-core\\src\\components\\TimeDisplay.tsx",
+      "importSpecifier": "./components/TimeDisplay",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\ui-core\\src\\index.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\ui-core\\src\\hooks\\useSimState.ts",
+      "importSpecifier": "./hooks/useSimState",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\ui-core\\src\\index.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\ui-core\\src\\hooks\\useTelemetry.ts",
+      "importSpecifier": "./hooks/useTelemetry",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\ui-core\\src\\index.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\ui-core\\src\\hooks\\useTheme.ts",
+      "importSpecifier": "./hooks/useTheme",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\ui-core\\src\\index.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\ui-core\\src\\stores\\telemetry-store.ts",
+      "importSpecifier": "./stores/telemetry-store",
+      "importType": "named"
+    },
+    {
+      "source": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\ui-core\\src\\stores\\__tests__\\telemetry-store.test.ts",
+      "target": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\packages\\ui-core\\src\\stores\\telemetry-store.ts",
+      "importSpecifier": "../telemetry-store",
+      "importType": "named"
+    }
+  ],
+  "metadata": {
+    "generatedAt": "2026-06-02T16:37:03.279Z",
+    "generator": "repo-graph",
+    "nodeCount": 124,
+    "edgeCount": 105
+  }
+}

@@ -1,10 +1,13 @@
 import { z } from 'zod';
+import { DeltaBarConfigSchema } from './delta-bar-config';
+import { StreamAlertsConfigSchema } from './stream-alerts-config';
 
 // ──────────────────────────────────────────────
 // Overlay configuration schemas
 // ──────────────────────────────────────────────
 
 export const StandingsConfigSchema = z.object({
+  overlayId: z.literal('standings'),
   rowCount: z.number().int().min(5).max(40).default(20),
   showMulticlass: z.boolean().default(true),
   showGaps: z.boolean().default(true),
@@ -17,6 +20,7 @@ export const StandingsConfigSchema = z.object({
 });
 
 export const RelativeConfigSchema = z.object({
+  overlayId: z.literal('relative'),
   rangeAhead: z.number().int().min(0).max(10).default(3),
   rangeBehind: z.number().int().min(0).max(10).default(3),
   showGaps: z.boolean().default(true),
@@ -34,9 +38,21 @@ export const OverlayPositionSchema = z.object({
 });
 
 // ──────────────────────────────────────────────
+// Discriminated union of all overlay configs
+// ──────────────────────────────────────────────
+
+export const OverlayConfigDiscriminatedSchema = z.discriminatedUnion('overlayId', [
+  StandingsConfigSchema,
+  RelativeConfigSchema,
+  DeltaBarConfigSchema,
+  StreamAlertsConfigSchema,
+]);
+
+// ──────────────────────────────────────────────
 // Derived TypeScript types
 // ──────────────────────────────────────────────
 
 export type StandingsConfig = z.infer<typeof StandingsConfigSchema>;
 export type RelativeConfig = z.infer<typeof RelativeConfigSchema>;
 export type OverlayPosition = z.infer<typeof OverlayPositionSchema>;
+export type OverlayConfigDiscriminated = z.infer<typeof OverlayConfigDiscriminatedSchema>;

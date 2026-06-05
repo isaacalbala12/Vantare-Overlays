@@ -14,6 +14,8 @@ const mockOverlayManager = {
   setSize: mockSetSize,
 };
 
+const storeData: Record<string, unknown> = { profiles: [] };
+
 vi.mock("electron", () => ({
   ipcMain: {
     handle: vi.fn(),
@@ -37,12 +39,15 @@ vi.mock("@vantare/auth", () => ({
   },
 }));
 
-vi.mock("electron-store", () => ({
-  default: vi.fn().mockImplementation(() => ({
-    get: vi.fn(),
-    set: vi.fn(),
-  })),
-}));
+vi.mock("electron-store", () => {
+  const get = vi.fn((key: string) => storeData[key]);
+  const set = vi.fn((key: string, value: unknown) => {
+    storeData[key] = value;
+  });
+  return {
+    default: vi.fn().mockImplementation(() => ({ get, set })),
+  };
+});
 
 vi.mock("@vantare/sim-core", () => ({
   MockSimFactory: {
@@ -53,9 +58,30 @@ vi.mock("@vantare/sim-core", () => ({
 import { ipcMain } from "electron";
 import { registerIpcHandlers, setSimManager, setOverlayManager } from "../handlers";
 
+const validProfile = {
+  id: "profile-1",
+  name: "Default",
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+  overlays: {
+    standings: {
+      overlayId: "standings",
+      rowCount: 20,
+      showMulticlass: true,
+      showGaps: true,
+      showLastLap: true,
+      showBestLap: true,
+      columns: ["position", "name", "gap", "lastLap"],
+      opacity: 1,
+    },
+  },
+  themeId: "dark",
+};
+
 describe("overlay IPC handlers", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    storeData.profiles = [];
     (ipcMain.handle as unknown as ReturnType<typeof vi.fn>).mockClear();
   });
 
@@ -216,5 +242,89 @@ describe("overlay IPC handlers", () => {
     expect(handler).toBeDefined();
     await handler![1](null, "delta", 300, 100);
     expect(mockSetSize).not.toHaveBeenCalled();
+  });
+});
+
+describe("profiles IPC handlers", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    storeData.profiles = [];
+  });
+
+  afterEach(() => {
+    setSimManager(null);
+    setOverlayManager(null);
+  });
+
+  it("registers profiles:save handler", async () => {
+    registerIpcHandlers();
+    const handler = (ipcMain.handle as unknown as ReturnType<typeof vi.fn>).mock.calls.find(
+      (c: unknown[]) => c[0] === "profiles:save"
+    );
+    expect(handler).toBeDefined();
+  });
+
+  it("profiles:save stores a valid profile", async () => {
+    registerIpcHandlers();
+    const handler = (ipcMain.handle as unknown as ReturnType<typeof vi.fn>).mock.calls.find(
+      (c: unknown[]) => c[0] === "profiles:save"
+    );
+    expect(handler).toBeDefined();
+
+    await handler![1](null, validProfile);
+
+    const stored = storeData.profiles as Array<{ id: string }>;
+    expect(stored).toEqual(
+      expect.arrayContaining([expect.objectContaining({ id: "profile-1" })])
+    );
+  });
+
+  it("profiles:save updates existing profile by id", async () => {
+    registerIpcHandlers();
+    const handler = (ipcMain.handle as unknown as ReturnType<typeof vi.fn>).mock.calls.find(
+      (c: unknown[]) => c[0] === "profiles:save"
+    );
+    expect(handler).toBeDefined();
+
+    await handler![1](null, { ...validProfile, name: "First" });
+    await handler![1](null, { ...validProfile, name: "Updated" });
+
+    const stored = storeData.profiles as Array<{ id: string; name: string }>;
+    expect(stored).toHaveLength(1);
+    expect(stored[0]).toEqual(expect.objectContaining({ id: "profile-1", name: "Updated" }));
+  });
+
+  it("profiles:save rejects profile with missing name", async () => {
+    registerIpcHandlers();
+    const handler = (ipcMain.handle as unknown as ReturnType<typeof vi.fn>).mock.calls.find(
+      (c: unknown[]) => c[0] === "profiles:save"
+    );
+    expect(handler).toBeDefined();
+
+    const invalidProfile = { ...validProfile, name: "" };
+
+    expect(() => handler![1](null, invalidProfile)).toThrow();
+    expect(storeData.profiles).toHaveLength(0);
+  });
+
+  it("profiles:save rejects profile with invalid overlay config", async () => {
+    registerIpcHandlers();
+    const handler = (ipcMain.handle as unknown as ReturnType<typeof vi.fn>).mock.calls.find(
+      (c: unknown[]) => c[0] === "profiles:save"
+    );
+    expect(handler).toBeDefined();
+
+    const invalidProfile = {
+      ...validProfile,
+      overlays: {
+        standings: {
+          overlayId: "standings",
+          rowCount: 0,
+        },
+      },
+    };
+
+    expect(() => handler![1](null, invalidProfile)).toThrow();
+    expect(storeData.profiles).toHaveLength(0);
   });
 });

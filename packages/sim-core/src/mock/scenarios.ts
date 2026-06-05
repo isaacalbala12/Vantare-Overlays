@@ -1,0 +1,129 @@
+import type { MockScenario } from './mock-provider';
+
+export interface ScenarioConfig {
+  speedMin: number;
+  speedMax: number;
+  rpmMin: number;
+  rpmMax: number;
+  fuelBehavior: 'full' | 'low' | 'decreasing' | 'increasing' | 'empty';
+  positionRange: [number, number] | null;
+  hasTraffic: boolean;
+  flags: string[];
+  isPit: boolean;
+  isPitting: boolean;
+  isOnTrack: boolean;
+  vehicleCount: number;
+  gearRange: [number, number];
+  baseLaptime: number;
+  sessionType: string;
+}
+
+export const SCENARIO_CONFIGS: Record<MockScenario, ScenarioConfig> = {
+  practice: {
+    speedMin: 100,
+    speedMax: 250,
+    rpmMin: 3000,
+    rpmMax: 7500,
+    fuelBehavior: 'full',
+    positionRange: null,
+    hasTraffic: true,
+    flags: ['green'],
+    isPit: false,
+    isPitting: false,
+    isOnTrack: true,
+    vehicleCount: 15,
+    gearRange: [2, 6],
+    baseLaptime: 105_000,
+    sessionType: 'Practice',
+  },
+
+  qualifying: {
+    speedMin: 150,
+    speedMax: 320,
+    rpmMin: 4000,
+    rpmMax: 9000,
+    fuelBehavior: 'low',
+    positionRange: [1, 5],
+    hasTraffic: false,
+    flags: ['green'],
+    isPit: false,
+    isPitting: false,
+    isOnTrack: true,
+    vehicleCount: 8,
+    gearRange: [3, 6],
+    baseLaptime: 100_000,
+    sessionType: 'Qualifying',
+  },
+
+  race: {
+    speedMin: 120,
+    speedMax: 300,
+    rpmMin: 3500,
+    rpmMax: 8500,
+    fuelBehavior: 'decreasing',
+    positionRange: [1, 20],
+    hasTraffic: true,
+    flags: ['green'],
+    isPit: false,
+    isPitting: false,
+    isOnTrack: true,
+    vehicleCount: 25,
+    gearRange: [2, 6],
+    baseLaptime: 108_000,
+    sessionType: 'Race',
+  },
+
+  'pit-stop': {
+    speedMin: 0,
+    speedMax: 60,
+    rpmMin: 800,
+    rpmMax: 3000,
+    fuelBehavior: 'increasing',
+    positionRange: [10, 25],
+    hasTraffic: false,
+    flags: ['green'],
+    isPit: true,
+    isPitting: true,
+    isOnTrack: false,
+    vehicleCount: 20,
+    gearRange: [0, 2],
+    baseLaptime: 0,
+    sessionType: 'Race',
+  },
+
+  crash: {
+    speedMin: 0,
+    speedMax: 0,
+    rpmMin: 0,
+    rpmMax: 1000,
+    fuelBehavior: 'full',
+    positionRange: [1, 30],
+    hasTraffic: true,
+    flags: ['yellow', 'debris'],
+    isPit: false,
+    isPitting: false,
+    isOnTrack: false,
+    vehicleCount: 20,
+    gearRange: [0, 1],
+    baseLaptime: 0,
+    sessionType: 'Race',
+  },
+
+  'formation-lap': {
+    speedMin: 60,
+    speedMax: 120,
+    rpmMin: 2500,
+    rpmMax: 5000,
+    fuelBehavior: 'full',
+    positionRange: [1, 20],
+    hasTraffic: false,
+    flags: ['yellow'],
+    isPit: false,
+    isPitting: false,
+    isOnTrack: true,
+    vehicleCount: 20,
+    gearRange: [2, 4],
+    baseLaptime: 130_000,
+    sessionType: 'Race',
+  },
+};

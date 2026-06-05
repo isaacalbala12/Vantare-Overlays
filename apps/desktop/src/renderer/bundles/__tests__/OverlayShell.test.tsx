@@ -53,6 +53,7 @@ describe('OverlayShell', () => {
     container = document.createElement('div');
     document.body.appendChild(container);
     root = createRoot(container);
+    (window as any).vantare = { getActiveTheme: () => Promise.resolve({ id: 'default', name: 'Default' }) };
   });
 
   afterEach(() => {

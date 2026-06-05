@@ -1,0 +1,46 @@
+{
+  "id": "profile-001",
+  "name": "My Racing Profile",
+  "createdAt": "2025-01-15T10:00:00Z",
+  "updatedAt": "2025-06-01T08:30:00Z",
+  "overlays": {
+    "standings": {
+      "overlayId": "standings",
+      "rowCount": 20,
+      "showMulticlass": true,
+      "showGaps": true,
+      "showLastLap": true,
+      "showBestLap": true,
+      "columns": [
+        "position",
+        "name",
+        "gap",
+        "lastLap"
+      ],
+      "opacity": 1
+    },
+    "relative": {
+      "overlayId": "relative",
+      "rangeAhead": 3,
+      "rangeBehind": 3,
+      "showGaps": true,
+      "colorCoding": true,
+      "opacity": 1
+    },
+    "delta-bar": {
+      "overlayId": "delta-bar",
+      "showDelta": true,
+      "showPrediction": false,
+      "barPosition": "top",
+      "opacity": 0.8
+    },
+    "stream-alerts": {
+      "overlayId": "stream-alerts",
+      "enabled": true,
+      "duration": 8,
+      "position": "top-right",
+      "queueCap": 5
+    }
+  },
+  "themeId": "dark"
+}

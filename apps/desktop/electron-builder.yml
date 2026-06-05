@@ -1,0 +1,29 @@
+﻿appId: com.vantare.overlays
+productName: Vantare Overlays
+copyright: Copyright 2026 Vantare
+directories:
+  output: release
+  buildResources: build
+files:
+  - dist/**/*
+  - package.json
+  - "!node_modules/**/*"
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  icon: docs/assets/icon.ico
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  perMachine: true
+publish:
+  - provider: github
+    owner: vantare
+    repo: overlays
+    releaseType: release
+electronDownload:
+  mirror: https://npmmirror.com/mirrors/electron/

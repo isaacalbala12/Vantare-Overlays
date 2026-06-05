@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "baseUrl": ".",
+    "paths": {
+      "@vantare/sim-core": ["packages/sim-core/src"],
+      "@vantare/sim-core/*": ["packages/sim-core/src/*"],
+      "@vantare/ui-core": ["packages/ui-core/src"],
+      "@vantare/ui-core/*": ["packages/ui-core/src/*"],
+      "@vantare/auth": ["packages/auth/src"],
+      "@vantare/auth/*": ["packages/auth/src/*"],
+      "@vantare/types": ["packages/types/src"],
+      "@vantare/types/*": ["packages/types/src/*"],
+      "@shared/*": ["shared/*"]
+    }
+  },
+  "exclude": ["node_modules", "dist", ".turbo"]
+}

@@ -1,0 +1,49 @@
+{
+  "name": "@vantare/sim-core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Sim racing telemetry core - unified types, adapters, calculations",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./types": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/types/index.js"
+    },
+    "./adapters": {
+      "types": "./dist/adapters/index.d.ts",
+      "import": "./dist/adapters/index.js"
+    },
+    "./calculations": {
+      "types": "./dist/calculations/index.d.ts",
+      "import": "./dist/calculations/index.js"
+    },
+    "./calculations/*": {
+      "types": "./dist/calculations/*.d.ts",
+      "import": "./dist/calculations/*.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "lint": "eslint src/ --ext .ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "zod": "^3.23.0",
+    "koffi": "^3.0.2"
+  },
+  "devDependencies": {
+    "eslint": "^9.0.0",
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.9"
+  },
+  "type": "module"
+}

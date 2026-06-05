@@ -1,7 +1,8 @@
 import { execSync } from 'child_process';
 import { BrowserWindow } from 'electron';
 import { MockSimFactory, SimNormalizer } from '@vantare/sim-core';
-import type { MockProvider, Telemetry, SimType } from '@vantare/sim-core';
+import type { MockProvider, Telemetry, SimType, SimAdapter } from '@vantare/sim-core';
+import { createAdapter } from './adapters';
 
 export type TelemetryCallback = (data: Telemetry) => void;
 
@@ -12,6 +13,8 @@ export class SimManager {
   private broadcastTelemetryFn: ((data: Telemetry) => void) | null = null;
   private mockProvider: MockProvider | null = null;
   private normalizer: SimNormalizer = new SimNormalizer();
+  private activeAdapter: SimAdapter | null = null;
+  private latestTelemetry: Telemetry | null = null;
   public currentSim: string | null = null;
   private connected: boolean = false;
   private mainWindow: BrowserWindow | null = null;
@@ -85,14 +88,44 @@ export class SimManager {
     this.isMockActive = true;
     this.connected = true;
     this.currentSim = 'iracing';
+    // Destroy real adapter when falling back to mock
+    this.activeAdapter?.destroy();
+    this.activeAdapter = null;
+    this.latestTelemetry = null;
     this.mockProvider = MockSimFactory.create('iracing', 'race');
     this.emitSimState();
   }
 
   private activateSim(simName: string): void {
+    // Don't re-activate if already on this sim with a live adapter
+    if (this.currentSim === simName && this.activeAdapter && this.connected) return;
+
     this.isMockActive = false;
     this.currentSim = simName;
     this.connected = true;
+
+    // Destroy old adapter
+    this.activeAdapter?.destroy();
+
+    // Create and connect new adapter
+    this.activeAdapter = createAdapter(simName);
+    this.activeAdapter.onTelemetry((data) => {
+      this.latestTelemetry = data;
+      this.handleTelemetry(data);
+    });
+    this.activeAdapter.onConnectionState((state) => {
+      if (state === 'connected') {
+        this.connected = true;
+      } else if (state === 'error' || state === 'disconnected') {
+        console.warn(`Adapter ${simName} state: ${state}, falling back to mock`);
+        this.activateMock();
+      }
+      this.emitSimState();
+    });
+    this.activeAdapter.connect().catch(() => {
+      console.warn(`Failed to connect ${simName} adapter, falling back to mock`);
+      this.activateMock();
+    });
     this.emitSimState();
   }
 
@@ -106,15 +139,40 @@ export class SimManager {
     });
   }
 
+  private handleTelemetry(data: Telemetry): void {
+    if (this.mainWindow && !this.mainWindow.isDestroyed()) {
+      this.mainWindow.webContents.send('telemetry', data);
+    }
+    if (this.onTelemetryCallback) {
+      this.onTelemetryCallback(data);
+    }
+    if (this.broadcastTelemetryFn) {
+      this.broadcastTelemetryFn(data);
+    }
+  }
+
+  private handleState(state: string): void {
+    if (state === 'connected') {
+      this.connected = true;
+    } else if (state === 'error' || state === 'disconnected') {
+      console.warn(`Adapter state: ${state}, falling back to mock`);
+      this.activateMock();
+    }
+    this.emitSimState();
+  }
+
   getTelemetry(): Telemetry | null {
     if (this.isMockActive && this.mockProvider) {
       const raw = this.mockProvider.getData();
       return this.normalizer.normalize(raw, (this.currentSim ?? 'iracing') as SimType);
     }
-    return null;
+    return this.latestTelemetry;
   }
 
   stop(): void {
+    this.activeAdapter?.destroy();
+    this.activeAdapter = null;
+    this.latestTelemetry = null;
     if (this.pollInterval) {
       clearInterval(this.pollInterval);
       this.pollInterval = null;

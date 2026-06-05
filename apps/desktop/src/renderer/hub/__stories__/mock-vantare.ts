@@ -1,0 +1,59 @@
+/**
+ * Shared mock for window.vantare IPC bridge.
+ * Each story can override specific methods by calling setupMockVantare() then
+ * reassigning the desired property before rendering.
+ */
+export function setupMockVantare(overrides?: Partial<Window['vantare']>) {
+  const defaultMock: Window['vantare'] = {
+    onTelemetry: () => (() => {}),
+    onSessionData: () => (() => {}),
+    onSimState: () => (() => {}),
+    getSettings: () => Promise.resolve({
+      language: 'en',
+      autostart: false,
+      minimizeToTray: true,
+      startMinimized: false,
+      overlayVisibilityKey: 'F9',
+      preferredSim: 'auto',
+      alertVolume: 0.8,
+      alertEnabled: true,
+      autoUpdate: true,
+      updateChannel: 'stable',
+      httpServerPort: 2546,
+      networkAccess: true,
+    }),
+    saveSettings: () => Promise.resolve(),
+    getProfiles: () => Promise.resolve([]),
+    getActiveProfile: () => Promise.resolve(null),
+    saveProfile: () => Promise.resolve(),
+    deleteProfile: () => Promise.resolve(),
+    setActiveProfile: () => Promise.resolve(),
+    importProfile: (json: string) => Promise.resolve(JSON.parse(json)),
+    exportProfile: () => Promise.resolve('{}'),
+    login: () => Promise.resolve({ user: null, session: null }) as any,
+    register: () => Promise.resolve({ user: null, session: null }) as any,
+    logout: () => Promise.resolve(),
+    getSession: () => Promise.resolve(null),
+    getLicenseStatus: () => Promise.resolve({ tier: 'free', active: true }) as any,
+    getOverlayWindows: () => Promise.resolve([]),
+    showOverlay: () => Promise.resolve(),
+    hideOverlay: () => Promise.resolve(),
+    setOverlayPosition: () => Promise.resolve(),
+    setOverlaySize: () => Promise.resolve(),
+    getAvailableSims: () => Promise.resolve([]),
+    getActiveSim: () => Promise.resolve(null),
+    getThemes: () => Promise.resolve([]),
+    getActiveTheme: () => Promise.resolve({ id: 'dark', name: 'Dark', description: 'Default dark theme', author: 'Vantare', version: '1.0', tokens: {} }),
+    saveTheme: () => Promise.resolve(),
+    setActiveTheme: () => Promise.resolve(),
+    deleteTheme: () => Promise.resolve(),
+    getVersion: () => Promise.resolve('0.1.0'),
+    checkForUpdates: () => Promise.resolve(null),
+    installUpdate: () => Promise.resolve(),
+    openExternal: () => Promise.resolve(),
+    toggleOverlayVisibility: () => Promise.resolve(),
+    minimizeToTray: () => Promise.resolve(),
+  };
+
+  window.vantare = { ...defaultMock, ...overrides };
+}

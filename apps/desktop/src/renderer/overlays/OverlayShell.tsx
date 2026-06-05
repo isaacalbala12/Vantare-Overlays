@@ -3,9 +3,6 @@ import { loadBundle } from '../bundles/registry';
 import type { Bundle } from '../bundles/types';
 import type { OverlayId } from '../bundles/types';
 
-// TODO(sprint-4b): wire IPC theme fetch from electron-store
-const THEME_ID = 'default';
-
 const ROUTABLE_OVERLAYS: readonly OverlayId[] = [
   'standings',
   'relative',
@@ -26,20 +23,29 @@ function getOverlayId(): OverlayId | '' {
 
 export default function OverlayShell() {
   const [overlayId, setOverlayId] = useState<OverlayId | ''>(() => getOverlayId());
+  const [themeId, setThemeId] = useState('default');
   const [bundle, setBundle] = useState<Bundle | null>(null);
 
-  // Load the active theme bundle once on mount. The registry caches the
-  // resolved Promise, so concurrent mounts (e.g. strict-mode double-render)
-  // share the same load.
+  // Fetch the active theme from IPC on mount
+  useEffect(() => {
+    window.vantare.getActiveTheme().then((t) => {
+      setThemeId(t?.id || 'default');
+    }).catch(() => {
+      // Graceful degradation — keep default
+    });
+  }, []);
+
+  // Load the active theme bundle. The registry caches the resolved Promise,
+  // so concurrent mounts (e.g. strict-mode double-render) share the same load.
   useEffect(() => {
     let mounted = true;
-    loadBundle(THEME_ID).then((b) => {
+    loadBundle(themeId).then((b) => {
       if (mounted) setBundle(b);
     });
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [themeId]);
 
   // Re-resolve the overlay id from the URL on history navigation. The active
   // component is derived in render below.

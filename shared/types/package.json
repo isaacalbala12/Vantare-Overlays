@@ -1,0 +1,31 @@
+{
+  "name": "@shared/types",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Vantare shared type definitions",
+  "type": "module",
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "exports": {
+    ".": {
+      "types": "./index.ts",
+      "default": "./index.ts"
+    },
+    "./bridge": {
+      "types": "./bridge.ts",
+      "default": "./bridge.ts"
+    },
+    "./profile": {
+      "types": "./profile.ts",
+      "default": "./profile.ts"
+    },
+    "./settings": {
+      "types": "./settings.ts",
+      "default": "./settings.ts"
+    },
+    "./theme": {
+      "types": "./theme.ts",
+      "default": "./theme.ts"
+    }
+  }
+}

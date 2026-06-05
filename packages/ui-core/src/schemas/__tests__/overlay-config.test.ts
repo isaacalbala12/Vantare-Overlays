@@ -7,8 +7,9 @@ import {
 
 describe('StandingsConfigSchema', () => {
   it('accepts valid minimal config', () => {
-    const result = StandingsConfigSchema.parse({});
+    const result = StandingsConfigSchema.parse({ overlayId: 'standings' });
     expect(result).toEqual({
+      overlayId: 'standings',
       rowCount: 20,
       showMulticlass: true,
       showGaps: true,
@@ -20,33 +21,34 @@ describe('StandingsConfigSchema', () => {
   });
 
   it('rejects rowCount below 5', () => {
-    expect(() => StandingsConfigSchema.parse({ rowCount: 4 })).toThrow();
+    expect(() => StandingsConfigSchema.parse({ overlayId: 'standings', rowCount: 4 })).toThrow();
   });
 
   it('rejects rowCount above 40', () => {
-    expect(() => StandingsConfigSchema.parse({ rowCount: 41 })).toThrow();
+    expect(() => StandingsConfigSchema.parse({ overlayId: 'standings', rowCount: 41 })).toThrow();
   });
 
   it('rejects opacity below 0', () => {
-    expect(() => StandingsConfigSchema.parse({ opacity: -0.1 })).toThrow();
+    expect(() => StandingsConfigSchema.parse({ overlayId: 'standings', opacity: -0.1 })).toThrow();
   });
 
   it('rejects opacity above 1', () => {
-    expect(() => StandingsConfigSchema.parse({ opacity: 1.5 })).toThrow();
+    expect(() => StandingsConfigSchema.parse({ overlayId: 'standings', opacity: 1.5 })).toThrow();
   });
 
   it('rejects non-integer rowCount', () => {
-    expect(() => StandingsConfigSchema.parse({ rowCount: 5.5 })).toThrow();
+    expect(() => StandingsConfigSchema.parse({ overlayId: 'standings', rowCount: 5.5 })).toThrow();
   });
 
   it('rejects invalid column values', () => {
     expect(() =>
-      StandingsConfigSchema.parse({ columns: ['position', 'invalid'] }),
+      StandingsConfigSchema.parse({ overlayId: 'standings', columns: ['position', 'invalid'] }),
     ).toThrow();
   });
 
   it('accepts all valid column values', () => {
     const result = StandingsConfigSchema.parse({
+      overlayId: 'standings',
       columns: ['position', 'name', 'car', 'class', 'gap', 'lastLap', 'bestLap', 'interval'],
     });
     expect(result.columns).toHaveLength(8);
@@ -55,8 +57,9 @@ describe('StandingsConfigSchema', () => {
 
 describe('RelativeConfigSchema', () => {
   it('accepts valid minimal config', () => {
-    const result = RelativeConfigSchema.parse({});
+    const result = RelativeConfigSchema.parse({ overlayId: 'relative' });
     expect(result).toEqual({
+      overlayId: 'relative',
       rangeAhead: 3,
       rangeBehind: 3,
       showGaps: true,
@@ -66,27 +69,27 @@ describe('RelativeConfigSchema', () => {
   });
 
   it('rejects rangeAhead below 0', () => {
-    expect(() => RelativeConfigSchema.parse({ rangeAhead: -1 })).toThrow();
+    expect(() => RelativeConfigSchema.parse({ overlayId: 'relative', rangeAhead: -1 })).toThrow();
   });
 
   it('rejects rangeAhead above 10', () => {
-    expect(() => RelativeConfigSchema.parse({ rangeAhead: 11 })).toThrow();
+    expect(() => RelativeConfigSchema.parse({ overlayId: 'relative', rangeAhead: 11 })).toThrow();
   });
 
   it('rejects rangeBehind below 0', () => {
-    expect(() => RelativeConfigSchema.parse({ rangeBehind: -1 })).toThrow();
+    expect(() => RelativeConfigSchema.parse({ overlayId: 'relative', rangeBehind: -1 })).toThrow();
   });
 
   it('rejects opacity below 0', () => {
-    expect(() => RelativeConfigSchema.parse({ opacity: -0.5 })).toThrow();
+    expect(() => RelativeConfigSchema.parse({ overlayId: 'relative', opacity: -0.5 })).toThrow();
   });
 
   it('rejects opacity above 1', () => {
-    expect(() => RelativeConfigSchema.parse({ opacity: 2 })).toThrow();
+    expect(() => RelativeConfigSchema.parse({ overlayId: 'relative', opacity: 2 })).toThrow();
   });
 
   it('rejects non-integer range values', () => {
-    expect(() => RelativeConfigSchema.parse({ rangeAhead: 2.5 })).toThrow();
+    expect(() => RelativeConfigSchema.parse({ overlayId: 'relative', rangeAhead: 2.5 })).toThrow();
   });
 });
 

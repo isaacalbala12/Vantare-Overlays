@@ -6,6 +6,7 @@ import type { SimManager } from '../sim/sim-manager';
 import type { OverlayManager } from '../windows/overlay-manager';
 import { MockSimFactory } from '@vantare/sim-core';
 import type { SimInfo, SimType } from '@vantare/sim-core';
+import { ProfileSchema } from '@vantare/ui-core/schemas';
 
 interface StoreSchema {
   settings: Settings;
@@ -63,10 +64,11 @@ export function registerIpcHandlers(): void {
     return profiles.find((p) => p.id === activeId) || null;
   });
   ipcMain.handle('profiles:save', (_, profile: Profile) => {
+    const parsed = ProfileSchema.parse(profile);
     const profiles = [...store.get('profiles')];
-    const idx = profiles.findIndex((p) => p.id === profile.id);
-    if (idx >= 0) profiles[idx] = profile;
-    else profiles.push(profile);
+    const idx = profiles.findIndex((p) => p.id === parsed.id);
+    if (idx >= 0) profiles[idx] = parsed;
+    else profiles.push(parsed);
     store.set('profiles', profiles);
   });
   ipcMain.handle('profiles:delete', (_, id: string) => {

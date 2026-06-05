@@ -1,0 +1,1 @@
+{"version":3,"file":"mock-sim-factory.d.ts","sourceRoot":"","sources":["mock-sim-factory.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,YAAY,EAAE,YAAY,EAAE,OAAO,EAAE,MAAM,iBAAiB,CAAC;AAK3E,qBAAa,cAAc;IACzB,MAAM,CAAC,MAAM,CAAC,OAAO,EAAE,SAAS,GAAG,KAAK,GAAG,IAAI,EAAE,QAAQ,CAAC,EAAE,YAAY,GAAG,YAAY;IAsBvF,MAAM,CAAC,gBAAgB,IAAI,OAAO,EAAE;CAOrC"}

@@ -1,0 +1,24 @@
+Task 1 - Hub Layout with react-router
+=======================================
+Date: 2026-06-04
+Files changed:
+  - apps/desktop/src/renderer/App.tsx
+  - apps/desktop/src/renderer/hub/HubLayout.tsx (new)
+  - apps/desktop/src/renderer/shared/stores/app-store.ts
+  - apps/desktop/src/renderer/shared/__tests__/store.test.ts
+
+Changes made:
+  1. Created HubLayout.tsx with sidebar navigation (4 NavLink items: Dashboard, Overlays, Profiles, Settings) + Outlet
+  2. Replaced View enum in App.tsx with BrowserRouter + Routes (4 routes: /, /overlays, /profiles, /settings)
+  3. Removed activeView/setActiveView from app-store.ts
+  4. Updated store.test.ts to remove activeView test coverage
+
+Smoke test: Verified TypeScript compilation passes via lsp_diagnostics.
+Routing is static (no dynamic params). Routes tested:
+  - /         → DashboardPage placeholder
+  - /overlays → OverlaySettingsPage placeholder
+  - /profiles → ProfilesPage placeholder
+  - /settings → SettingsPage placeholder
+All routes render inside HubLayout's Outlet.
+
+Note: Full E2E routing test would require Playwright browser context.

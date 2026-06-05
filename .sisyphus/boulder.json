@@ -1,0 +1,53 @@
+{
+  "active_plan": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\.sisyphus\\plans\\sprint2-telemetry-pipeline.md",
+  "started_at": "2026-06-02T13:32:18.294Z",
+  "session_ids": [
+    "ses_1785c5700ffe9zcNQKnrzcHW1j",
+    "ses_1776b7b32ffeZ5iHD9gxgoc5Wv",
+    "ses_17753a5c0ffenDPHgGdEzJkYYK",
+    "ses_1774db837ffefxRbAlI0T0pK2G",
+    "ses_1774d85f5ffey6QtSfMgDl9OcF",
+    "ses_1774d5899ffeJ45dS60dZz9zC0",
+    "ses_1774d2941ffesr32uW6LF8v5XR",
+    "ses_177467643ffeC2A70mwqo6dVHt",
+    "ses_177372df7ffeesrbqUh5rE99Gq",
+    "ses_1773705f5ffeVaTIH7qPQxk0m0",
+    "ses_17736d4ccffe7aLdMS5j3zsFEw",
+    "ses_17734c99dffeNeKTjZsQRbJ7Q0"
+  ],
+  "plan_name": "sprint2-telemetry-pipeline",
+  "session_origins": {
+    "ses_1785c5700ffe9zcNQKnrzcHW1j": "direct",
+    "ses_1776b7b32ffeZ5iHD9gxgoc5Wv": "appended",
+    "ses_17753a5c0ffenDPHgGdEzJkYYK": "appended",
+    "ses_1774db837ffefxRbAlI0T0pK2G": "appended",
+    "ses_1774d85f5ffey6QtSfMgDl9OcF": "appended",
+    "ses_1774d5899ffeJ45dS60dZz9zC0": "appended",
+    "ses_1774d2941ffesr32uW6LF8v5XR": "appended",
+    "ses_177467643ffeC2A70mwqo6dVHt": "appended",
+    "ses_177372df7ffeesrbqUh5rE99Gq": "appended",
+    "ses_1773705f5ffeVaTIH7qPQxk0m0": "appended",
+    "ses_17736d4ccffe7aLdMS5j3zsFEw": "appended",
+    "ses_17734c99dffeNeKTjZsQRbJ7Q0": "appended"
+  },
+  "task_sessions": {
+    "todo:1": {
+      "task_key": "todo:1",
+      "task_label": "1",
+      "task_title": "Enhance Telemetry Store — Singleton + Memoized Selectors + Error State",
+      "session_id": "ses_1773fdec6ffeTfa3wwEdmX6IMw",
+      "agent": "Sisyphus-Junior",
+      "category": "deep",
+      "updated_at": "2026-06-02T14:40:22.082Z"
+    },
+    "todo:2": {
+      "task_key": "todo:2",
+      "task_label": "2",
+      "task_title": "Enhance SimManager — Wire SimNormalizer into getTelemetry()",
+      "session_id": "ses_17734c99dffeNeKTjZsQRbJ7Q0",
+      "agent": "Sisyphus-Junior",
+      "category": "quick",
+      "updated_at": "2026-06-02T14:44:51.721Z"
+    }
+  }
+}

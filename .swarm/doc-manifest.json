@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "scanned_at": "2026-06-02T06:34:51.764Z",
+  "files": [
+    {
+      "path": "docs\\ARCHITECTURE.md",
+      "title": "ARQUITECTURA - Vantare Overlays v1.0",
+      "summary": "> Documento tecnico de arquitectura del sistema Vantare Overlays. > Version: 1.0.0 | Ultima actualizacion: Junio 2026 --- 1. [Vision General del Sistema](#1-vision-general-del-sistema) 2. [Stack Te...",
+      "lines": 3071,
+      "mtime": 1780345931100.659
+    },
+    {
+      "path": "docs\\AUTH-GUIDE.md",
+      "title": "Guía de Autenticación y Licencias - Vantare Overlays",
+      "summary": "Vantare Overlays utiliza **Supabase** como backend para gestionar la autenticación de usuarios, el sistema de licencias y el control de acceso a funcionalidades premium. Esta guía documenta la arqu...",
+      "lines": 1832,
+      "mtime": 1780345649394.9172
+    },
+    {
+      "path": "docs\\IPC-BRIDGE.md",
+      "title": "IPC Bridge - Comunicación Main ↔ Renderer",
+      "summary": "> Documentación completa del sistema de comunicación entre procesos de Electron > para el proyecto **Vantare Overlays**. --- Electron ejecuta dos tipos de procesos: el **proceso principal** (Main P...",
+      "lines": 1944,
+      "mtime": 1780346126631.8452
+    },
+    {
+      "path": "docs\\OVERLAY-DEV-GUIDE.md",
+      "title": "Guia de Desarrollo de Overlays — Vantare Overlays",
+      "summary": "> Guia completa para desarrolladores que quieran crear nuevos overlays en el proyecto Vantare Overlays. > Stack: React + TypeScript + Tailwind + SSE + Bun/Fastify. --- Un overlay en Vantare es un *...",
+      "lines": 2092,
+      "mtime": 1780345117354.7834
+    },
+    {
+      "path": "docs\\ROADMAP.md",
+      "title": "Roadmap de Desarrollo — Vantare Overlays v1.0",
+      "summary": "> **Versión**: 2.0.0 | **Fecha**: 2026-06-01 | **Estado**: Final > Roadmap actualizado tras auditoría completa de features (28 features, 8 sprints, 16 semanas). --- 1. [Visión General](#1-visión-ge...",
+      "lines": 422,
+      "mtime": 1780347759153.374
+    },
+    {
+      "path": "docs\\SIM-ADAPTER-GUIDE.md",
+      "title": "Guía de Adaptadores de Simulador",
+      "summary": "> Documentación completa del sistema de adaptadores de telemetría para Vantare Overlays. > Cubre iRacing, Le Mans Ultimate (LMU) y Assetto Corsa (AC). --- 1. [Visión General](#1-visión-general) 2. ...",
+      "lines": 4159,
+      "mtime": 1780345167581.0925
+    },
+    {
+      "path": "docs\\TECH-DECISIONS.md",
+      "title": "Decisiones Tecnicas - Vantare Overlays",
+      "summary": "> Documento maestro de arquitectura y decisiones tecnicas del proyecto Vantare Overlays. > Ultima actualizacion: 2026-06-01 --- 1. [DEC-001: Simuladores soportados en v1](#dec-001-simuladores-sopor...",
+      "lines": 1344,
+      "mtime": 1780345246089.3916
+    },
+    {
+      "path": "docs\\THEME-SYSTEM.md",
+      "title": "Sistema de Temas — Vantare Overlays",
+      "summary": "Guía completa del sistema de temas, diseño visual y personalización de la apariencia de los overlays en tiempo real. --- 1. [Visión General](#1-visión-general) 2. [Arquitectura del Tema](#2-arquite...",
+      "lines": 1945,
+      "mtime": 1780346116601.8723
+    },
+    {
+      "path": "README.md",
+      "title": "Vantare Overlays",
+      "summary": "<div align=\"center\"> **Overlays profesionales de simracing para streaming y configuraciones multi-monitor.** Un competidor moderno y multi-sim de RaceLabs con soporte para iRacing, Le Mans Ultimate...",
+      "lines": 522,
+      "mtime": 1780346235111.7822
+    }
+  ]
+}

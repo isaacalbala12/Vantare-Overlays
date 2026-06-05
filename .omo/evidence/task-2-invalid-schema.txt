@@ -1,0 +1,21 @@
+{
+  "success": false,
+  "error": {
+    "issues": [
+      {
+        "code": "too_big",
+        "maximum": 40,
+        "type": "number",
+        "inclusive": true,
+        "exact": false,
+        "message": "Number must be less than or equal to 40",
+        "path": [
+          "overlays",
+          "standings",
+          "rowCount"
+        ]
+      }
+    ],
+    "name": "ZodError"
+  }
+}
