@@ -1,12 +1,12 @@
 {
-  "active_plan": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\.omo\\plans\\sprint6-themes-auth.md",
-  "started_at": "2026-06-05T14:00:00+02:00",
+  "active_plan": "C:\\Users\\isaac\\Desktop\\Vantare-Overlays\\.omo\\plans\\sprint5b-lmu-adapter.md",
+  "started_at": "2026-06-05T14:05:00+02:00",
   "session_ids": [],
-  "plan_name": "sprint6-themes-auth",
+  "plan_name": "sprint5b-lmu-adapter",
   "session_origins": {},
   "task_sessions": {},
   "schema_version": 2,
-  "active_work_id": "sprint6-themes-auth",
+  "active_work_id": "sprint5b-lmu-adapter",
   "works": {
     "sprint5a-multi-sim": {
       "work_id": "sprint5a-multi-sim",
@@ -15,20 +15,21 @@
       "ended_at": "2026-06-05T13:30:00Z"
     },
     "sprint5b-lmu-adapter": {
-      "status": "completed",
-      "started_at": "2026-06-05T12:20:54.0455401+02:00",
-      "ended_at": "2026-06-05T12:21:07.1056909+02:00",
       "work_id": "sprint5b-lmu-adapter",
-      "plan_name": "sprint5b-lmu-adapter"
+      "plan_name": "sprint5b-lmu-adapter",
+      "status": "in_progress",
+      "started_at": "2026-06-05T12:20:54.0455401+02:00",
+      "resumed_at": "2026-06-05T14:05:00+02:00"
     },
     "sprint6-themes-auth": {
       "work_id": "sprint6-themes-auth",
       "plan_name": "sprint6-themes-auth",
-      "status": "in_progress",
-      "started_at": "2026-06-05T14:00:00+02:00"
+      "status": "completed",
+      "started_at": "2026-06-05T14:00:00+02:00",
+      "ended_at": "2026-06-05T14:05:00+02:00"
     }
   },
   "agent": "atlas",
-  "updated_at": "2026-06-05T14:00:00+02:00",
+  "updated_at": "2026-06-05T14:05:00+02:00",
   "status": "in_progress"
 }
