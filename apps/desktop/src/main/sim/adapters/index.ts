@@ -15,8 +15,8 @@ export function createAdapter(simName: string): import('@vantare/sim-core').SimA
     }
     case 'lmu': {
       // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { LMUAdapter } = require('./lmu-adapter');
-      return new LMUAdapter();
+      const { LMUAdapterV2 } = require('./lmu-adapter-v2');
+      return new LMUAdapterV2();
     }
     case 'ac': {
       // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -27,3 +27,4 @@ export function createAdapter(simName: string): import('@vantare/sim-core').SimA
       throw new Error(`Unknown sim type: ${simName}`);
   }
 }
+
