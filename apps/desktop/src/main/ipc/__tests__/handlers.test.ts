@@ -85,10 +85,12 @@ const validProfile = {
 };
 
 describe("overlay IPC handlers", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
     storeData.profiles = [];
     (ipcMain.handle as unknown as ReturnType<typeof vi.fn>).mockClear();
+    const { initAppStore } = await import("../../store");
+    await initAppStore();
   });
 
   afterEach(() => {

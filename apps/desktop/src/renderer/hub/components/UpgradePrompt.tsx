@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import type { LicenseTier } from '@vantare/auth';
+import type { LicenseTier } from '@vantare/auth/types';
 
 interface UpgradePromptProps {
   feature: string;

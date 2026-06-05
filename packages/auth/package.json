@@ -10,6 +10,14 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./feature-gate": {
+      "types": "./src/feature-gate.ts",
+      "import": "./src/feature-gate.ts"
+    },
+    "./types": {
+      "types": "./src/types.ts",
+      "import": "./src/types.ts"
     }
   },
   "scripts": {

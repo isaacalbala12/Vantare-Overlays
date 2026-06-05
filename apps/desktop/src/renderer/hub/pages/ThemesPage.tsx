@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { exportTheme, importTheme, useTheme, validateTheme } from '@vantare/ui-core/themes';
-import { Feature } from '@vantare/auth';
+import { Feature } from '@vantare/auth/feature-gate';
 import ThemeSelector from '../components/ThemeSelector';
 import ThemeEditor from '../components/ThemeEditor';
 import FeatureGate from '../components/FeatureGate';

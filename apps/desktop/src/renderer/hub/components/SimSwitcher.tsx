@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { Feature } from '@vantare/auth';
+import { Feature } from '@vantare/auth/feature-gate';
 import { useLicense } from '../../shared/hooks/useLicense';
 import FeatureBadge from './FeatureBadge';
 

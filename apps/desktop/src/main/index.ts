@@ -1,10 +1,12 @@
 import { app, BrowserWindow, Tray, Menu, nativeImage } from 'electron';
+import fs from 'node:fs';
 import path from 'path';
 import { registerIpcHandlers, setOverlayManager } from './ipc/handlers';
 import { OverlayManager } from './windows/overlay-manager';
 import { HttpServer } from './server/http-server';
 import { SimManager } from './sim/sim-manager';
 import { loadEnv, setupSecureStorage, setupMachineId } from './auth/setup';
+import { initAppStore, seedE2eDefaults } from './store';
 
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
@@ -29,11 +31,15 @@ function createMainWindow(): void {
     },
   });
 
-  if (isDev) {
+  const builtRenderer = path.join(__dirname, '../renderer/index.html');
+  const useBuiltRendererInDev =
+    process.env.E2E_TEST === '1' || (isDev && fs.existsSync(builtRenderer) && process.env.USE_BUILT_RENDERER === '1');
+
+  if (!isDev || useBuiltRendererInDev) {
+    mainWindow.loadFile(builtRenderer);
+  } else {
     mainWindow.loadURL('http://localhost:3000');
     mainWindow.webContents.openDevTools();
-  } else {
-    mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
   }
 
   mainWindow.once('ready-to-show', () => {
@@ -41,6 +47,7 @@ function createMainWindow(): void {
   });
 
   mainWindow.on('close', (event) => {
+    if (process.env.E2E_TEST === '1') return;
     if (!isQuitting) {
       event.preventDefault();
       mainWindow?.hide();
@@ -65,6 +72,8 @@ app.whenReady().then(async () => {
   loadEnv();
   setupSecureStorage();
   setupMachineId();
+  await initAppStore();
+  seedE2eDefaults();
   registerIpcHandlers();
   overlayManager = new OverlayManager();
   httpServer = new HttpServer();
@@ -80,6 +89,9 @@ app.whenReady().then(async () => {
   simManager.setBroadcastTelemetryFn((data) => httpServer.broadcastTelemetry(data));
 
   simManager.start();
+  mainWindow!.webContents.on('did-finish-load', () => {
+    simManager.reemitSimState();
+  });
   setOverlayManager(overlayManager);
 });
 

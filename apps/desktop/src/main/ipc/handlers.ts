@@ -1,51 +1,17 @@
 import { app, ipcMain, BrowserWindow } from 'electron';
-import Store from 'electron-store';
-import { AuthService, type LicenseCache } from '@vantare/auth';
+import { AuthService } from '@vantare/auth';
 import { builtInThemes } from '@vantare/ui-core/themes';
 import type { Profile, Theme, Settings } from '@shared/types';
 import { setupAuth } from '../auth/setup';
+import { getStore } from '../store';
 import type { SimManager } from '../sim/sim-manager';
 import type { OverlayManager } from '../windows/overlay-manager';
 import { MockSimFactory } from '@vantare/sim-core';
 import type { SimInfo, SimType, Telemetry } from '@vantare/sim-core';
 import { ProfileSchema } from '@vantare/ui-core/schemas';
 
-interface StoreSchema {
-  settings: Settings;
-  overlays: Record<string, unknown>;
-  profiles: Profile[];
-  activeProfileId: string | null;
-  themes: Theme[];
-  activeThemeId: string;
-  licenseCache: LicenseCache | null;
-}
-
-const store = new Store<StoreSchema>({
-  defaults: {
-    settings: {
-      language: 'en',
-      autostart: false,
-      minimizeToTray: true,
-      startMinimized: false,
-      overlayVisibilityKey: 'Alt+H',
-      preferredSim: 'auto',
-      alertVolume: 0.8,
-      alertEnabled: true,
-      autoUpdate: true,
-      updateChannel: 'stable',
-      httpServerPort: 3200,
-      networkAccess: false,
-    },
-    overlays: {},
-    profiles: [],
-    activeProfileId: null,
-    themes: [],
-    activeThemeId: 'dark',
-    licenseCache: null,
-  },
-});
-
 function getAllThemes(): Theme[] {
+  const store = getStore();
   const custom = store.get('themes');
   const builtInIds = new Set(builtInThemes.map((theme) => theme.id));
   const customThemes = custom.filter((theme) => !builtInIds.has(theme.id));
@@ -63,6 +29,7 @@ export function setOverlayManager(mgr: OverlayManager | null): void {
 }
 
 export function registerIpcHandlers(): void {
+  const store = getStore();
   setupAuth({
     get: async () => store.get('licenseCache'),
     set: async (cache) => store.set('licenseCache', cache),

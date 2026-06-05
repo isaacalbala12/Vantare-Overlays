@@ -122,8 +122,7 @@ describe('SimManager + TelemetryRecorder integration', () => {
   it('records frames through SimManager callback flow', () => {
     const testTelemetry = makeTelemetry({ timestamp: 1000 });
 
-    mockGetData.mockReturnValue({ rpm: 7500, speed: 180 });
-    mockNormalize.mockReturnValue(testTelemetry);
+    mockGetData.mockReturnValue(testTelemetry);
 
     simManager = new SimManager(new BrowserWindow());
     recorder = new TelemetryRecorder();
@@ -143,8 +142,8 @@ describe('SimManager + TelemetryRecorder integration', () => {
     // Advance timers — triggers the 62ms telemetry interval at least once
     vi.advanceTimersByTime(70);
 
-    // The normalizer was called at least once (getTelemetry in mock mode)
-    expect(mockNormalize).toHaveBeenCalled();
+    expect(mockGetData).toHaveBeenCalled();
+    expect(mockNormalize).not.toHaveBeenCalled();
 
     const stoppedPath = recorder.stopRecording();
     expect(stoppedPath).toBe(filePath);

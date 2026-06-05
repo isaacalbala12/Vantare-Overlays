@@ -1,7 +1,7 @@
 import { useEffect, useCallback, useMemo } from 'react';
 import { z } from 'zod';
 import { SettingsForm } from '@vantare/ui-core';
-import { Feature } from '@vantare/auth';
+import { Feature } from '@vantare/auth/feature-gate';
 import { useSettingsStore } from '../../shared/stores/settings-store';
 import { useLicense } from '../../shared/hooks/useLicense';
 

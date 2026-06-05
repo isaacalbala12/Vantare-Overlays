@@ -6,7 +6,7 @@ import {
   DeltaBarConfigSchema,
   StreamAlertsConfigSchema,
 } from '@vantare/ui-core';
-import { Feature } from '@vantare/auth';
+import { Feature } from '@vantare/auth/feature-gate';
 import type { z } from 'zod';
 import { useOverlayConfigStore } from '../../shared/stores/overlay-config-store';
 import { useLicense } from '../../shared/hooks/useLicense';

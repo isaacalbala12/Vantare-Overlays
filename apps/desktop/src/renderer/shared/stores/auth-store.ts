@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { LicenseStatus } from '@vantare/auth';
+import type { LicenseStatus } from '@vantare/auth/types';
 
 export interface AuthUser {
   id: string;

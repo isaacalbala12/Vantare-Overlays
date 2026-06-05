@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Feature, getRequiredTier, hasFeature } from '@vantare/auth';
+import { Feature, getRequiredTier, hasFeature } from '@vantare/auth/feature-gate';
 import { useTelemetryStore } from '@vantare/ui-core';
 import { useAuthStore } from '../stores/auth-store';
 import { useAppStore } from '../stores/app-store';

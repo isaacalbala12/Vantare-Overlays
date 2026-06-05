@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import { Feature } from '@vantare/auth';
+import { Feature } from '@vantare/auth/feature-gate';
 import { useTelemetryStore } from '@vantare/ui-core';
 import { useAppStore } from '../../stores/app-store';
 import { useAuthStore } from '../../stores/auth-store';

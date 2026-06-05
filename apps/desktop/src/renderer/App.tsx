@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, useSearchParams } from 'react-router-dom';
+import { HashRouter, Routes, Route, useSearchParams } from 'react-router-dom';
 import { useTelemetry, useTelemetryStore } from '@vantare/ui-core';
 import { ThemeProvider } from '@vantare/ui-core/themes';
 import { DebugOverlay } from './DebugOverlay';
@@ -43,7 +43,7 @@ export default function App() {
 
   return (
     <ThemeProvider>
-      <BrowserRouter>
+      <HashRouter>
         <div className="w-screen h-screen bg-transparent relative">
           <DebugOverlay />
           {isMock && (
@@ -60,7 +60,7 @@ export default function App() {
 
           <AppRouter />
         </div>
-      </BrowserRouter>
+      </HashRouter>
     </ThemeProvider>
   );
 }

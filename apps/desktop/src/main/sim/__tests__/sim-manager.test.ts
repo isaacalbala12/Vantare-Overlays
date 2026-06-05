@@ -97,14 +97,12 @@ describe("SimManager", () => {
       inputs: { throttle: 0.8, brake: 0, clutch: 0, steering: 0 },
       weather: { airTemp: 20, trackTemp: 25, humidity: 60, precipitation: 0, windSpeed: 5, windDirection: 180 },
     };
-    const normalizedOutput = { ...rawTelemetry, _normalized: true };
-    mockNormalize.mockReturnValue(normalizedOutput);
     mockGetData.mockReturnValue(rawTelemetry);
     simManager.start();
     const result = simManager.getTelemetry();
     expect(mockGetData).toHaveBeenCalledOnce();
-    expect(mockNormalize).toHaveBeenCalledWith(rawTelemetry, "iracing");
-    expect(result).toBe(normalizedOutput);
+    expect(mockNormalize).not.toHaveBeenCalled();
+    expect(result).toBe(rawTelemetry);
   });
 
   it("getTelemetry returns null when mock is not active", () => {

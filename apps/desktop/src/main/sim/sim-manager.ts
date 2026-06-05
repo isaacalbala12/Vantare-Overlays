@@ -65,8 +65,12 @@ export class SimManager {
   }
 
   start(): void {
-    this.detectSim();
-    this.pollInterval = setInterval(() => this.detectSim(), 2000);
+    if (process.env.E2E_TEST === '1') {
+      this.activateMock();
+    } else {
+      this.detectSim();
+      this.pollInterval = setInterval(() => this.detectSim(), 2000);
+    }
 
     this.telemetryInterval = setInterval(() => {
       const data = this.getTelemetry();
@@ -164,6 +168,11 @@ export class SimManager {
     this.emitSimState();
   }
 
+  /** Re-send current sim state (e.g. after renderer finishes loading). */
+  reemitSimState(): void {
+    this.emitSimState();
+  }
+
   private emitSimState(): void {
     if (!this.mainWindow || this.mainWindow.isDestroyed()) return;
     this.mainWindow.webContents.send('sim-state', {
@@ -202,8 +211,8 @@ export class SimManager {
 
   getTelemetry(): Telemetry | null {
     if (this.isMockActive && this.mockProvider) {
-      const raw = this.mockProvider.getData();
-      return this.normalizer.normalize(raw, (this.currentSim ?? 'iracing') as SimType);
+      // Mock providers already return normalized Telemetry — do not re-normalize.
+      return this.mockProvider.getData();
     }
     return this.latestTelemetry;
   }

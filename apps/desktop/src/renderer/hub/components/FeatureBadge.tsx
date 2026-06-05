@@ -1,4 +1,4 @@
-import type { LicenseTier } from '@vantare/auth';
+import type { LicenseTier } from '@vantare/auth/types';
 
 interface FeatureBadgeProps {
   requiredTier: LicenseTier;

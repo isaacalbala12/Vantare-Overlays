@@ -26,12 +26,14 @@ export default function HubLayout() {
   const [activeTheme, setActiveTheme] = useState<Theme | null>(null);
   const [recording, setRecording] = useState(false);
   const activeProfile = useProfileStore((s) => s.activeProfile);
+  const loadProfiles = useProfileStore((s) => s.loadProfiles);
   const loadSession = useAuthStore((s) => s.loadSession);
   const navigate = useNavigate();
 
   useEffect(() => {
+    void loadProfiles();
     void loadSession();
-  }, [loadSession]);
+  }, [loadProfiles, loadSession]);
 
   // Fetch the active theme from IPC on mount (graceful degradation if IPC fails)
   useEffect(() => {

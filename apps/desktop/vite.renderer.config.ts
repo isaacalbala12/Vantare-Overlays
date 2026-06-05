@@ -14,6 +14,12 @@ export default defineConfig({
   resolve: {
     alias: {
       '@shared': path.resolve(__dirname, '../../shared'),
+      '@vantare/ui-core': path.resolve(__dirname, '../../packages/ui-core/src'),
+      '@vantare/sim-core': path.resolve(__dirname, '../../packages/sim-core/src'),
+      '@vantare/auth': path.resolve(__dirname, '../../packages/auth/src'),
+      '@vantare/auth/feature-gate': path.resolve(__dirname, '../../packages/auth/src/feature-gate.ts'),
+      '@vantare/auth/types': path.resolve(__dirname, '../../packages/auth/src/types.ts'),
+      '@vantare/types': path.resolve(__dirname, '../../packages/types/src'),
     },
   },
   server: {
