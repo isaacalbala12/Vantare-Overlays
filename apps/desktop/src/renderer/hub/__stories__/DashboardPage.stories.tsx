@@ -51,7 +51,10 @@ export const ConnectedSim: Story = {
   },
   beforeEach: () => {
     setupMockVantare({
-      getOverlayWindows: () => Promise.resolve([{ id: 'standings' }, { id: 'relative' }]),
+      getOverlayWindows: () => Promise.resolve([
+        { id: 'standings', name: 'Standings', visible: true, x: 0, y: 0, width: 400, height: 600 },
+        { id: 'relative', name: 'Relative', visible: true, x: 400, y: 0, width: 400, height: 300 },
+      ]),
       getThemes: () => Promise.resolve([]),
     });
   },
@@ -96,9 +99,17 @@ export const AllOverlaysActive: Story = {
       getActiveProfile: () => Promise.resolve({
         id: 'profile_1',
         name: 'Default',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        themeId: 'dark',
         overlays: { standings: {}, relative: {}, delta: {}, alerts: {} },
       }),
-      getOverlayWindows: () => Promise.resolve([{ id: 'standings' }, { id: 'relative' }, { id: 'delta' }, { id: 'alerts' }]),
+      getOverlayWindows: () => Promise.resolve([
+        { id: 'standings', name: 'Standings', visible: true, x: 0, y: 0, width: 400, height: 600 },
+        { id: 'relative', name: 'Relative', visible: true, x: 400, y: 0, width: 400, height: 300 },
+        { id: 'delta', name: 'Delta Bar', visible: true, x: 0, y: 600, width: 400, height: 200 },
+        { id: 'alerts', name: 'Stream Alerts', visible: true, x: 400, y: 300, width: 400, height: 300 },
+      ]),
     });
   },
 };

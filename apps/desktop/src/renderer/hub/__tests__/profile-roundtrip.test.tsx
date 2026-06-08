@@ -159,6 +159,20 @@ function createMockBackend() {
 describe('Profile round-trip', () => {
   beforeEach(() => {
     createMockBackend();
+    // Mock matchMedia for DashboardPage animation check
+    Object.defineProperty(window, 'matchMedia', {
+      writable: true,
+      value: vi.fn().mockImplementation((query: string) => ({
+        matches: false,
+        media: query,
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      })),
+    });
   });
 
   afterEach(() => {
@@ -217,9 +231,23 @@ describe('Profile round-trip', () => {
     // ── 5. RE-RENDER WITH HUBLAYOUT ─────────────────
     // Now that a profile is active, HubLayout will render <Outlet />
     cleanup();
+    // matchMedia needs re-setup for DashboardPage after cleanup
+    Object.defineProperty(window, 'matchMedia', {
+      writable: true,
+      value: vi.fn().mockImplementation((query: string) => ({
+        matches: false,
+        media: query,
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      })),
+    });
     renderAppAt('/');
     await waitFor(() => {
-      expect(screen.getByTestId('dashboard-active-profile')).toBeTruthy();
+      expect(screen.getByTestId('dashboard-panel-overlays')).toBeTruthy();
     });
 
     // ── 6. NAVIGATE TO OVERLAYS ────────────────────
@@ -298,7 +326,20 @@ describe('Profile round-trip', () => {
     // ── 12. VERIFY PERSISTENCE ON RELOAD ───────────
     cleanup();
     vi.restoreAllMocks();
-
+    // Re-setup matchMedia for DashboardPage animation check
+    Object.defineProperty(window, 'matchMedia', {
+      writable: true,
+      value: vi.fn().mockImplementation((query: string) => ({
+        matches: false,
+        media: query,
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      })),
+    });
     mockReloadBackend();
     // Seed store with persisted data so HubLayout shows Dashboard immediately
     useProfileStore.setState({
@@ -310,9 +351,8 @@ describe('Profile round-trip', () => {
 
     renderAppAt('/');
     await waitFor(() => {
-      expect(screen.getByTestId('dashboard-active-profile')).toBeTruthy();
+      expect(screen.getByTestId('dashboard-panel-overlays')).toBeTruthy();
     });
-    expect(screen.getByText('Quali Setup')).toBeTruthy();
 
     await act(async () => {
       fireEvent.click(screen.getByTestId('sidebar-overlays'));

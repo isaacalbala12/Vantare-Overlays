@@ -12,7 +12,7 @@ export function useAccountStatus() {
     user,
     license,
     tier: user?.tier ?? license?.tier ?? 'free',
-    isValid: license?.isValid ?? license?.active ?? false,
+    isValid: license?.isValid ?? false,
     isLoading,
     error,
     loadSession,
