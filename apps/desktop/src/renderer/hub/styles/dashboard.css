@@ -1,0 +1,185 @@
+/* ==========================================================================
+   Dashboard Styles — Glassmorphism Panels, Grid Layouts, Animations
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Glassmorphism Panel Base
+   -------------------------------------------------------------------------- */
+
+.dashboard-panel {
+  position: relative;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s ease;
+}
+
+/* Subtle gradient border overlay */
+.dashboard-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(127, 29, 29, 0.3), transparent 50%);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  pointer-events: none;
+}
+
+/* --------------------------------------------------------------------------
+   Panel Variants
+   -------------------------------------------------------------------------- */
+
+.dashboard-panel-hero {
+  min-height: 240px;
+}
+
+.dashboard-panel-medium {
+  min-height: 160px;
+}
+
+.dashboard-panel-small {
+  min-height: 80px;
+}
+
+/* --------------------------------------------------------------------------
+   Panel Glow (hover / active)
+   -------------------------------------------------------------------------- */
+
+.dashboard-panel-glow {
+  box-shadow:
+    0 0 20px var(--color-primary),
+    0 0 40px var(--color-primary-muted);
+  border-color: var(--color-primary);
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+/* --------------------------------------------------------------------------
+   Panel Skeleton (loading state)
+   -------------------------------------------------------------------------- */
+
+.dashboard-panel-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-glass) 25%,
+    rgba(255, 255, 255, 0.03) 50%,
+    var(--color-glass) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: inherit;
+  min-height: 60px;
+}
+
+/* --------------------------------------------------------------------------
+   Panel Entrance Animation
+   -------------------------------------------------------------------------- */
+
+.dashboard-panel-enter {
+  animation: panelEnter 0.5s ease-out both;
+}
+
+/* --------------------------------------------------------------------------
+   Grid Layouts
+   -------------------------------------------------------------------------- */
+
+/* Desktop — Layout B (>1024px) */
+.dashboard-layout-desktop {
+  display: grid;
+  grid-template-columns: 1.8fr 1fr;
+  grid-template-rows: auto auto auto;
+  gap: 1rem;
+  grid-template-areas:
+    "overlays sim"
+    "overlays themes account"
+    "settings settings settings";
+  height: 100%;
+}
+
+/* Tablet – 2-col (640–1024px) */
+.dashboard-layout-tablet {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  grid-template-areas:
+    "overlays sim"
+    "themes account"
+    "settings settings";
+  height: 100%;
+}
+
+/* Mobile – 1-col (<640px) */
+.dashboard-layout-mobile {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  grid-template-areas:
+    "overlays"
+    "sim"
+    "themes"
+    "account"
+    "settings";
+  height: 100%;
+}
+
+/* --------------------------------------------------------------------------
+   Grid Area Classes
+   -------------------------------------------------------------------------- */
+
+.dashboard-area-overlays  { grid-area: overlays; }
+.dashboard-area-sim       { grid-area: sim; }
+.dashboard-area-themes    { grid-area: themes; }
+.dashboard-area-account   { grid-area: account; }
+.dashboard-area-settings  { grid-area: settings; }
+
+/* --------------------------------------------------------------------------
+   Particles Canvas
+   -------------------------------------------------------------------------- */
+
+.particles-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Keyframes
+   -------------------------------------------------------------------------- */
+
+@keyframes panelEnter {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* --------------------------------------------------------------------------
+   Reduced Motion
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-panel-enter {
+    animation: none;
+  }
+  .dashboard-panel-glow {
+    box-shadow: none;
+  }
+}
