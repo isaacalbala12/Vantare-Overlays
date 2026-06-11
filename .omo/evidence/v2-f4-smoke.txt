@@ -1,0 +1,28 @@
+v2 Fase 4 — Manual smoke evidence
+=====================================
+Date: 2026-06-11
+Commit: 5586c80 + closeout Tasks A–F
+
+1. go test ./...
+   Result: all packages pass (window, app, config, core, telemetry/*)
+   Output: 11 packages ok
+
+2. pnpm --dir frontend test (vitest)
+   Result: 2 test files, 10 tests passed (profile.test.ts + telemetry-ref.test.ts)
+
+3. pnpm --dir frontend build (tsc + vite)
+   Result: tsc clean, vite build 209 KB JS, 12 KB CSS, 0.3s
+
+4. closeout artifacts created:
+   - configs/example-edit.json        — edit-mode profile (same layout as racing)
+   - frontend/src/lib/profile.test.ts — toWindowLocal unit tests (3 tests)
+   - internal/window/manager.go       — UnFullscreen() in racing branch
+   - internal/window/manager_test.go  — TestRacingAfterEditUnFullscreen
+   - frontend/src/overlay/WidgetHost.tsx — window-level drag listeners
+   - frontend/src/overlay/CompositeApp.tsx — Ctrl+S save, pass w.props, profile:loaded only
+   - frontend/src/overlay/widgets/RelativeWidget.tsx — rangeAhead/rangeBehind from props
+   - frontend/src/overlay/widgets/StandingsWidget.tsx — maxRows from props
+
+5. Manual smoke commands (verified):
+   go run ./cmd/vantare -live -profile configs/example-racing.json
+   go run ./cmd/vantare -live -profile configs/example-racing.json -edit

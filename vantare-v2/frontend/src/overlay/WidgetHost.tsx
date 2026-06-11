@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback, type ReactNode } from "react";
+import { useRef, useState, useCallback, useEffect, type ReactNode } from "react";
 import type { Rect } from "../lib/profile";
 
 type WidgetHostProps = {
@@ -23,9 +23,11 @@ export function WidgetHost({ id, position, editMode, onDragEnd, children }: Widg
     [editMode, position.x, position.y],
   );
 
-  const handleMouseMove = useCallback(
-    (e: React.MouseEvent) => {
-      if (!dragging || !dragStart.current) return;
+  useEffect(() => {
+    if (!dragging) return;
+
+    const onMouseMove = (e: MouseEvent) => {
+      if (!dragStart.current) return;
       const dx = e.clientX - dragStart.current.mx;
       const dy = e.clientY - dragStart.current.my;
       const el = document.getElementById(`widget-${id}`);
@@ -33,13 +35,10 @@ export function WidgetHost({ id, position, editMode, onDragEnd, children }: Widg
         el.style.left = `${dragStart.current.wx + dx}px`;
         el.style.top = `${dragStart.current.wy + dy}px`;
       }
-    },
-    [dragging, id],
-  );
+    };
 
-  const handleMouseUp = useCallback(
-    (e: React.MouseEvent) => {
-      if (!dragging || !dragStart.current) return;
+    const onMouseUp = (e: MouseEvent) => {
+      if (!dragStart.current) return;
       const dx = e.clientX - dragStart.current.mx;
       const dy = e.clientY - dragStart.current.my;
       setDragging(false);
@@ -50,9 +49,15 @@ export function WidgetHost({ id, position, editMode, onDragEnd, children }: Widg
         w: position.w,
         h: position.h,
       });
-    },
-    [dragging, id, position, onDragEnd],
-  );
+    };
+
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+    return () => {
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    };
+  }, [dragging, id, position, onDragEnd]);
 
   return (
     <div
@@ -65,8 +70,6 @@ export function WidgetHost({ id, position, editMode, onDragEnd, children }: Widg
         height: `${position.h}px`,
       }}
       onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
     >
       {editMode && (
         <div className="absolute -top-5 left-0 text-[10px] text-white/50 font-mono pointer-events-none select-none">

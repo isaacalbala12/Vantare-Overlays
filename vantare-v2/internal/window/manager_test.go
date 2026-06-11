@@ -98,10 +98,43 @@ func TestApplyProfileSkipRefresh(t *testing.T) {
 	mgr.ApplyProfile(p, false)
 	initialCalls := fw.setBoundsCalls
 
-	// Apply again with skipRefresh — should still call SetBounds
 	mgr.ApplyProfile(p, true)
 	if fw.setBoundsCalls != initialCalls+1 {
 		t.Fatalf("skipRefresh should still set bounds: calls=%d", fw.setBoundsCalls)
+	}
+}
+
+func TestApplyProfileSkipRefreshSkipsModeToggle(t *testing.T) {
+	fw := &fakeWindow{fullscreen: true, ignoreMouse: false}
+	mgr := window.NewManager(fw, 8)
+	p := &config.ProfileConfig{
+		DisplayMode: config.ModeEdit,
+		Widgets: []config.WidgetConfig{
+			{Enabled: true, Position: config.Rect{X: 100, Y: 200, W: 400, H: 48}},
+		},
+	}
+	mgr.ApplyProfile(p, true)
+
+	if !fw.fullscreen {
+		t.Fatal("skipRefresh should not call UnFullscreen in edit mode")
+	}
+	if fw.setBoundsCalls != 0 {
+		t.Fatal("edit mode skipRefresh should not shrink-wrap")
+	}
+}
+
+func TestRacingAfterEditUnFullscreen(t *testing.T) {
+	fw := &fakeWindow{fullscreen: true}
+	mgr := window.NewManager(fw, 8)
+	p := &config.ProfileConfig{
+		DisplayMode: config.ModeRacing,
+		Widgets: []config.WidgetConfig{
+			{Enabled: true, Position: config.Rect{X: 100, Y: 200, W: 400, H: 48}},
+		},
+	}
+	mgr.ApplyProfile(p, false)
+	if fw.fullscreen {
+		t.Fatal("expected UnFullscreen to be called when switching from edit to racing")
 	}
 }
 

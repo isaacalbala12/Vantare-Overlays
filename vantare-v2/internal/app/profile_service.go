@@ -38,21 +38,21 @@ func (s *ProfileService) GetProfile() *config.ProfileConfig {
 }
 
 // SaveLayout updates widget positions and persists to disk.
-// skipRefresh=true avoids recreating the window.
+// Uses skipWindowRefresh (bounds-only resize) and re-emits profile:loaded for layoutOrigin sync.
 func (s *ProfileService) SaveLayout(widgets []config.WidgetConfig) error {
 	s.profile.Widgets = widgets
 	if err := config.SaveFile(s.path, s.profile); err != nil {
 		return err
 	}
-	// Apply with skipRefresh=true — resize only, no recreate
+	// skipWindowRefresh: bounds only, then refresh frontend layout origin
 	s.mgr.ApplyProfile(s.profile, true)
 
-	// Emit layout:saved event
 	if s.emitter != nil {
 		s.emitter.Emit("layout:saved", map[string]any{
 			"ok":      true,
 			"profile": s.profile,
 		})
+		s.EmitLoaded()
 	}
 	return nil
 }

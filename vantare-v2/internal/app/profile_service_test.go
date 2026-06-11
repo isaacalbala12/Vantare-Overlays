@@ -99,9 +99,8 @@ func TestProfileServiceSaveLayout(t *testing.T) {
 		t.Fatal("expected SetBounds to be called")
 	}
 
-	// Verify event emitted
-	if len(spy.events) != 1 || spy.events[0] != "layout:saved" {
-		t.Fatalf("events=%v, want [layout:saved]", spy.events)
+	if len(spy.events) != 2 || spy.events[0] != "layout:saved" || spy.events[1] != "profile:loaded" {
+		t.Fatalf("events=%v, want [layout:saved profile:loaded]", spy.events)
 	}
 }
 

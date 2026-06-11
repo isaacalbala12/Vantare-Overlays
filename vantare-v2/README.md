@@ -14,19 +14,26 @@ Documentación: [`../docs/V2-STACK-AND-PERFORMANCE.md`](../docs/V2-STACK-AND-PER
 
 ```
 vantare-v2/
-├── cmd/vantare/            # Wails overlay app (Fase 3)
+├── cmd/vantare/            # Wails overlay app (Fase 3-4)
 ├── cmd/lmu-debug/          # CLI de telemetría LMU
+├── configs/                # perfiles JSON (racing, edit)
 ├── frontend/               # React 19 + Vite + Tailwind v4
+│   └── src/
+│       ├── lib/            # telemetry-ref.ts, profile.ts
+│       └── overlay/        # CompositeApp, WidgetHost, widgets/
 ├── internal/
-│   ├── app/                # lifecycle + telemetry bridge
+│   ├── app/                # lifecycle + bridge + profile service
 │   ├── core/               # deadband, utilidades
-│   └── telemetry/
-│       ├── lmu/            # mmap reader + parser
-│       ├── normalizer/     # raw bytes → snapshot
-│       ├── pipeline/       # deadband filter
-│       ├── diff/           # JSON diff payload
-│       └── service/        # 60Hz read / 30Hz emit + Subscribe
-├── pkg/models/             # tipos unificados
+│   ├── telemetry/
+│   │   ├── lmu/            # mmap reader + parser
+│   │   ├── normalizer/     # raw bytes → snapshot
+│   │   ├── pipeline/       # deadband filter
+│   │   ├── diff/           # JSON diff payload
+│   │   └── service/        # 60Hz read / 30Hz emit + Subscribe
+│   └── window/             # bounds + mode manager
+├── pkg/
+│   ├── config/             # profile schema + load/save
+│   └── models/             # tipos unificados
 └── tools/                  # generador offsets (desde repo v1)
 ```
 
@@ -62,9 +69,54 @@ go run ./cmd/vantare              # mock telemetry
 go run ./cmd/vantare -live        # LMU must be running
 ```
 
+## Composite overlay (Fase 4)
+
+Un solo ventana overlay con 3 widgets (delta, relative, standings) driven by profile JSON.
+
+### Comandos
+
+```bash
+go test ./...                     # Go tests
+pnpm --dir frontend test          # Frontend tests
+pnpm --dir frontend build         # Build frontend
+
+# Modo racing (shrink-wrap, click-through)
+go run ./cmd/vantare -profile configs/example-racing.json
+
+# Modo edit (fullscreen, draggable widgets)
+go run ./cmd/vantare -profile configs/example-racing.json -edit
+
+# Live con LMU
+go run ./cmd/vantare -live -profile configs/example-racing.json
+go run ./cmd/vantare -live -profile configs/example-racing.json -edit
+```
+
+### Perfil JSON
+
+Los perfiles definen widgets con posiciones, tipo y props:
+
+```json
+{
+  "id": "default-racing",
+  "displayMode": "racing",
+  "monitorIndex": 0,
+  "widgets": [
+    { "id": "delta", "type": "delta", "enabled": true, "position": { "x": 760, "y": 40, "w": 400, "h": 48 } },
+    { "id": "relative", "type": "relative", "enabled": true, "position": { "x": 40, "y": 600, "w": 320, "h": 280 } },
+    { "id": "standings", "type": "standings", "enabled": true, "position": { "x": 1560, "y": 40, "w": 340, "h": 420 } }
+  ]
+}
+```
+
+### Modos
+
+- **Racing**: Ventana shrink-wrap al bbox de widgets, click-through (`SetIgnoreMouseEvents`)
+- **Edit**: Ventana fullscreen, widgets arrastrables, guarda posiciones a JSON
+
 ## Próximos pasos
 
 1. ~~Offsets generados desde Python~~ → `python tools/generate-lmu-offsets.py`
 2. ~~Fixtures binarios + tests (`testdata/lmu-fixture.bin`)~~ → ver `testdata/README.md`
 3. ~~Normalizer + deadband en pipeline (Fase 2)~~ ✅
 4. ~~Wails v3 + ventana overlay (Fase 3)~~ ✅
+5. ~~Composite layout + perfiles (Fase 4)~~ ✅

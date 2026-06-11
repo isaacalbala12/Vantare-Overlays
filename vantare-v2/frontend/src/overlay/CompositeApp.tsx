@@ -7,6 +7,7 @@ import type {
   WidgetConfig,
   Rect,
 } from "../lib/profile";
+import { toWindowLocal } from "../lib/profile";
 import { WidgetHost } from "./WidgetHost";
 import { DeltaWidget } from "./widgets/DeltaWidget";
 import { RelativeWidget } from "./widgets/RelativeWidget";
@@ -14,33 +15,34 @@ import { StandingsWidget } from "./widgets/StandingsWidget";
 import type { ComponentType } from "react";
 
 // Widget registry — maps widget type to component
-const WIDGETS: Record<string, ComponentType<{ editMode: boolean }>> = {
+type WidgetProps = { editMode: boolean; props?: Record<string, unknown> };
+const WIDGETS: Record<string, ComponentType<WidgetProps>> = {
   delta: DeltaWidget,
   relative: RelativeWidget,
   standings: StandingsWidget,
 };
 
-// Convert profile widget coords to window-local coords
-function toWindowLocal(
-  widgetPos: Rect,
-  origin: LayoutOrigin,
-): Rect {
-  return {
-    x: widgetPos.x - origin.x,
-    y: widgetPos.y - origin.y,
-    w: widgetPos.w,
-    h: widgetPos.h,
-  };
+let saveTimer: ReturnType<typeof setTimeout> | null = null;
+
+function emitLayoutSave(widgets: WidgetConfig[]) {
+  try {
+    Events.Emit("layout:save", { widgets });
+  } catch {
+    // @ts-expect-error Wails runtime binding
+    window.go?.ProfileService?.SaveLayout?.(widgets);
+  }
 }
 
-// Debounced save helper
-let saveTimer: ReturnType<typeof setTimeout> | null = null;
-function debouncedSave(widgets: WidgetConfig[]) {
-  if (saveTimer) clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => {
-    // @ts-expect-error Wails runtime binding
-    window.go?.main?.ProfileService?.SaveLayout?.(widgets);
-  }, 300);
+function saveLayout(widgets: WidgetConfig[], immediate = false) {
+  if (saveTimer) {
+    clearTimeout(saveTimer);
+    saveTimer = null;
+  }
+  if (immediate) {
+    emitLayoutSave(widgets);
+    return;
+  }
+  saveTimer = setTimeout(() => emitLayoutSave(widgets), 300);
 }
 
 export function CompositeApp() {
@@ -50,6 +52,20 @@ export function CompositeApp() {
   const [widgets, setWidgets] = useState<WidgetConfig[]>([]);
   const profileRef = useRef(profile);
   profileRef.current = profile;
+
+  // Ctrl+S save in edit mode
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+        e.preventDefault();
+        if (editMode && widgets.length > 0) {
+          saveLayout(widgets, true);
+        }
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [editMode, widgets]);
 
   useEffect(() => {
     const unsub = Events.On("profile:loaded", (event: { data: unknown }) => {
@@ -68,18 +84,6 @@ export function CompositeApp() {
       }
     });
 
-    // Request profile from Go on mount
-    // @ts-expect-error Wails runtime binding
-    window.go?.main?.ProfileService?.GetProfile?.().then(
-      (p: ProfileConfig) => {
-        if (p) {
-          setProfile(p);
-          setWidgets(p.widgets.filter((w) => w.enabled));
-          setEditMode(p.displayMode === "edit");
-        }
-      },
-    );
-
     return () => {
       unsub?.();
     };
@@ -93,7 +97,7 @@ export function CompositeApp() {
             ? { ...w, position: { x: newPos.x + layoutOrigin.x, y: newPos.y + layoutOrigin.y, w: newPos.w, h: newPos.h } }
             : w,
         );
-        debouncedSave(updated);
+        saveLayout(updated);
         return updated;
       });
     },
@@ -125,7 +129,7 @@ export function CompositeApp() {
             editMode={editMode}
             onDragEnd={handleDragEnd}
           >
-            <Component editMode={editMode} />
+            <Component editMode={editMode} props={w.props} />
           </WidgetHost>
         );
       })}

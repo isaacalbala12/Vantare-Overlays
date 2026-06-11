@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"log"
 	"os/signal"
@@ -98,6 +99,28 @@ func main() {
 
 	// Emit profile:loaded event for frontend
 	profileSvc.EmitLoaded()
+
+	// Listen for layout:save events from frontend (edit mode drag-save)
+	wailsApp.Event.On("layout:save", func(event *application.CustomEvent) {
+		type layoutSaveData struct {
+			Widgets []config.WidgetConfig `json:"widgets"`
+		}
+		var data layoutSaveData
+		switch v := event.Data.(type) {
+		case map[string]any:
+			// Extract widgets from map
+			if widgetsRaw, ok := v["widgets"]; ok {
+				if widgetsJSON, err := json.Marshal(widgetsRaw); err == nil {
+					json.Unmarshal(widgetsJSON, &data.Widgets)
+				}
+			}
+		}
+		if len(data.Widgets) > 0 {
+			if err := profileSvc.SaveLayout(data.Widgets); err != nil {
+				log.Printf("layout save error: %v", err)
+			}
+		}
+	})
 
 	if err := wailsApp.Run(); err != nil {
 		log.Fatal(err)

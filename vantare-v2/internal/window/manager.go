@@ -28,23 +28,29 @@ func NewManager(win WindowHandle, pad int) *Manager {
 }
 
 // ApplyProfile applies the profile's display mode to the window.
-// skipRefresh=true avoids recreating the window (used on layout save).
+// skipRefresh=true (skipWindowRefresh): resize bounds only — no mode toggles
+// (avoids fullscreen flash / redundant WebView2 state changes on layout save).
 func (m *Manager) ApplyProfile(p *config.ProfileConfig, skipRefresh bool) {
 	switch p.DisplayMode {
 	case config.ModeEdit:
-		m.win.SetIgnoreMouseEvents(false)
-		m.win.SetResizable(true)
-		m.win.Fullscreen()
+		if !skipRefresh {
+			m.win.SetIgnoreMouseEvents(false)
+			m.win.SetResizable(true)
+			m.win.Fullscreen()
+		}
 	default: // racing
-		m.win.SetIgnoreMouseEvents(true)
-		m.win.SetResizable(false)
-		m.applyShrinkWrap(p, skipRefresh)
+		if !skipRefresh {
+			m.win.UnFullscreen()
+			m.win.SetIgnoreMouseEvents(true)
+			m.win.SetResizable(false)
+		}
+		m.applyShrinkWrap(p)
 	}
 }
 
 // applyShrinkWrap resizes and repositions the window to tightly enclose
 // all enabled widgets from the profile.
-func (m *Manager) applyShrinkWrap(p *config.ProfileConfig, skipRefresh bool) {
+func (m *Manager) applyShrinkWrap(p *config.ProfileConfig) {
 	bounds, _ := ShrinkWrap(p, m.pad)
 	m.win.SetBounds(WailsRect{
 		X:      bounds.X,

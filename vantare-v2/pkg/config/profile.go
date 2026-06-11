@@ -39,7 +39,7 @@ type ProfileConfig struct {
 	ID           string        `json:"id,omitempty"`
 	Name         string        `json:"name,omitempty"`
 	DisplayMode  DisplayMode   `json:"displayMode"`
-	MonitorIndex int           `json:"monitorIndex"`
+	MonitorIndex int           `json:"monitorIndex"` // reserved: multi-monitor placement (F9); primary monitor for now
 	Widgets      []WidgetConfig `json:"widgets"`
 }
 

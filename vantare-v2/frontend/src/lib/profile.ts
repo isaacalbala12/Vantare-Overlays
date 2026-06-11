@@ -36,3 +36,16 @@ export type ProfileLoadedPayload = {
   layoutOrigin: LayoutOrigin;
   windowMode: DisplayMode;
 };
+
+// Convert profile widget coords to window-local coords
+export function toWindowLocal(
+  widgetPos: Rect,
+  origin: LayoutOrigin,
+): Rect {
+  return {
+    x: widgetPos.x - origin.x,
+    y: widgetPos.y - origin.y,
+    w: widgetPos.w,
+    h: widgetPos.h,
+  };
+}
