@@ -2,7 +2,7 @@
 
 Reinicio del proyecto con **Go + Wails + React**. Esta carpeta es el scaffold inicial (Fase 1).
 
-Documentación: [`../docs/V2-STACK-AND-PERFORMANCE.md`](../docs/V2-STACK-AND-PERFORMANCE.md) · Plan maestro: [`../docs/V2-MASTER-PLAN.md`](../docs/V2-MASTER-PLAN.md)
+Documentación: [`../docs/V2-STACK-AND-PERFORMANCE.md`](../docs/V2-STACK-AND-PERFORMANCE.md) · Plan maestro: [`../docs/V2-MASTER-PLAN.md`](../docs/V2-MASTER-PLAN.md) · **Guía completa:** [`../docs/proyecto/README.md`](../docs/proyecto/README.md)
 
 ## Requisitos
 
@@ -108,6 +108,21 @@ Los perfiles definen widgets con posiciones, tipo y props:
 }
 ```
 
+## Hub Dashboard (Fase 5)
+
+Segunda ventana Wails (normal, con marco) para gestión visual de perfiles y dashboard de telemetría.
+
+```bash
+go run ./cmd/vantare                 # Abre overlay + hub window
+go run ./cmd/vantare -live           # Con LMU en vivo
+```
+
+### Hub features
+
+- **Dashboard**: Hero VANTARE cinematográfico, panel coche/circuito/sesión, banner evento, ratings driver + safety, gráfico iRating (canvas), carreras recientes, sidebar Pro + ecosistema
+- **Overlays (Perfiles)**: Lista, crear, activar, eliminar perfiles JSON
+- **Diseño**: Portado fiel desde `hub_main_v5.html` — Tailwind v4, glass-panel, card-sleek, paleta `vantare-*`
+
 ### Modos
 
 - **Racing**: Ventana shrink-wrap al bbox de widgets, click-through (`SetIgnoreMouseEvents`)
@@ -120,3 +135,4 @@ Los perfiles definen widgets con posiciones, tipo y props:
 3. ~~Normalizer + deadband en pipeline (Fase 2)~~ ✅
 4. ~~Wails v3 + ventana overlay (Fase 3)~~ ✅
 5. ~~Composite layout + perfiles (Fase 4)~~ ✅
+6. ~~Hub dashboard + CRUD perfiles (Fase 5)~~ ✅

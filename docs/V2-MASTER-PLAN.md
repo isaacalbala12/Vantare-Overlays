@@ -6,6 +6,8 @@
 **Referencias:**
 
 - Stack y optimizaciones: [`V2-STACK-AND-PERFORMANCE.md`](./V2-STACK-AND-PERFORMANCE.md)
+- **Documentación proyecto (visión, estado, workflow):** [`proyecto/README.md`](./proyecto/README.md)
+- **Prompt continuar orquestador:** [`proyecto/PROMPT-ORQUESTADOR.md`](./proyecto/PROMPT-ORQUESTADOR.md)
 - **Dirección visual (Hub v5):** [`V2-DESIGN-REFERENCE.md`](./V2-DESIGN-REFERENCE.md) · [`hub_main_v5.html`](../hub_main_v5.html)
 - Código scaffold: [`../vantare-v2/`](../vantare-v2/)
 
@@ -29,7 +31,7 @@
 | **2** | Pipeline telemetría | Normalizer + deadband + throttle 30 Hz | Benchmark parse < 2 ms/tick | ✅ |
 | **3** | Wails overlay mínimo | 1 ventana compuesta shrink-wrap, 1 widget | < 80 MB RAM, bounds OK | ✅ MVP |
 | **4** | Layout + modos | JSON layout, racing/edit, 3 widgets | Persistencia, skipWindowRefresh | ✅ Hecho |
-| **5** | Hub React | Dashboard shadcn, config sin editar JSON | CRUD perfil desde UI | 🟡 Plan listo |
+| **5** | Hub React | Dashboard shadcn, config sin editar JSON | CRUD perfil desde UI | ✅ Hecho |
 | **6** | OBS / SSE | HTTP embebido, modo streaming-only | Browser source sin ventana Wails | ⬜ Pendiente |
 | **7** | Optimización UI | FPS por widget + diff payload | Standings 15 Hz, delta 30 Hz | ⬜ Pendiente |
 | **8** | Temas | CSS variables + Lite mode | Swap tema en runtime | ⬜ Pendiente |
@@ -142,22 +144,15 @@
 
 ---
 
-## Fase 5 — Hub React
+## Fase 5 — Hub React ✅
 
 **Objetivo:** Configuración visual; el usuario no edita JSON a mano.
 
-**Referencia visual (obligatoria):** [`V2-DESIGN-REFERENCE.md`](./V2-DESIGN-REFERENCE.md) · mockup [`hub_main_v5.html`](../hub_main_v5.html) — portar layout/tokens tal cual, sin improvisar.
+**Referencia visual (obligatoria):** [`V2-DESIGN-REFERENCE.md`](./V2-DESIGN-REFERENCE.md) · mockup [`hub_main_v5.html`](../hub_main_v5.html) — portado en tokens Tailwind v4 + componentes.
 
-### Tareas
+**Miniplan:** [`docs/superpowers/plans/2026-06-11-v2-f5-hub-dashboard.md`](./superpowers/plans/2026-06-11-v2-f5-hub-dashboard.md)
 
-| ID | Tarea | Validación |
-|----|-------|------------|
-| 5.1 | Hub window Wails (ventana normal) | Navegación básica |
-| 5.2 | shadcn/ui + Tailwind v4 tokens | UI coherente |
-| 5.3 | CRUD perfiles + selector sim | Persistencia disco |
-| 5.4 | Preview overlay desde hub | Abre/cierra overlay |
-
-**Miniplan sugerido:** `v2-f5-hub-dashboard.md` · diseño: `v2-design-hub-v5-reference.md`
+**Evidencia:** `.omo/evidence/v2-f5-hub.txt`
 
 ---
 
@@ -310,3 +305,4 @@ vantare-v2/
 | Fecha | Cambio |
 |-------|--------|
 | 2026-06-11 | Plan maestro creado; Fase 0 ✅; Fase 1 🟡 |
+| 2026-06-11 | Fase 4 ✅ · Fase 5 ✅ — Hub dashboard, tokens v5, CRUD perfiles, segunda ventana Wails |

@@ -1,0 +1,51 @@
+Vantare Overlays v2 — Build para testers (Fase 5 Hub)
+=====================================================
+
+Requisitos
+----------
+- Windows 10/11 (64-bit)
+- WebView2 Runtime (suele estar instalado en Windows 11; si falla, instala desde Microsoft)
+
+Contenido del ZIP
+-----------------
+- Vantare-Overlays-v2.exe   → aplicación principal
+- frontend/dist/            → UI (overlay + hub)
+- configs/                  → perfiles de ejemplo JSON
+
+Cómo ejecutar
+-------------
+1. Extrae TODO el ZIP en una carpeta (ej. C:\Vantare-v2).
+2. Ejecuta Vantare-Overlays-v2.exe desde esa carpeta (no muevas solo el .exe).
+3. Se abren DOS ventanas:
+   - Overlay transparente (widgets delta / relative / standings)
+   - Hub Vantare (1280×800) — dashboard y gestión de perfiles
+
+Telemetría mock (sin sim)
+-------------------------
+Doble clic en el .exe — datos de prueba en overlay.
+
+Le Mans Ultimate en vivo
+------------------------
+Abre LMU y entra en pista. Cierra la app si estaba abierta y ejecuta desde PowerShell:
+
+  .\Vantare-Overlays-v2.exe -live
+
+Modo edición de layout
+----------------------
+  .\Vantare-Overlays-v2.exe -edit
+
+Perfil específico
+-----------------
+  .\Vantare-Overlays-v2.exe -profile configs\example-racing.json
+
+Hub — perfiles
+--------------
+En el Hub, pestaña "Overlays": crear, activar o eliminar perfiles.
+Al activar, el overlay recarga el layout automáticamente.
+
+Reportar bugs
+-------------
+GitHub Issues: https://github.com/isaacalbala12/Vantare-Overlays/issues
+Incluye: Windows version, pasos, captura, si usabas -live o mock.
+
+Versión: v2.0.0-beta.1 (Fase 5 — Hub Dashboard)

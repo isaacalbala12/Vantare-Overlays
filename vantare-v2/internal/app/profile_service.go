@@ -24,10 +24,16 @@ func NewProfileService(path string, mgr *window.Manager, emitter EventEmitter) *
 
 // Load reads the profile from disk and stores it in memory.
 func (s *ProfileService) Load() error {
-	p, err := config.LoadFile(s.path)
+	return s.LoadActiveProfile(s.path)
+}
+
+// LoadActiveProfile loads a profile file and sets it as the active save target.
+func (s *ProfileService) LoadActiveProfile(path string) error {
+	p, err := config.LoadFile(path)
 	if err != nil {
 		return err
 	}
+	s.path = path
 	s.profile = p
 	return nil
 }

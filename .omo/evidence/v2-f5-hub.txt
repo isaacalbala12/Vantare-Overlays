@@ -1,0 +1,36 @@
+v2 Fase 5 — Hub Dashboard smoke evidence
+============================================
+Date: 2026-06-11
+
+1. go test ./...
+   Result: 15 test suites pass (4 new hub_service tests)
+   Output: all packages ok
+
+2. pnpm --dir frontend test (vitest)
+   Result: 2 test files, 10 tests passed (unchanged)
+
+3. pnpm --dir frontend build (tsc + vite)
+   Result: tsc clean, vite 238 KB JS, 46 KB CSS (includes hub components + v5 tokens)
+
+4. Fase 5 artifacts created:
+   - frontend/src/index.css — Tailwind v4 theme tokens from v5 (vantare-* colors, Inter/Rajdhani/Space Mono fonts, .glass-panel, .card-sleek, .btn-primary, .nav-item, .hero-text-huge, .premium-bg, etc.)
+   - frontend/src/hub/HubApp.tsx — Hub shell with section routing
+   - frontend/src/hub/pages/DashboardPage.tsx — Full v5 dashboard (hero, banner, ratings, chart, races, sidebar)
+   - frontend/src/hub/pages/ProfilesPage.tsx — Profile CRUD list (create/activate/delete)
+   - frontend/src/hub/components/Topbar.tsx — Navigation bar (Hub, Overlays, Telemetría, Setup)
+   - frontend/src/hub/components/HeroSection.tsx — VANTARE cinematic hero + car/track panel
+   - frontend/src/hub/components/EventBanner.tsx — 24h Le Mans countdown banner
+   - frontend/src/hub/components/RatingsCards.tsx — Driver + Safety rating
+   - frontend/src/hub/components/RatingChart.tsx — Canvas iRating chart (no Chart.js dependency)
+   - frontend/src/hub/components/RecentRaces.tsx — Recent races list
+   - frontend/src/hub/components/ProSidebar.tsx — Pro promo + ecosystem
+   - internal/app/hub_service.go — Go CRUD (ListProfiles, CreateProfile, DeleteProfile, ActivateProfile)
+   - internal/app/hub_service_test.go — 4 tests (create+list, activate, delete, empty dir)
+
+5. cmd/vantare/main.go:
+   - +hub window (1280×800, framed, /#/hub URL)
+   - +HubService registration
+   - +hub:* event handlers (list, create, delete, activate)
+   - +configsDir() helper
+
+6. Visual vs hub_main_v5.html: verified matching (topbar, hero gradient, glass panels, card-sleek, rating badges, chart mock, recent races, Pro sidebar, ecosystem)

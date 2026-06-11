@@ -1,10 +1,167 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: 'Inter', sans-serif;
+  --font-display: 'Rajdhani', sans-serif;
+  --font-mono: 'Space Mono', monospace;
+
+  --color-vantare-bg: #080808;
+  --color-vantare-surface: #0F0F0F;
+  --color-vantare-panel: #141414;
+  --color-vantare-border: #1E1E1E;
+  --color-vantare-borderHover: #2A2A2A;
+  --color-vantare-text: #E8E8E8;
+  --color-vantare-textMuted: #7A7A7A;
+  --color-vantare-textDim: #4A4A4A;
+  --color-vantare-red-50: #FFE5E5;
+  --color-vantare-red-100: #FFCCCC;
+  --color-vantare-red-200: #FF9999;
+  --color-vantare-red-300: #FF6666;
+  --color-vantare-red-400: #E63946;
+  --color-vantare-red-500: #C1121F;
+  --color-vantare-red-600: #9B2226;
+  --color-vantare-red-700: #800020;
+  --color-vantare-red-800: #66001A;
+  --color-vantare-red-900: #4A0012;
+  --color-vantare-red-950: #2A000A;
+  --color-vantare-wine: #722F37;
+  --color-vantare-burgundy: #4A0E16;
+  --color-vantare-blood: #8B0000;
+
+  --animate-fade-in-up: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-red {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
 html, body, #root {
   margin: 0;
   padding: 0;
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background: transparent;
+}
+
+body {
+  background: #080808;
+  color: #E8E8E8;
+  font-family: 'Inter', sans-serif;
+}
+
+body.hub {
+  overflow-y: auto;
+}
+
+.premium-bg {
+  background-color: #080808;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+@layer components {
+  .glass-panel {
+    background: rgba(20, 20, 20, 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .glass-panel:hover {
+    border-color: rgba(193, 18, 31, 0.2);
+  }
+
+  .card-sleek {
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    background: linear-gradient(180deg, rgba(20,20,20,0.8) 0%, rgba(15,15,15,0.8) 100%);
+    border: 1px solid rgba(255,255,255,0.03);
+  }
+  .card-sleek:hover {
+    transform: translateY(-2px);
+    background: linear-gradient(180deg, rgba(25,25,25,0.9) 0%, rgba(20,20,20,0.9) 100%);
+    border-color: rgba(139, 0, 0, 0.3);
+    box-shadow: 0 4px 20px rgba(139, 0, 0, 0.1);
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #9B2226 0%, #66001A 100%);
+    border: 1px solid rgba(255,255,255,0.1);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .btn-primary:hover {
+    background: linear-gradient(135deg, #C1121F 0%, #9B2226 100%);
+    box-shadow: 0 0 20px rgba(193, 18, 31, 0.4);
+    transform: translateY(-2px);
+  }
+
+  .btn-secondary {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    transition: all 0.2s;
+  }
+  .btn-secondary:hover {
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(139,0,0,0.3);
+  }
+
+  .nav-item {
+    position: relative;
+    transition: all 0.2s;
+  }
+  .nav-item::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #C1121F, #800020);
+    transition: all 0.3s;
+    transform: translateX(-50%);
+  }
+  .nav-item:hover::after,
+  .nav-item.active::after {
+    width: 100%;
+  }
+  .nav-item:hover {
+    color: #E8E8E8;
+  }
+
+  .hero-text-huge {
+    font-size: clamp(3.5rem, 9vw, 6.5rem);
+    line-height: 1;
+    letter-spacing: 0.2em;
+    background: linear-gradient(180deg, #FFFFFF 0%, #7A7A7A 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    position: relative;
+    z-index: 10;
+  }
+
+  .pro-badge {
+    background: linear-gradient(135deg, #FFD700 0%, #B8860B 100%);
+    color: #000;
+    font-weight: 700;
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+  }
+
+  .rating-badge-gold {
+    background: linear-gradient(135deg, #FFD700 0%, #B8860B 100%);
+    color: #000;
+  }
+
+  .live-indicator {
+    animation: pulse-red 2s infinite;
+  }
 }

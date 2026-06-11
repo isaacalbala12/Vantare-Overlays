@@ -466,6 +466,7 @@ La documentación completa del proyecto está disponible en la carpeta `docs/`:
 
 | Documento | Descripción |
 |---|---|
+| [**Documentación proyecto (ES)**](docs/proyecto/README.md) | **Visión, estado, workflow, prompt orquestador — empezar aquí** |
 | [**V2 Stack & Performance**](docs/V2-STACK-AND-PERFORMANCE.md) | **Stack confirmado v2 (Go+Wails+React), arquitectura y optimizaciones** |
 | [Architecture](docs/ARCHITECTURE.md) | Arquitectura general del sistema y decisiones de diseño (v1 Electron) |
 | [Technical Decisions](docs/TECH-DECISIONS.md) | Decisiones técnicas y justificaciones |

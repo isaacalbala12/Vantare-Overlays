@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"flag"
 	"log"
+	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 
 	"github.com/vantare/overlays/v2/internal/app"
@@ -13,6 +15,28 @@ import (
 	"github.com/vantare/overlays/v2/pkg/config"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
+
+// configsDir returns the absolute path to the configs directory.
+func configsDir() string {
+	candidates := []string{
+		"configs",
+		"vantare-v2/configs",
+	}
+	if exe, err := os.Executable(); err == nil {
+		dir := filepath.Dir(exe)
+		candidates = append(candidates,
+			filepath.Join(dir, "configs"),
+			filepath.Join(dir, "..", "configs"),
+		)
+	}
+	for _, dir := range candidates {
+		if info, err := os.Stat(dir); err == nil && info.IsDir() {
+			abs, _ := filepath.Abs(dir)
+			return abs
+		}
+	}
+	return ""
+}
 
 type wailsEmitter struct {
 	wailsApp *application.App
@@ -57,6 +81,19 @@ func main() {
 		URL:            "/",
 	})
 
+	// Create hub window (normal framed window, separate from overlay)
+	hubW := wailsApp.Window.NewWithOptions(application.WebviewWindowOptions{
+		Title:          "Vantare Hub",
+		Width:          1280,
+		Height:         800,
+		Frameless:      false,
+		BackgroundType: application.BackgroundTypeSolid,
+		URL:            "/#/hub",
+		MinWidth:       900,
+		MinHeight:      600,
+	})
+	hubW.Show()
+
 	// Create window manager (pad=8 for safe margin)
 	winsrc := &wailsWindowHandle{w: w}
 	mgr := window.NewManager(winsrc, 8)
@@ -86,6 +123,92 @@ func main() {
 
 	// Register profile service with Wails (frontend can call methods)
 	wailsApp.RegisterService(application.NewService(profileSvc))
+
+	// Create hub service for profile CRUD
+	cfgDir := configsDir()
+	if cfgDir == "" {
+		log.Printf("warning: configs directory not found — hub profile CRUD disabled")
+	}
+	hubSvc := app.NewHubService(cfgDir, profileSvc, emitter)
+	wailsApp.RegisterService(application.NewService(hubSvc))
+
+	emitHubError := func(message string) {
+		emitter.Emit("hub:error", map[string]any{"message": message})
+	}
+
+	// Hub event handlers
+	wailsApp.Event.On("hub:list", func(event *application.CustomEvent) {
+		profiles, err := hubSvc.ListProfiles()
+		if err != nil {
+			log.Printf("hub:list error: %v", err)
+			emitHubError(err.Error())
+			return
+		}
+		emitter.Emit("hub:profiles", map[string]any{
+			"profiles": profiles,
+		})
+	})
+
+	wailsApp.Event.On("hub:create", func(event *application.CustomEvent) {
+		var data struct {
+			Name string `json:"name"`
+		}
+		if event.Data != nil {
+			if raw, err := json.Marshal(event.Data); err == nil {
+				json.Unmarshal(raw, &data)
+			}
+		}
+		if err := hubSvc.CreateProfile(data.Name); err != nil {
+			log.Printf("hub:create error: %v", err)
+			emitHubError(err.Error())
+			return
+		}
+		emitter.Emit("hub:profile-created", map[string]any{"ok": true})
+	})
+
+	wailsApp.Event.On("hub:delete", func(event *application.CustomEvent) {
+		var data struct {
+			ID   string `json:"id"`
+			File string `json:"file"`
+		}
+		if event.Data != nil {
+			if raw, err := json.Marshal(event.Data); err == nil {
+				json.Unmarshal(raw, &data)
+			}
+		}
+		target := data.File
+		if target == "" {
+			target = data.ID
+		}
+		if err := hubSvc.DeleteProfile(target); err != nil {
+			log.Printf("hub:delete error: %v", err)
+			emitHubError(err.Error())
+			return
+		}
+		emitter.Emit("hub:profile-deleted", map[string]any{"ok": true})
+	})
+
+	wailsApp.Event.On("hub:activate", func(event *application.CustomEvent) {
+		var data struct {
+			ID   string `json:"id"`
+			File string `json:"file"`
+		}
+		if event.Data != nil {
+			if raw, err := json.Marshal(event.Data); err == nil {
+				json.Unmarshal(raw, &data)
+			}
+		}
+		target := data.File
+		if target == "" {
+			target = data.ID
+		}
+		if err := hubSvc.ActivateProfile(target); err != nil {
+			log.Printf("hub:activate error: %v", err)
+			emitHubError(err.Error())
+			return
+		}
+		emitter.Emit("hub:profile-activated", map[string]any{"ok": true})
+	})
 
 	// Start telemetry
 	bridge := app.NewTelemetryBridge(vapp.Telemetry, emitter)
