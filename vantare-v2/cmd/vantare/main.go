@@ -12,6 +12,7 @@ import (
 	"sync"
 	"syscall"
 
+	"github.com/vantare/overlays/v2/configs"
 	"github.com/vantare/overlays/v2/frontend"
 	"github.com/vantare/overlays/v2/internal/app"
 	"github.com/vantare/overlays/v2/internal/ops"
@@ -62,6 +63,27 @@ func configsDir() string {
 		if info, err := os.Stat(dir); err == nil && info.IsDir() {
 			abs, _ := filepath.Abs(dir)
 			return abs
+		}
+	}
+
+	// Fallback: create next to exe
+	if exe, err := os.Executable(); err == nil {
+		dir := filepath.Dir(exe)
+		configsPath := filepath.Join(dir, "configs")
+		if err := os.MkdirAll(configsPath, 0755); err == nil {
+			files := []string{"custom-hfg.json", "example-edit.json", "example-racing.json", "example-streaming.json"}
+			for _, f := range files {
+				content, err := configs.ConfigsFS.ReadFile(f)
+				if err == nil {
+					dest := filepath.Join(configsPath, f)
+					if _, err := os.Stat(dest); os.IsNotExist(err) {
+						_ = os.WriteFile(dest, content, 0644)
+					}
+				}
+			}
+			if abs, err := filepath.Abs(configsPath); err == nil {
+				return abs
+			}
 		}
 	}
 	return ""
