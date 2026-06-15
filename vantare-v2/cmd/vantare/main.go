@@ -161,11 +161,24 @@ func main() {
 	}
 	wailsApp.OnShutdown(cleanupApp)
 	defer cleanupApp()
+	// Get and verify configs directory first
+	cfgDir := configsDir()
+	if cfgDir == "" {
+		log.Printf("warning: configs directory not found — hub profile CRUD disabled")
+	}
+
+	// Resolve the profile path relative to the config directory if it's relative
+	resolvedProfilePath := *profilePath
+	if !filepath.IsAbs(resolvedProfilePath) {
+		cleanPath := strings.TrimPrefix(resolvedProfilePath, "configs/")
+		cleanPath = strings.TrimPrefix(cleanPath, "configs\\")
+		resolvedProfilePath = filepath.Join(cfgDir, cleanPath)
+	}
 
 	// Load profile into memory for Hub / Preview.
-	profileSvc := app.NewProfileService(*profilePath, nil, emitter)
+	profileSvc := app.NewProfileService(resolvedProfilePath, nil, emitter)
 	if err := profileSvc.Load(); err != nil {
-		log.Printf("warning: could not load profile %s: %v (using defaults)", *profilePath, err)
+		log.Printf("warning: could not load profile %s: %v (using defaults)", resolvedProfilePath, err)
 		// Create a default profile
 		profileSvc.SetProfile(&config.ProfileConfig{
 			ID:           "default-fallback",
@@ -179,7 +192,6 @@ func main() {
 			},
 		})
 	}
-
 	// Overlay controller owns the desktop overlay window lifecycle.
 	overlayController = app.NewOverlayController(&wailsOverlayFactory{app: wailsApp, stopOverlay: func() { overlayController.Stop() }})
 
@@ -204,11 +216,7 @@ func main() {
 	// Register profile service with Wails (frontend can call methods)
 	wailsApp.RegisterService(application.NewService(profileSvc))
 
-	// Create hub service for profile CRUD
-	cfgDir := configsDir()
-	if cfgDir == "" {
-		log.Printf("warning: configs directory not found — hub profile CRUD disabled")
-	}
+	// Create hub service for profile CRUD using the resolved directory
 	hubSvc := app.NewHubService(cfgDir, profileSvc, emitter, overlayController)
 	wailsApp.RegisterService(application.NewService(hubSvc))
 

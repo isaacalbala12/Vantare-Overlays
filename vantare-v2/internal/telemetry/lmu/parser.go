@@ -3,6 +3,7 @@ package lmu
 import (
 	"encoding/binary"
 	"math"
+	"strings"
 
 	"github.com/vantare/overlays/v2/pkg/models"
 )
@@ -191,7 +192,15 @@ func ParseVehicleScoring(buf []byte, count int) []models.VehicleScoring {
 		}
 		id := readInt32(buf, off+vehicleScoringID)
 		name := readString(buf, off+vehicleScoringDriverName, 32)
+		isPlayer := readByte(buf, off+vehicleScoringIsPlayer) != 0
+		lowerName := strings.ToLower(name)
 		if id < 0 || name == "" {
+			continue
+		}
+		if !isPlayer && (strings.Contains(lowerName, "testdriver") ||
+			strings.Contains(lowerName, "test driver") ||
+			strings.Contains(lowerName, "test-driver") ||
+			strings.Contains(lowerName, "test_driver")) {
 			continue
 		}
 		pitState := pitStateName(readByte(buf, off+vehicleScoringPitState))
