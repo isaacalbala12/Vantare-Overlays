@@ -25,6 +25,22 @@ func BuildSyntheticBuffer() []byte {
 	buf[telemetryPlayerHasVehicle] = 1
 
 	po := telemetryTelemOffset
+
+	v1 := vehicleScoringOffset + vehicleScoringStride
+	binary.LittleEndian.PutUint32(buf[v1+vehicleScoringID:], 1)
+	writeString(buf, v1+vehicleScoringDriverName, "CarTwo", 32)
+	buf[v1+vehicleScoringPlace] = 2
+	buf[v1+vehicleScoringIsPlayer] = 0
+	binary.LittleEndian.PutUint64(buf[v1+vehicleScoringLapDistance:], math.Float64bits(950))
+	binary.LittleEndian.PutUint64(buf[v1+vehicleScoringEstimatedLapTime:], math.Float64bits(120))
+
+	v2 := vehicleScoringOffset + 2*vehicleScoringStride
+	binary.LittleEndian.PutUint32(buf[v2+vehicleScoringID:], 2)
+	writeString(buf, v2+vehicleScoringDriverName, "CarThree", 32)
+	buf[v2+vehicleScoringPlace] = 3
+	buf[v2+vehicleScoringIsPlayer] = 0
+	binary.LittleEndian.PutUint64(buf[v2+vehicleScoringLapDistance:], math.Float64bits(1050))
+	binary.LittleEndian.PutUint64(buf[v2+vehicleScoringEstimatedLapTime:], math.Float64bits(120))
 	setPlayerSpeedMPS(buf, po, 15)
 	binary.LittleEndian.PutUint32(buf[po+vehicleTelemetryGear:], 4)
 	binary.LittleEndian.PutUint64(buf[po+vehicleTelemetryEngineRPM:], math.Float64bits(7200))
