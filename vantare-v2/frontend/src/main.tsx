@@ -1,15 +1,20 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
+import { applyTheme, getStoredThemeId, type VantareTheme } from "./lib/theme";
+import vantareV5 from "./themes/vantare-v5.json";
+import vantareLite from "./themes/vantare-lite.json";
 import { CompositeApp } from "./overlay/CompositeApp";
 import { ObsOverlayApp } from "./overlay/ObsOverlayApp";
 import { HubApp } from "./hub/HubApp";
 
-// Routing:
-//  /overlay?profile=... → ObsOverlayApp (OBS Browser Source, no Wails dep)
-//  /#/hub              → HubApp
-//  /                   → CompositeApp (Wails desktop overlay)
-function App() {
+const v5Theme = vantareV5 as unknown as VantareTheme;
+const liteTheme = vantareLite as unknown as VantareTheme;
+
+const themeId = getStoredThemeId();
+applyTheme(themeId === "vantare-lite" ? liteTheme : v5Theme);
+
+export function App() {
   const path = window.location.pathname;
   const params = new URLSearchParams(window.location.search);
   if (path.startsWith("/overlay") || params.get("obs") === "1") {

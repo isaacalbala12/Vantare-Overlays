@@ -2,8 +2,9 @@ import { useState, useEffect, useCallback } from "react";
 import { Topbar } from "./components/Topbar";
 import { DashboardPage } from "./pages/DashboardPage";
 import { ProfilesPage } from "./pages/ProfilesPage";
+import { PreviewPage } from "./pages/PreviewPage";
 
-type Section = "dashboard" | "profiles" | "telemetry" | "setup";
+type Section = "dashboard" | "profiles" | "preview" | "telemetry" | "setup";
 
 export function HubApp() {
   const [section, setSection] = useState<Section>("dashboard");
@@ -23,7 +24,8 @@ export function HubApp() {
 
       <main className="pt-14">
         {section === "dashboard" && <DashboardPage />}
-        {section === "profiles" && <ProfilesPage />}
+        {section === "profiles" && <ProfilesPage onOpenPreview={() => setSection("preview")} />}
+        {section === "preview" && <PreviewPage />}
         {(section === "telemetry" || section === "setup") && (
           <div className="flex items-center justify-center h-[60vh] text-vantare-textMuted text-sm font-mono">
             {section === "telemetry" ? "Telemetría — próxima actualización" : "Setup — próxima actualización"}

@@ -1,5 +1,22 @@
-﻿# Vantare Overlays
+# Vantare Overlays
 
+> **Alpha v0.1.0-alpha.1:** el desarrollo activo está en [`vantare-v2/`](vantare-v2/) con Go + Wails v3 + React 19.
+> `apps/desktop/` es la versión Electron v1 heredada y no representa la alpha v2 actual.
+
+## Estado Actual De v2
+
+Vantare Overlays v2 ya tiene una alpha técnica usable para Le Mans Ultimate:
+
+- Hub principal con dashboard, perfiles, Preview Workbench y panel Ops.
+- Overlay desktop fullscreen transparente, click-through y bajo demanda.
+- Telemetría live LMU mediante shared memory.
+- Relative y Standings conectados a datos reales.
+- Widgets visuales iniciales estilo Vantare Racing.
+- OBS/HTTP/SSE implementado técnicamente.
+
+Limitación principal de la alpha: el widget Delta todavía no tiene `deltaBest` live fiable conectado.
+
+Consulta [`CHANGELOG.md`](CHANGELOG.md) para el detalle de la alpha.
 <div align="center">
 
 **Overlays profesionales de simracing para streaming y configuraciones multi-monitor.**

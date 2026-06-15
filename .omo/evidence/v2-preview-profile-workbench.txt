@@ -1,0 +1,52 @@
+Vantare v2 — Preview Profile Workbench Evidence
+
+Date: 2026-06-13
+Scope:
+- Preview is the main profile workbench.
+- Profiles are treated as overlay layouts.
+- Widgets can be enabled/disabled from Preview.
+- Runtime renders only enabled widgets.
+- Overlay lifecycle remains Hub-controlled.
+- Code review findings fixed.
+
+Commands:
+- go test ./...: PASS (all packages ok)
+- pnpm --dir frontend test: PASS, 14 test files, 49 tests
+- pnpm --dir frontend build: PASS (tsc + vite build)
+
+Code review fixes applied:
+- Backend: HubService.StartOverlay now emits overlay:status even when ActivateProfile fails,
+  so the frontend never keeps a stale "running" state.
+- Backend: ProfileService.SaveLayout persists to disk before mutating the in-memory profile;
+  on I/O error it restores the previous widgets.
+- Backend: ProfileService.SetDisplayMode returns an error when no profile is loaded.
+- Backend: OverlayController creates the desktop window outside the mutex so Status() calls
+  are not blocked during slow WebView2 creation.
+- Frontend: CompositeApp no longer supports edit-mode drag/Ctrl+S/Escape inside the desktop
+  overlay window. Preview is now the single editor.
+- Frontend: WidgetHost simplified to a positioned, click-through container.
+- Frontend: frame-budget uses setInterval instead of a perpetual requestAnimationFrame loop,
+  letting the browser throttle inactive tabs.
+- Frontend: dom-write caches the last HTML value to avoid reading innerHTML each frame.
+- Frontend: RelativeWidget, StandingsWidget and DeltaWidget now apply textColor from
+  props.appearance consistently through a --widget-text CSS variable.
+- Frontend: PreviewPage activation is no longer optimistic; it waits for profile:loaded
+  before enabling the Iniciar button and shows a loading indicator.
+- Frontend: PreviewPage displays hub:error messages in a visible banner.
+- Frontend: Added regression tests for start blocked with unsaved changes, save blocked
+  while overlay is running, and backend save errors.
+
+Manual checklist:
+- Hub-only startup: confirmed (logs show only Hub window requests)
+- Profiles -> Preview navigation: UI wired (Preview button emits hub:activate + onOpenPreview)
+- Preview profile selector: confirmed (selector renders, emits hub:activate on click)
+- Preview waits for profile:load before enabling start: confirmed
+- Widget disable/save/start: covered by frontend tests + profile-editor helpers
+- Widget re-enable/save/start: covered by frontend tests
+- LMU live Relative/Standings: pending Isaac validation with LMU in session
+- OBS health/profile/overlay/SSE: confirmed /health and /api/profile respond; SSE emits telemetry events
+
+Notes:
+- Delta may remain blank until deltaBest is available from the telemetry model.
+- No commit/push performed.
+- apps/desktop was not touched.

@@ -1,0 +1,15 @@
+Date: 2026-06-13
+Commands:
+- go test ./...  -> PASS
+- pnpm --dir frontend test  -> PASS (32 tests including profile-editor.test.ts)
+- pnpm --dir frontend build  -> PASS
+Manual:
+- Hub-only startup: confirmed (same as Plan A)
+- Select profile: UI button "Seleccionar" emits hub:activate -> profile loaded and emitted
+- Preview layout: Preview tab added to Hub nav; renders 16:9 canvas with widget frames
+- Edit position: PreviewCanvas keyboard nudge + PreviewInspector numeric X/Y/W/H update profile immutably
+- Edit appearance: PreviewInspector color/opacity inputs update props.appearance
+- Start overlay after save: overlay:start loads the active profile; runtime widgets read props.appearance
+Known limitations:
+- Drag/resize handles not implemented; numeric inputs and arrow keys provided for foundation.
+- Interactive visual verification of color changes in runtime overlay requires manual Windows desktop testing.

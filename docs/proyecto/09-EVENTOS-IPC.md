@@ -25,7 +25,10 @@ Events.On("hub:profiles", (event) => { ... });
 | `hub:list` | — | Go emite `hub:profiles` `{ profiles: ProfileEntry[] }` |
 | `hub:create` | `{ name: string }` | OK → `hub:profile-created`; error → `hub:error` |
 | `hub:delete` | `{ id, file }` | OK → `hub:profile-deleted`; error → `hub:error` |
-| `hub:activate` | `{ id, file }` | OK → `hub:profile-activated` + overlay `profile:loaded`; error → `hub:error` |
+| `hub:activate` | `{ id, file }` | Loads profile as active save target; OK → `hub:profile-activated`; error → `hub:error` |
+| `overlay:start` | `{ id, file }` | Loads profile and creates a fresh runtime overlay window |
+| `overlay:stop` | — | Closes runtime overlay window |
+| `overlay:status` | `{ running, profileId, mode }` | Emitted after start/stop |
 
 **Preferir `file`** (basename, ej. `example-racing.json`) cuando el id JSON difiere del nombre archivo.
 
@@ -92,10 +95,21 @@ sequenceDiagram
   Hub->>Go: Emit hub:activate {file}
   Go->>Go: HubService.ActivateProfile
   Go->>PS: LoadActiveProfile(path)
-  PS->>PS: ApplyToWindow
   PS->>OL: Emit profile:loaded
   Go->>Hub: Emit hub:profile-activated
 ```
+
+## Flujo Preview Workbench
+
+1. Preview monta y emite `hub:list` + `profile:request`.
+2. Backend responde con `hub:profiles` y `profile:loaded`.
+3. Al elegir perfil, Preview emite `hub:activate`.
+4. Backend carga perfil y emite `profile:loaded`.
+5. Preview edita localmente y emite `layout:save` solo al pulsar Guardar.
+6. Backend persiste JSON y emite `layout:saved`.
+7. Preview emite `overlay:start` para iniciar la ventana runtime.
+8. Backend emite `overlay:status`.
+9. Overlay runtime escucha `profile:request`, `profile:loaded` y `telemetry:update`.
 
 ---
 

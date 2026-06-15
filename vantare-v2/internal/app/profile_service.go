@@ -1,6 +1,8 @@
 package app
 
 import (
+	"fmt"
+
 	"github.com/vantare/overlays/v2/internal/window"
 	"github.com/vantare/overlays/v2/pkg/config"
 )
@@ -46,12 +48,21 @@ func (s *ProfileService) GetProfile() *config.ProfileConfig {
 // SaveLayout updates widget positions and persists to disk.
 // Uses skipWindowRefresh (bounds-only resize) and re-emits profile:loaded for layoutOrigin sync.
 func (s *ProfileService) SaveLayout(widgets []config.WidgetConfig) error {
+	if s.profile == nil {
+		return fmt.Errorf("profile not loaded")
+	}
+	// Persist first; only mutate memory after success so an I/O error leaves
+	// the in-memory profile consistent with disk.
+	backup := s.profile.Widgets
 	s.profile.Widgets = widgets
 	if err := config.SaveFile(s.path, s.profile); err != nil {
+		s.profile.Widgets = backup
 		return err
 	}
 	// skipWindowRefresh: bounds only, then refresh frontend layout origin
-	s.mgr.ApplyProfile(s.profile, true)
+	if s.mgr != nil {
+		s.mgr.ApplyProfile(s.profile, true)
+	}
 
 	if s.emitter != nil {
 		s.emitter.Emit("layout:saved", map[string]any{
@@ -65,8 +76,13 @@ func (s *ProfileService) SaveLayout(widgets []config.WidgetConfig) error {
 
 // SetDisplayMode changes the mode and applies it to the window.
 func (s *ProfileService) SetDisplayMode(mode config.DisplayMode) error {
+	if s.profile == nil {
+		return fmt.Errorf("profile not loaded")
+	}
 	s.profile.DisplayMode = mode
-	s.mgr.ApplyProfile(s.profile, false)
+	if s.mgr != nil {
+		s.mgr.ApplyProfile(s.profile, false)
+	}
 	return nil
 }
 
@@ -75,7 +91,14 @@ func (s *ProfileService) EmitLoaded() {
 	if s.emitter == nil || s.profile == nil {
 		return
 	}
-	origin := s.mgr.LayoutOrigin(s.profile)
+	var origin config.Rect
+	if s.mgr != nil {
+		origin = s.mgr.LayoutOrigin(s.profile)
+	} else {
+		// The hub-owned runtime overlay is fullscreen, so profile coordinates
+		// are already window-local.
+		origin = config.Rect{}
+	}
 	s.emitter.Emit("profile:loaded", map[string]any{
 		"profile":      s.profile,
 		"layoutOrigin": origin,

@@ -1,0 +1,16 @@
+Date: 2026-06-13
+Commands:
+- go test ./...  -> PASS
+- pnpm --dir frontend test  -> PASS (29 tests, Plan A baseline)
+- pnpm --dir frontend build  -> PASS
+Manual:
+- Startup opens Hub only: confirmed (logs show only Hub window asset requests; no overlay window created)
+- Default Racing > Iniciar: UI wired to overlay:start event; lifecycle covered by Go tests + manual app startup
+- Default Racing > Detener: UI wired to overlay:stop event; lifecycle covered by Go tests
+- Restart overlay: OverlayController closes previous window before creating a new one (tested)
+- Streaming profile: confirmed HTTP still responds:
+  - curl http://127.0.0.1:39263/health -> {"ok":true}
+  - curl "http://127.0.0.1:39263/api/profile?profile=example-streaming.json" -> profile JSON
+Known limitations:
+- Visual click-through verification requires interactive Windows desktop; automated UI interaction not available in this environment.
+- WebView2 rapid restart can fail with 800700aa if previous process still releasing COM resources; waiting a few seconds resolves it.

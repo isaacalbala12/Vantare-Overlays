@@ -77,7 +77,7 @@ go run ./cmd/vantare -profile configs/example-streaming.json
 go run ./cmd/vantare -profile configs/example-streaming.json -http 127.0.0.1:4000
 ```
 
-Abre **dos ventanas**: overlay transparente + hub 1280×800.
+Abre **solo el Hub** 1280×800. El overlay transparente se crea al pulsar `Iniciar`.
 
 Hub URL interna: `/#/hub`
 
@@ -113,7 +113,64 @@ Shutdown source when not visible: enabled
 Refresh browser when scene becomes active: enabled
 ```
 
-En modo `displayMode: "streaming"`, la ventana overlay desktop se mueve off-screen a 1×1 para no interferir con el simulador; OBS muestra el overlay vía HTTP.
+En modo `displayMode: "streaming"` no se crea ventana overlay desktop; OBS muestra el overlay vía HTTP.
+
+---
+
+## Verificación Fase 7 — FPS por widget
+
+Objetivo: confirmar que los widgets respetan su `updateHz` y no reescriben DOM si los valores no cambian.
+
+```powershell
+cd C:\Users\isaac\Desktop\Vantare-Overlays\vantare-v2
+
+# Racing overlay con mock data
+go run ./cmd/vantare -profile configs/example-racing.json
+
+# OBS / streaming overlay
+go run ./cmd/vantare -profile configs/example-streaming.json
+```
+
+Checklist manual:
+
+- [ ] El overlay racing carga sin quedarse en `Loading profile...`.
+- [ ] Los tres widgets (`Delta`, `Relative`, `Standings`) se renderizan.
+- [ ] El overlay OBS responde en `http://127.0.0.1:39261/overlay?profile=example-streaming.json`.
+- [ ] Los widgets no parpadean ni se sienten más lentos que antes.
+
+Con DevTools (Chrome/Electron/OBS Browser Source):
+
+- [ ] En Performance > Record, `DeltaWidget` ejecuta su callback de pintura como máximo a 30 Hz.
+- [ ] `RelativeWidget` y `StandingsWidget` ejecutan su callback de pintura como máximo a 15 Hz.
+- [ ] Si la telemetría está quieta, `innerHTML`/`textContent`/`className` no cambian entre frames.
+
+Nota: los valores por defecto son `delta: 30 Hz`, `relative: 15 Hz`, `standings: 15 Hz`. El techo global sigue siendo la emisión Go a ≤ 30 Hz.
+
+---
+
+## Verificación Fase 8 — Temas runtime y Lite mode
+
+Objetivo: confirmar que los tokens v5 se aplican como variables CSS y que Lite mode reduce efectos caros sin romper layout.
+
+```powershell
+cd C:\Users\isaac\Desktop\Vantare-Overlays\vantare-v2
+pnpm --dir frontend build
+go run ./cmd/vantare -profile configs/example-racing.json
+```
+
+Checklist manual:
+
+- [ ] El Hub abre con diseño v5 (fondo oscuro, tipografías, glass topbar).
+- [ ] En DevTools, `<html>` tiene `data-theme="vantare-v5"` y las variables `--v-*` están definidas.
+- [ ] El botón "Lite OFF" en la topbar cambia a "Lite ON" al hacer clic.
+- [ ] Con Lite ON, `<html>` pasa a `data-theme="vantare-lite"` y `data-visual-mode="lite"`.
+- [ ] En Lite mode, el blur del topbar desaparece (`backdrop-filter: none`) y las sombras/transiciones se desactivan.
+- [ ] El layout no se rompe al cambiar entre full y lite.
+- [ ] Overlay racing sigue transparente y los widgets renderizan.
+- [ ] OBS `/overlay?profile=example-streaming.json` sigue sirviendo assets.
+- [ ] `localStorage.getItem("vantare.theme")` persiste como `vantare-v5` o `vantare-lite`.
+
+Nota: Lite mode no rediseña; solo reduce blur, sombras y motion. `hub_main_v5.html` sigue siendo la referencia visual.
 
 ---
 
@@ -183,6 +240,63 @@ pnpm dev
 
 ---
 
+## Verificación alpha 0.1
+
+Antes de crear tag `v0.1.0-alpha.1`:
+
+```powershell
+cd C:\Users\isaac\Desktop\Vantare-Overlays\vantare-v2
+go test ./...
+pnpm --dir frontend test
+pnpm --dir frontend build
+```
+
+Smoke mock:
+
+```powershell
+go run ./cmd/vantare -profile configs/example-racing.json
+```
+
+Checklist:
+
+- [ ] Hub abre solo.
+- [ ] Preview Workbench permite seleccionar perfil.
+- [ ] Guardar confirma solo tras `layout:saved`.
+- [ ] `Iniciar` abre overlay fullscreen transparente.
+- [ ] `Detener` cierra overlay y deja Hub vivo.
+- [ ] Activar/desactivar widget en Preview se refleja en runtime.
+
+Smoke LMU live:
+
+```powershell
+go run ./cmd/lmu-debug -once
+go run ./cmd/vantare -live -profile configs/example-racing.json
+```
+
+Checklist:
+
+- [ ] `lmu-debug` muestra pista/speed/rpm reales.
+- [ ] Hub Ops muestra fuente `Le Mans Ultimate`.
+- [ ] Relative muestra pilotos reales.
+- [ ] Standings muestra clasificación real.
+- [ ] Delta puede seguir en `—`; `deltaBest` live es limitación conocida de alpha.
+
+OBS técnico:
+
+```powershell
+Invoke-WebRequest http://127.0.0.1:39261/health
+Invoke-WebRequest "http://127.0.0.1:39261/api/profile?profile=example-streaming.json"
+curl.exe -N --max-time 5 http://127.0.0.1:39261/telemetry/stream
+```
+
+Esperado:
+
+- `/health` devuelve `{"ok":true}`.
+- `/api/profile` devuelve JSON de perfil.
+- SSE emite `event: telemetry`.
+
+---
+
 ## Troubleshooting rápido
 
 | Problema | Solución |
@@ -194,3 +308,81 @@ pnpm dev
 | Activate perfil falla | Usar `file` del listado; ver 08-PERFILES |
 | Live sin datos | LMU en pista, no solo menú |
 | PowerShell `&&` error | Usar `;` entre comandos |
+
+---
+
+## Verificación Preview Workbench
+
+```powershell
+cd C:\Users\isaac\Desktop\Vantare-Overlays\vantare-v2
+go run ./cmd/vantare -profile configs/example-racing.json
+```
+
+Checklist:
+
+- [ ] Hub abre solo.
+- [ ] Overlays muestra perfiles y botón Preview.
+- [ ] Preview muestra selector de perfiles.
+- [ ] Elegir `Default Racing` carga canvas, lista de widgets e inspector.
+- [ ] Desactivar `standings`, guardar, iniciar.
+- [ ] Runtime no muestra `standings`.
+- [ ] Detener, reactivar `standings`, guardar, iniciar.
+- [ ] Runtime vuelve a mostrar `standings`.
+- [ ] Con overlay iniciado, Preview bloquea edición.
+- [ ] LMU live: `go run ./cmd/vantare -live -profile configs/example-racing.json` muestra datos reales en Relative/Standings.
+
+---
+
+## Verificación Fase 9 — Ops + multi-sim foundation
+
+Objetivo: confirmar que el Hub recibe métricas de app a baja frecuencia y que la fuente de telemetría expone metadata sin romper LMU/mock.
+
+```powershell
+cd C:\Users\isaac\Desktop\Vantare-Overlays\vantare-v2
+go test ./...
+pnpm --dir frontend test
+pnpm --dir frontend build
+go run ./cmd/vantare -profile configs/example-racing.json
+```
+
+Checklist manual:
+
+- [ ] El Hub muestra panel `Ops`.
+- [ ] El panel pasa de `Esperando métricas` a valores reales.
+- [ ] RAM app aparece en MB.
+- [ ] Goroutines aparece como número entero.
+- [ ] Fuente muestra `Mock telemetry` sin `-live`.
+- [ ] Con `-live`, si LMU está disponible, fuente muestra `Le Mans Ultimate`.
+- [ ] Las métricas no actualizan a 30/60 Hz; deben sentirse como 1 Hz.
+- [ ] Overlay racing sigue cargando widgets.
+
+---
+
+## Verificación cierre MVP técnico
+
+```powershell
+cd C:\Users\isaac\Desktop\Vantare-Overlays\vantare-v2
+go test ./...
+pnpm --dir frontend test
+pnpm --dir frontend build
+go run ./cmd/vantare -profile configs/example-racing.json
+go run ./cmd/vantare -profile configs/example-streaming.json
+```
+
+Checklist manual:
+
+- [ ] Racing overlay carga widgets y no queda en `Loading profile...`.
+- [ ] Racing overlay no queda fullscreen.
+- [ ] Edit mode abre intencionalmente.
+- [ ] No hay botones rotos `Guardar`/`Salir` dentro del overlay.
+- [ ] HTTP responde `/health`, `/api/profile`, `/overlay`.
+- [ ] SSE `/telemetry/stream` emite eventos `telemetry`.
+- [ ] Lite mode cambia `data-theme` a `vantare-lite` sin romper layout.
+- [ ] Ops panel pasa de `Esperando métricas` a valores reales.
+- [ ] CPU en Ops panel aparece como `N/D`.
+- [ ] Fuente sin `-live` muestra `Mock telemetry`.
+
+Evidencia:
+
+- `.omo/evidence/v2-mvp-closeout.txt`
+- `.omo/evidence/v2-mvp-manual-checklist.md`

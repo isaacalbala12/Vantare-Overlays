@@ -33,9 +33,9 @@
 | **4** | Layout + modos | JSON layout, racing/edit, 3 widgets | Persistencia, skipWindowRefresh | ✅ Hecho |
 | **5** | Hub React | Dashboard shadcn, config sin editar JSON | CRUD perfil desde UI | ✅ Hecho |
 | **6** | OBS / SSE | HTTP embebido, modo streaming-only | Browser source + SSE localhost | ✅ Técnico |
-| **7** | Optimización UI | FPS por widget + diff payload | Standings 15 Hz, delta 30 Hz | ⬜ Pendiente |
-| **8** | Temas | CSS variables + Lite mode | Swap tema en runtime | ⬜ Pendiente |
-| **9** | Ops + multi-sim | System Performance widget, iRacing/AC | Usuario ve CPU/RAM; 2º sim | ⬜ Pendiente |
+| **7** | Optimización UI | FPS por widget + diff payload | Standings 15 Hz, delta 30 Hz | ✅ Técnico |
+| **8** | Temas | CSS variables + Lite mode | Swap tema en runtime | ✅ Técnico |
+| **9** | Ops + multi-sim | Ops panel + multi-sim foundation | RAM/goroutines + metadata fuente | ✅ Técnico |
 
 **Leyenda:** ✅ Hecho · 🟡 En curso · ⬜ Pendiente
 

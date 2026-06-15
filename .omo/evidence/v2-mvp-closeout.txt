@@ -1,0 +1,23 @@
+Vantare v2 MVP technical closeout
+Fecha: 2026-06-12
+Estado: validado con pendientes
+
+Automático:
+- go test ./...: OK
+- pnpm --dir frontend test: OK (28 tests, 7 archivos)
+- pnpm --dir frontend build: OK
+
+Manual:
+- Racing overlay: ✅ app arrancó, ventanas creadas, assets servidos, sin "Loading profile...".
+- Edit mode: ✅ app arrancó con -edit, ventana overlay creada.
+- OBS / HTTP / SSE: ✅ /health 200, /api/profile por filename 200, /api/profile por id 200, /overlay 200, /telemetry/stream emite eventos telemetry.
+- Lite mode: ⚠️ no validado visualmente por falta de interacción directa con el Hub; tests de tema pasan.
+- Ops panel: ✅ evento ops:metrics se emite cada segundo; fuente Mock telemetry confirmada; RAM/goroutines en valores reales.
+
+Bloqueos:
+- Ningún bloqueo técnico.
+- Pendientes externos: OBS real no validado (sin OBS abierto), LMU live no validado (sin LMU corriendo), Lite mode visual no validado interactivamente.
+
+Reglas:
+- No se tocó apps/desktop/.
+- No se hizo commit ni push.

@@ -94,6 +94,7 @@ func ParsePlayerTelemetry(buf []byte, playerIdx int) *models.PlayerTelemetry {
 		DeltaBest:   readFloat64(buf, po+vehicleTelemetryDeltaBest),
 		Throttle:    readFloat64(buf, po+vehicleTelemetryFilteredThrottle),
 		Brake:       readFloat64(buf, po+vehicleTelemetryFilteredBrake),
+		Clutch:      readFloat64(buf, po+vehicleTelemetryFilteredClutch),
 		Steering:    readFloat64(buf, po+vehicleTelemetryFilteredSteering),
 		VehicleName: readString(buf, po+vehicleTelemetryVehicleName, 64),
 		TrackName:   readString(buf, po+vehicleTelemetryTrackName, 64),

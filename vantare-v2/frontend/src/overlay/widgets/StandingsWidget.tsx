@@ -1,66 +1,135 @@
 import { useEffect, useRef } from "react";
 import { getTelemetryRef } from "../../lib/telemetry-ref";
+import { getMockTelemetry } from "./mock-telemetry";
+import { resolveWidgetAppearance } from "./widget-appearance";
+import { setHTMLIfChanged } from "../../lib/dom-write";
+import { escapeHTML } from "../../lib/html-escape";
+import { brandTextColor } from "../../lib/color-utils";
+import { startFrameBudgetLoop } from "../../lib/frame-budget";
 
 type StandingsProps = {
   editMode: boolean;
+  updateHz?: number;
   props?: Record<string, unknown>;
 };
 
-function truncate(name: string, max: number): string {
-  if (name.length <= max) return name;
-  return name.slice(0, max - 1) + "…";
-}
+const BAKED_PANEL_BG = "linear-gradient(180deg, #3a050a 0%, #0d0102 100%)";
+const BAKED_HEADER_BG = "linear-gradient(180deg, #9b2226 0%, #3a050a 100%)";
+const BAKED_CLASS_BG = "linear-gradient(90deg, #9b2226 0%, #e63946 50%, #9b2226 100%)";
 
 function formatGap(timeBehind: number): string {
   if (timeBehind <= 0) return "Leader";
-  return `+${timeBehind.toFixed(1)}s`;
+  return `+${timeBehind.toFixed(3)}s`;
 }
 
-export function StandingsWidget({ props }: StandingsProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
+function tireBadgeHtml(compound: string | undefined, tireSoft: string, tireMedium: string, tireHard: string): string {
+  if (!compound) return "";
+  const colorMap: Record<string, string> = { S: tireSoft, M: tireMedium, H: tireHard };
+  const color = colorMap[compound] ?? "#FFFFFF";
+  return `<span class="font-sans font-bold text-[8px] px-[3px] py-[1px] rounded-sm border leading-none" style="border-color:${color};color:${color}">${escapeHTML(compound)}</span>`;
+}
 
+function brandInitial(name: string | undefined): string {
+  if (!name) return "?";
+  return name.charAt(0);
+}
+
+export function StandingsWidget({ editMode, props, updateHz = 15 }: StandingsProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const maxRows = (props?.maxRows as number) ?? 12;
 
-  useEffect(() => {
-    let frameId = 0;
-    const tick = () => {
-      const t = getTelemetryRef();
-      const container = containerRef.current;
-      if (!container) {
-        frameId = requestAnimationFrame(tick);
-        return;
-      }
+  const { appearance: a } = resolveWidgetAppearance("standings", props);
 
-      // Sort by place, take top N
+  useEffect(() => {
+    return startFrameBudgetLoop(updateHz, () => {
+      const t = editMode ? getMockTelemetry() : getTelemetryRef();
+      const a = resolveWidgetAppearance("standings", props).appearance;
+      const container = containerRef.current;
+      if (!container) return;
+
       const sorted = [...t.vehicles]
-        .sort((a, b) => (a.place ?? 99) - (b.place ?? 99))
+        .sort((x, y) => (x.place ?? 99) - (y.place ?? 99))
         .slice(0, maxRows);
 
-      const rows = sorted.map((v) => {
-        const isP = v.isPlayer;
-        const bgColor = isP ? "bg-white/10" : "";
-        const textColor = isP ? "text-white" : "text-white/60";
-        const gap = v.timeBehindLeader ?? 0;
-        return `<div class="flex items-center gap-2 px-2 py-0.5 ${bgColor} ${textColor} text-xs font-mono">
-          <span class="w-5 text-right text-white/40">${v.place ?? ""}</span>
-          <span class="flex-1 truncate">${truncate(v.driverName ?? "?", 16)}</span>
-          <span class="w-14 text-right text-white/40">${formatGap(gap)}</span>
+      const rows = sorted.map((v, i) => {
+        const bgRow = i % 2 === 0 ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.3)";
+        const isLeader = v.place === 1;
+        const isPit = v.inPits;
+        const gapText = v.fastestLap ? "FASTEST" : (isPit ? "IN PIT" : formatGap(v.timeBehindLeader ?? 0));
+        const gapColor = isLeader || isPit ? a.pitColor : "";
+        const posColor = isLeader ? a.posLeaderColor : (v.place && v.place <= 3 ? "#FFFFFF" : "#9CA3AF");
+
+        const hasBrand = !!v.teamBrandColor;
+        const bi = hasBrand ? brandInitial(v.driverName) : "";
+        const teamBg = v.teamBrandColor || "transparent";
+        const tc = hasBrand ? brandTextColor(teamBg) : "#9CA3AF";
+        const numTc = isPit ? a.pitColor : (hasBrand ? brandTextColor(v.teamBrandColor!) : "#9CA3AF");
+        const numBg = isPit ? "#000" : (v.teamBrandColor || "transparent");
+        const teamColor = isLeader ? a.posLeaderColor : (v.place && v.place <= 3 ? "#FFFFFF" : "#D1D5DB");
+
+        const leaderShadow = isLeader ? `box-shadow: inset 2px 0 0 0 ${a.posLeaderColor}` : "";
+        const fastestShadow = v.fastestLap ? `box-shadow: inset 2px 0 0 0 ${a.textColor}` : "";
+        const leftInset = fastestShadow || leaderShadow;
+
+        const brandCell = hasBrand
+          ? `<div class="w-7 h-full flex items-center justify-center py-[2px] px-[2px] shrink-0">
+            <div class="w-full h-full flex items-center justify-center" style="background:${teamBg}">
+              <span class="font-black text-[10px]" style="color:${tc}">${bi}</span>
+            </div>
+          </div>`
+          : "";
+        const numberCell = v.driverNumber
+          ? `<div class="w-7 h-full flex items-center justify-center py-[2px] pr-[2px] shrink-0">
+            <div class="w-full h-full flex items-center justify-center" style="background:${numBg};${isPit ? `border:1px solid ${a.pitColor}` : ""}">
+              <span class="font-black text-[11px]" style="color:${numTc}">${escapeHTML(v.driverNumber)}</span>
+            </div>
+          </div>`
+          : "";
+
+        return `<div class="flex items-center h-[26px] text-[11px] font-bold border-b border-black/20 transition-all" style="background:${bgRow};${leftInset}">
+          <div class="w-6 text-center shrink-0" style="color:${posColor}">${v.place ?? ""}</div>
+          ${brandCell}
+          ${numberCell}
+          <div class="flex-1 px-1 tracking-wide truncate" style="color:${teamColor}">${escapeHTML(v.driverName ?? "?")}</div>
+          <div class="px-2 flex items-center justify-end font-mono text-[9px] shrink-0 gap-1">
+            ${tireBadgeHtml(v.tireCompound, a.tireSoftColor, a.tireMediumColor, a.tireHardColor)}
+            <span style="${gapColor ? `color:${gapColor}` : ""}">${gapText}</span>
+          </div>
         </div>`;
       });
 
-      container.innerHTML = rows.join("");
-      frameId = requestAnimationFrame(tick);
-    };
-    frameId = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frameId);
-  }, [maxRows]);
+      setHTMLIfChanged(container, rows.join(""));
+    });
+  }, [maxRows, updateHz, editMode, props]);
 
   return (
-    <div className="w-full h-full flex flex-col overflow-hidden rounded">
-      <div className="text-[10px] text-white/30 font-mono uppercase tracking-wider px-2 py-1 border-b border-white/5">
-        Standings
+    <div
+      data-testid="standings-panel"
+      className="w-full h-full flex flex-col overflow-hidden rounded-lg"
+      style={{
+        background: BAKED_PANEL_BG,
+        border: `1px solid ${a.borderColor}`,
+        color: a.textColor,
+        opacity: a.opacity,
+      }}
+    >
+      <div
+        className="flex flex-col items-center pt-4 pb-2"
+        style={{ background: BAKED_HEADER_BG, borderBottom: "2px solid #1a0104" }}
+      >
+        <div className="text-3xl font-black italic tracking-widest mb-1 text-white font-display">VANTARE</div>
+        <div className="text-[11px] font-mono font-bold text-white tracking-widest">00:08:48</div>
       </div>
-      <div ref={containerRef} className="flex-1 overflow-hidden" />
+      <div
+        className="text-center text-[11px] py-1 font-bold tracking-widest text-white relative"
+        style={{ background: BAKED_CLASS_BG, borderBottom: "1px solid #000" }}
+      >
+        HYPERCAR
+      </div>
+      <div ref={containerRef} className="flex-1 overflow-hidden mt-1 px-1" />
+      <div className="mt-1 py-1 text-center text-[8px] tracking-widest text-white/50 font-bold border-t border-black" style={{ background: "#1a0104" }}>
+        LE MANS ULTIMATE
+      </div>
     </div>
   );
 }

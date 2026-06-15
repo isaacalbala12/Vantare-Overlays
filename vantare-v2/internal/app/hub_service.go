@@ -21,19 +21,28 @@ type ProfileEntry struct {
 	Widgets     int                `json:"widgets"`
 }
 
+// OverlayRuntime is the interface HubService uses to start/stop the desktop overlay.
+type OverlayRuntime interface {
+	Start(profile *config.ProfileConfig) (OverlayStatus, error)
+	Stop() OverlayStatus
+	Status() OverlayStatus
+}
+
 // HubService manages profile CRUD from the hub frontend.
 type HubService struct {
 	profilesDir string
 	profileSvc  *ProfileService
 	emitter     EventEmitter
+	overlay     OverlayRuntime
 }
 
 // NewHubService creates a hub service.
-func NewHubService(profilesDir string, profileSvc *ProfileService, emitter EventEmitter) *HubService {
+func NewHubService(profilesDir string, profileSvc *ProfileService, emitter EventEmitter, overlay OverlayRuntime) *HubService {
 	return &HubService{
 		profilesDir: profilesDir,
 		profileSvc:  profileSvc,
 		emitter:     emitter,
+		overlay:     overlay,
 	}
 }
 
@@ -118,18 +127,52 @@ func (s *HubService) DeleteProfile(idOrFile string) error {
 	return os.Remove(path)
 }
 
-// ActivateProfile loads a profile and emits profile:loaded for the overlay.
+// ActivateProfile loads a profile as the active save target.
+// It does not create or mutate the desktop overlay window.
 func (s *HubService) ActivateProfile(idOrFile string) error {
 	path, err := s.findProfilePath(idOrFile)
 	if err != nil {
 		return err
 	}
-	if err := s.profileSvc.LoadActiveProfile(path); err != nil {
-		return err
+	return s.profileSvc.LoadActiveProfile(path)
+}
+
+// StartOverlay loads the profile and creates a fresh runtime overlay window.
+func (s *HubService) StartOverlay(idOrFile string) (OverlayStatus, error) {
+	if err := s.ActivateProfile(idOrFile); err != nil {
+		status := OverlayStatus{}
+		if s.overlay != nil {
+			status = s.overlay.Status()
+		}
+		if s.emitter != nil {
+			s.emitter.Emit("overlay:status", status)
+		}
+		return status, err
 	}
-	s.profileSvc.ApplyToWindow(false)
-	s.profileSvc.EmitLoaded()
-	return nil
+	if s.overlay == nil {
+		return OverlayStatus{}, fmt.Errorf("overlay runtime not configured")
+	}
+	profile := s.profileSvc.GetProfile()
+	status, err := s.overlay.Start(profile)
+	if s.emitter != nil {
+		s.emitter.Emit("overlay:status", status)
+	}
+	if err != nil {
+		return status, err
+	}
+	return status, nil
+}
+
+// StopOverlay closes the runtime overlay window.
+func (s *HubService) StopOverlay() OverlayStatus {
+	if s.overlay == nil {
+		return OverlayStatus{}
+	}
+	status := s.overlay.Stop()
+	if s.emitter != nil {
+		s.emitter.Emit("overlay:status", status)
+	}
+	return status
 }
 
 // findProfilePath resolves id or file basename to an absolute profile path.

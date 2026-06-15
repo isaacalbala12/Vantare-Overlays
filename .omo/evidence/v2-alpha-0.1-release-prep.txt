@@ -1,0 +1,34 @@
+Vantare Overlays v2 — Alpha 0.1 Release Prep Evidence
+
+Date: 2026-06-15
+Target tag: v0.1.0-alpha.1
+
+Scope:
+- Prepare first GitHub alpha release.
+- Document current v2 alpha capabilities and known limitations.
+- Verify automated test/build commands.
+- Stage only intentional source/docs/evidence files.
+
+Known alpha limitation:
+- Delta live data is not connected to a reliable real deltaBest value yet.
+
+Automated verification:
+- go test ./...: PASS
+- pnpm --dir frontend test: PASS, 24 test files, 73 tests
+- pnpm --dir frontend build: PASS
+
+Manual validation already reported by Isaac:
+- Hub/Preview experience: OK
+- Runtime overlay fullscreen transparent: OK
+- Performance: OK
+- LMU live Relative/Standings: OK
+- Delta live: pending
+
+GitHub prep:
+- Commit: created as `chore: prepare v0.1 alpha`
+- Tag: pending
+- Push: pending
+
+Exclusions:
+- apps/desktop legacy is not part of v2 alpha.
+- Local dumps/builds/temp files must not be staged.

@@ -44,12 +44,12 @@
 
 ## Procesos y ventanas
 
-Al ejecutar `go run ./cmd/vantare` se abren **dos ventanas Wails** compartiendo el mismo bundle frontend:
+Al ejecutar `go run ./cmd/vantare` se abre **solo la ventana Hub**. La ventana Overlay se crea de forma limpia cuando el usuario pulsa `Iniciar` en el Hub.
 
 | Ventana | URL | Características |
 |---------|-----|-----------------|
-| **Overlay** | `/` → `CompositeApp` | Frameless, transparente, always-on-top, shrink-wrap en racing |
 | **Hub** | `/#/hub` → `HubApp` | Con marco, 1280×800, fondo sólido, CRUD perfiles |
+| **Overlay** | `/` → `CompositeApp` | Frameless, transparente, always-on-top, shrink-wrap en racing; creada bajo demanda |
 
 Routing: hash router en [`frontend/src/main.tsx`](../../vantare-v2/frontend/src/main.tsx).
 
@@ -121,7 +121,8 @@ frontend/src/
 ## Servicios registrados en Wails
 
 - **ProfileService** — Load, SaveLayout, SetDisplayMode, EmitLoaded
-- **HubService** — ListProfiles, CreateProfile, DeleteProfile, ActivateProfile
+- **HubService** — ListProfiles, CreateProfile, DeleteProfile, ActivateProfile, StartOverlay, StopOverlay
+- **OverlayController** — Start, Stop, Status (usado por HubService, no expuesto directamente a JS)
 
 Eventos custom vía `wailsApp.Event` (ver [09-EVENTOS-IPC.md](./09-EVENTOS-IPC.md)).
 

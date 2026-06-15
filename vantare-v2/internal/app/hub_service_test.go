@@ -1,6 +1,7 @@
 package app_test
 
 import (
+	"errors"
 	"path/filepath"
 	"testing"
 
@@ -16,7 +17,7 @@ func TestHubServiceCreateAndList(t *testing.T) {
 	fw := &fakeWindow{}
 	mgr := window.NewManager(fw, 0)
 	profileSvc := app.NewProfileService(filepath.Join(dir, "dummy.json"), mgr, nil)
-	hubSvc := app.NewHubService(dir, profileSvc, nil)
+	hubSvc := app.NewHubService(dir, profileSvc, nil, nil)
 
 	if err := hubSvc.CreateProfile("Test Layout"); err != nil {
 		t.Fatal(err)
@@ -46,7 +47,7 @@ func TestHubServiceActivateProfile(t *testing.T) {
 	fw := &fakeWindow{}
 	mgr := window.NewManager(fw, 0)
 	profileSvc := app.NewProfileService(filepath.Join(dir, "dummy.json"), mgr, nil)
-	hubSvc := app.NewHubService(dir, profileSvc, nil)
+	hubSvc := app.NewHubService(dir, profileSvc, nil, nil)
 
 	if err := hubSvc.CreateProfile("Racing"); err != nil {
 		t.Fatal(err)
@@ -60,6 +61,47 @@ func TestHubServiceActivateProfile(t *testing.T) {
 	if p == nil || p.ID != "custom-racing" {
 		t.Fatalf("profile not activated: got %v", p)
 	}
+	// ActivateProfile now only loads the profile; it does not mutate the window or force racing mode.
+	if fw.fullscreen {
+		t.Fatal("activated profile should not leave overlay fullscreen")
+	}
+	if fw.ignoreMouse {
+		t.Fatal("activated profile should not apply window settings")
+	}
+}
+
+func TestHubServiceStartOverlayForcesRacingMode(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "example-edit.json")
+	err := config.SaveFile(path, &config.ProfileConfig{
+		ID:          "custom-edit",
+		Name:        "Edit Layout",
+		DisplayMode: config.ModeEdit,
+		Widgets: []config.WidgetConfig{
+			{ID: "delta", Type: "delta", Enabled: true, Position: config.Rect{X: 0, Y: 0, W: 100, H: 50}},
+		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	profileSvc := app.NewProfileService(filepath.Join(dir, "dummy.json"), nil, nil)
+	runtime := &fakeOverlayRuntime{}
+	hubSvc := app.NewHubService(dir, profileSvc, nil, runtime)
+
+	status, err := hubSvc.StartOverlay("custom-edit")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !status.Running {
+		t.Fatal("overlay should be running")
+	}
+	if status.Mode != config.ModeRacing {
+		t.Fatalf("runtime mode=%q, want racing", status.Mode)
+	}
+	if profileSvc.GetProfile().DisplayMode != config.ModeEdit {
+		t.Fatalf("saved profile mode should remain edit, got %q", profileSvc.GetProfile().DisplayMode)
+	}
 }
 
 func TestHubServiceDeleteProfile(t *testing.T) {
@@ -68,7 +110,7 @@ func TestHubServiceDeleteProfile(t *testing.T) {
 	fw := &fakeWindow{}
 	mgr := window.NewManager(fw, 0)
 	profileSvc := app.NewProfileService(filepath.Join(dir, "dummy.json"), mgr, nil)
-	hubSvc := app.NewHubService(dir, profileSvc, nil)
+	hubSvc := app.NewHubService(dir, profileSvc, nil, nil)
 
 	if err := hubSvc.CreateProfile("To Delete"); err != nil {
 		t.Fatal(err)
@@ -95,7 +137,7 @@ func TestHubServiceListNoProfilesDir(t *testing.T) {
 	fw := &fakeWindow{}
 	mgr := window.NewManager(fw, 0)
 	profileSvc := app.NewProfileService(filepath.Join(dir, "dummy.json"), mgr, nil)
-	hubSvc := app.NewHubService(dir, profileSvc, nil)
+	hubSvc := app.NewHubService(dir, profileSvc, nil, nil)
 
 	profiles, err := hubSvc.ListProfiles()
 	if err != nil {
@@ -124,7 +166,7 @@ func TestHubServiceActivateByIDWhenFilenameDiffers(t *testing.T) {
 	fw := &fakeWindow{}
 	mgr := window.NewManager(fw, 0)
 	profileSvc := app.NewProfileService(filepath.Join(dir, "other.json"), mgr, nil)
-	hubSvc := app.NewHubService(dir, profileSvc, nil)
+	hubSvc := app.NewHubService(dir, profileSvc, nil, nil)
 
 	if err := hubSvc.ActivateProfile("default-racing"); err != nil {
 		t.Fatal(err)
@@ -139,7 +181,7 @@ func TestHubServiceCreateDuplicate(t *testing.T) {
 	fw := &fakeWindow{}
 	mgr := window.NewManager(fw, 0)
 	profileSvc := app.NewProfileService(filepath.Join(dir, "dummy.json"), mgr, nil)
-	hubSvc := app.NewHubService(dir, profileSvc, nil)
+	hubSvc := app.NewHubService(dir, profileSvc, nil, nil)
 
 	if err := hubSvc.CreateProfile("Racing"); err != nil {
 		t.Fatal(err)
@@ -154,7 +196,7 @@ func TestHubServiceRejectPathTraversal(t *testing.T) {
 	fw := &fakeWindow{}
 	mgr := window.NewManager(fw, 0)
 	profileSvc := app.NewProfileService(filepath.Join(dir, "dummy.json"), mgr, nil)
-	hubSvc := app.NewHubService(dir, profileSvc, nil)
+	hubSvc := app.NewHubService(dir, profileSvc, nil, nil)
 
 	if err := hubSvc.DeleteProfile("../outside"); err == nil {
 		t.Fatal("expected error for path traversal")
@@ -196,5 +238,147 @@ func TestProfileServiceLoadActiveProfileUpdatesSavePath(t *testing.T) {
 	}
 	if reloaded.Widgets[0].Position.X != 99 {
 		t.Fatalf("saved to wrong file: X=%d", reloaded.Widgets[0].Position.X)
+	}
+}
+
+
+type fakeOverlayRuntime struct {
+	started int
+	stopped int
+	lastID  string
+	err     error
+}
+
+func (f *fakeOverlayRuntime) Start(profile *config.ProfileConfig) (app.OverlayStatus, error) {
+	f.started++
+	if profile != nil {
+		f.lastID = profile.ID
+	}
+	if f.err != nil {
+		return app.OverlayStatus{Running: false, ProfileID: f.lastID, Mode: config.ModeRacing}, f.err
+	}
+	return app.OverlayStatus{Running: true, ProfileID: f.lastID, Mode: config.ModeRacing}, nil
+}
+
+func (f *fakeOverlayRuntime) Stop() app.OverlayStatus {
+	f.stopped++
+	return app.OverlayStatus{Running: false, ProfileID: f.lastID, Mode: config.ModeRacing}
+}
+
+func (f *fakeOverlayRuntime) Status() app.OverlayStatus {
+	return app.OverlayStatus{Running: f.started > f.stopped, ProfileID: f.lastID, Mode: config.ModeRacing}
+}
+
+func TestHubServiceStartOverlayLoadsProfileAndStartsRuntime(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "example-racing.json")
+	err := config.SaveFile(path, &config.ProfileConfig{
+		ID:          "default-racing",
+		Name:        "Default Racing",
+		DisplayMode: config.ModeRacing,
+		Widgets: []config.WidgetConfig{
+			{ID: "delta", Type: "delta", Enabled: true, Position: config.Rect{X: 0, Y: 0, W: 100, H: 50}},
+		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	profileSvc := app.NewProfileService(filepath.Join(dir, "dummy.json"), nil, nil)
+	runtime := &fakeOverlayRuntime{}
+	hubSvc := app.NewHubService(dir, profileSvc, nil, runtime)
+
+	status, err := hubSvc.StartOverlay("default-racing")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !status.Running {
+		t.Fatal("overlay should be running")
+	}
+	if runtime.started != 1 {
+		t.Fatalf("started=%d, want 1", runtime.started)
+	}
+	if runtime.lastID != "default-racing" {
+		t.Fatalf("lastID=%q", runtime.lastID)
+	}
+}
+
+func TestHubServiceStopOverlayStopsRuntime(t *testing.T) {
+	dir := t.TempDir()
+	profileSvc := app.NewProfileService(filepath.Join(dir, "dummy.json"), nil, nil)
+	runtime := &fakeOverlayRuntime{}
+	hubSvc := app.NewHubService(dir, profileSvc, nil, runtime)
+
+	status := hubSvc.StopOverlay()
+	if status.Running {
+		t.Fatal("overlay should not be running")
+	}
+	if runtime.stopped != 1 {
+		t.Fatalf("stopped=%d, want 1", runtime.stopped)
+	}
+}
+
+func TestHubServiceStartOverlayEmitsStoppedStatusWhenRuntimeFails(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "example-racing.json")
+	err := config.SaveFile(path, &config.ProfileConfig{
+		ID:          "default-racing",
+		Name:        "Default Racing",
+		DisplayMode: config.ModeRacing,
+		Widgets: []config.WidgetConfig{
+			{ID: "delta", Type: "delta", Enabled: true, Position: config.Rect{X: 0, Y: 0, W: 100, H: 50}},
+		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	profileSvc := app.NewProfileService(filepath.Join(dir, "dummy.json"), nil, nil)
+	runtime := &fakeOverlayRuntime{err: errors.New("create window failed")}
+	spy := &spyEmitter{}
+	hubSvc := app.NewHubService(dir, profileSvc, spy, runtime)
+
+	status, err := hubSvc.StartOverlay("default-racing")
+	if err == nil {
+		t.Fatal("expected runtime error")
+	}
+	if status.Running {
+		t.Fatal("status should report stopped after failed start")
+	}
+	if len(spy.events) != 1 || spy.events[0] != "overlay:status" {
+		t.Fatalf("events=%v, want [overlay:status]", spy.events)
+	}
+	emitted, ok := spy.data[0].(app.OverlayStatus)
+	if !ok {
+		t.Fatalf("emitted status type=%T", spy.data[0])
+	}
+	if emitted.Running {
+		t.Fatal("emitted status should report stopped")
+	}
+}
+
+func TestHubServiceStartOverlayEmitsStatusWhenActivateProfileFails(t *testing.T) {
+	dir := t.TempDir()
+	profileSvc := app.NewProfileService(filepath.Join(dir, "dummy.json"), nil, nil)
+	runtime := &fakeOverlayRuntime{}
+	spy := &spyEmitter{}
+	hubSvc := app.NewHubService(dir, profileSvc, spy, runtime)
+
+	status, err := hubSvc.StartOverlay("missing-profile")
+	if err == nil {
+		t.Fatal("expected activate error")
+	}
+	if status.Running {
+		t.Fatal("status should report stopped when activation fails")
+	}
+	if len(spy.events) != 1 || spy.events[0] != "overlay:status" {
+		t.Fatalf("events=%v, want [overlay:status]", spy.events)
+	}
+	emitted, ok := spy.data[0].(app.OverlayStatus)
+	if !ok {
+		t.Fatalf("emitted status type=%T", spy.data[0])
+	}
+	if emitted.Running {
+		t.Fatal("emitted status should report stopped")
 	}
 }

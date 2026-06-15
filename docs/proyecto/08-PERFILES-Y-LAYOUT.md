@@ -29,10 +29,11 @@ Archivos JSON en `vantare-v2/configs/*.json`.
 
 | Campo | Valores | Efecto |
 |-------|---------|--------|
-| `displayMode` | `racing`, `edit`, (futuro `streaming`) | Comportamiento ventana |
+| `displayMode` | `racing`, `edit`, `streaming` | Comportamiento ventana / OBS |
 | `monitorIndex` | 0, 1, … | Monitor para origin layout |
 | `widgets[].position` | x, y, w, h | Pixeles lógicos en edit; bbox en racing |
 | `widgets[].updateHz` | número | Objetivo refresh widget (F7 refina) |
+| `widgets[].props.appearance` | accentColor, backgroundColor, textColor, opacity | Apariencia básica editable en Preview |
 
 ---
 
@@ -51,19 +52,19 @@ Archivos JSON en `vantare-v2/configs/*.json`.
 
 ### Racing
 
-- `window.Manager` calcula bbox de widgets + padding.
+- `OverlayController` crea la ventana desktop overlay a pantalla completa bajo demanda.
 - Ventana frameless, transparente, always-on-top.
 - `SetIgnoreMouseEvents` — click-through al sim.
+- `CompositeApp` renderiza widgets y escucha telemetría; **no edita**.
 
 ### Edit
 
-- Ventana fullscreen en monitor del perfil.
-- Widgets arrastrables en `CompositeApp`.
-- `SaveLayout` persiste posiciones al JSON activo.
+- **Deprecado en la ventana overlay desktop.** La edición de layouts ocurre ahora en la pestaña **Preview** del Hub.
+- El campo `displayMode: "edit"` todavía existe en el JSON para compatibilidad, pero el runtime desktop fuerza `racing`.
 
 ### Flag `-edit`
 
-Fuerza edit mode aunque el JSON diga `racing`:
+Está deprecado. Aparece un warning en los logs indicando que se use Preview en el Hub:
 
 ```powershell
 go run ./cmd/vantare -profile configs/example-racing.json -edit
@@ -91,7 +92,9 @@ go run ./cmd/vantare -profile configs/example-racing.json -edit
 | `ListProfiles()` | Escanea `configs/*.json` → `ProfileEntry{id, file, name, ...}` |
 | `CreateProfile(name)` | Crea `custom-{slug}.json` con 3 widgets default |
 | `DeleteProfile(idOrFile)` | Borra archivo (validación path) |
-| `ActivateProfile(idOrFile)` | LoadActiveProfile + ApplyToWindow + EmitLoaded |
+| `ActivateProfile(idOrFile)` | LoadActiveProfile (selection only, no window mutation) |
+| `StartOverlay(idOrFile)` | LoadActiveProfile + create fresh desktop overlay window |
+| `StopOverlay()` | Close desktop overlay window |
 
 `configsDir()` en `main.go` busca `configs/` relativo al cwd o al ejecutable.
 
@@ -112,16 +115,65 @@ Ruta: sección **Overlays** en `HubApp`.
 ## Flujo activar perfil
 
 ```
-Usuario click "Activar" en hub
+Usuario click "Seleccionar" en hub
   → JS Emit hub:activate { id, file }
   → Go HubService.ActivateProfile(file)
   → ProfileService.LoadActiveProfile(absolutePath)
-  → ApplyToWindow + EmitLoaded
-  → Overlay recibe profile:loaded
-  → Widgets re-posicionan según nuevo JSON
+  → EmitLoaded
+  → Preview / Overlay recibe profile:loaded
+```
+
+## Flujo iniciar overlay
+
+```
+Usuario click "Iniciar" en hub
+  → JS Emit overlay:start { id, file }
+  → Go HubService.StartOverlay(file)
+  → ProfileService.LoadActiveProfile(absolutePath)
+  → OverlayController.Start(profile)
+  → Se crea ventana overlay limpia, transparente, click-through
+  → Overlay recibe profile:loaded tras emitir profile:request
+```
+
+## Flujo detener overlay
+
+```
+Usuario click "Detener" en hub
+  → JS Emit overlay:stop
+  → Go HubService.StopOverlay()
+  → OverlayController.Stop()
+  → Se cierra ventana overlay; Hub sigue abierto
 ```
 
 ---
+
+## Modelo Hub Preview
+
+En v2, un "overlay" visible en el Hub es un perfil/layout guardado en `configs/*.json`.
+
+- `widgets[]` contiene todos los widgets del perfil.
+- `enabled: true` significa que el widget se renderiza en runtime.
+- `enabled: false` significa que el widget queda oculto en runtime, pero sigue apareciendo en Preview para poder reactivarlo.
+- Preview es el editor principal: seleccionar perfil, ajustar widgets, guardar e iniciar.
+- La ventana desktop overlay no se usa para editar.
+
+## Preview editor (Hub)
+
+La pestaña **Preview** del Hub es el workbench principal para controlar y editar perfiles sin abrir el overlay desktop:
+
+- Selector de perfiles en la parte superior.
+- Canvas 16:9 escalado (ancho adaptable, coordenadas lógicas 1920×1080).
+- Lista de widgets con estado Visible/Oculto.
+- Selección de widget con clic o flechas del teclado.
+- Inspector con edición numérica de `x`, `y`, `w`, `h`.
+- Colores básicos: `accentColor`, `textColor`, opacidad.
+- Toggle `enabled` (visibilidad).
+- Botones `Guardar`, `Iniciar` y `Detener`.
+- Guardado vía `layout:save` → `ProfileService.SaveLayout`.
+- `Iniciar` queda bloqueado mientras haya cambios sin guardar.
+- La edición se bloquea mientras el overlay runtime esté iniciado.
+
+Los cambios se guardan en `widgets[].props.appearance` y `widgets[].position` del JSON activo.
 
 ## Crear perfil nuevo
 

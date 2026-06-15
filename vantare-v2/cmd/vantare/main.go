@@ -8,16 +8,43 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strings"
+	"sync"
 	"syscall"
 
 	"github.com/vantare/overlays/v2/internal/app"
+	"github.com/vantare/overlays/v2/internal/ops"
 	"github.com/vantare/overlays/v2/internal/server"
+	"github.com/vantare/overlays/v2/internal/telemetry/service"
 	"github.com/vantare/overlays/v2/internal/window"
 	"github.com/vantare/overlays/v2/pkg/config"
 	"github.com/wailsapp/wails/v3/pkg/application"
+	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
-// configsDir returns the absolute path to the configs directory.
+// reorderArgs moves flag arguments to the front of os.Args so flag.Parse() can
+// see them even when the user types `vantare serve -live -profile foo.json`.
+// The first non-flag positional argument (e.g. "serve") is left in place.
+func reorderArgs() {
+	args := os.Args
+	flags := make([]string, 0, len(args))
+	positional := make([]string, 0, len(args))
+	positional = append(positional, args[0])
+	sawFlag := false
+	for _, a := range args[1:] {
+		if strings.HasPrefix(a, "-") {
+			flags = append(flags, a)
+			sawFlag = true
+		} else if !sawFlag {
+			positional = append(positional, a)
+		} else {
+			flags = append(flags, a)
+		}
+	}
+	os.Args = append(positional, flags...)
+}
+
+// ConfigsDir returns the absolute path to the configs directory.
 func configsDir() string {
 	candidates := []string{
 		"configs",
@@ -54,6 +81,10 @@ func main() {
 	httpAddr := flag.String("http", "127.0.0.1:39261", "HTTP/SSE address for OBS Browser Source")
 	flag.Parse()
 
+	if *edit {
+		log.Printf("warning: -edit is deprecated in Hub Preview flow; start Hub and use Preview instead")
+	}
+
 	distFS, err := app.FrontendDistFS()
 	if err != nil {
 		log.Fatalf("frontend/dist not found (run: pnpm --dir frontend build): %v", err)
@@ -71,19 +102,55 @@ func main() {
 	})
 
 	emitter := &wailsEmitter{wailsApp: wailsApp}
+	var cleanup sync.Once
+	var bridge *app.TelemetryBridge
+	var opsBridge *app.OpsBridge
+	var httpSrv *server.Server
+	var overlayController *app.OverlayController
+	cleanupApp := func() {
+		cleanup.Do(func() {
+			if overlayController != nil {
+				overlayController.Stop()
+			}
+			if httpSrv != nil {
+				if err := httpSrv.Stop(); err != nil {
+					log.Printf("HTTP server shutdown error: %v", err)
+				}
+			}
+			if opsBridge != nil {
+				opsBridge.Stop()
+			}
+			if bridge != nil {
+				bridge.Stop()
+			}
+			vapp.StopTelemetry()
+		})
+	}
+	wailsApp.OnShutdown(cleanupApp)
+	defer cleanupApp()
 
-	// Create initial window (will be resized by ApplyProfile)
-	w := wailsApp.Window.NewWithOptions(application.WebviewWindowOptions{
-		Title:          "Vantare Overlay",
-		Width:          400,
-		Height:         120,
-		Frameless:      true,
-		BackgroundType: application.BackgroundTypeTransparent,
-		AlwaysOnTop:    true,
-		URL:            "/",
-	})
+	// Load profile into memory for Hub / Preview.
+	profileSvc := app.NewProfileService(*profilePath, nil, emitter)
+	if err := profileSvc.Load(); err != nil {
+		log.Printf("warning: could not load profile %s: %v (using defaults)", *profilePath, err)
+		// Create a default profile
+		profileSvc.SetProfile(&config.ProfileConfig{
+			ID:           "default-fallback",
+			Name:         "Fallback Racing",
+			DisplayMode:  config.ModeRacing,
+			MonitorIndex: 0,
+			Widgets: []config.WidgetConfig{
+				{ID: "delta", Type: "delta", Enabled: true, UpdateHz: 30, Position: config.Rect{X: 760, Y: 40, W: 400, H: 48}},
+				{ID: "relative", Type: "relative", Enabled: true, UpdateHz: 15, Position: config.Rect{X: 40, Y: 600, W: 320, H: 280}},
+				{ID: "standings", Type: "standings", Enabled: true, UpdateHz: 15, Position: config.Rect{X: 1560, Y: 40, W: 340, H: 420}},
+			},
+		})
+	}
 
-	// Create hub window (normal framed window, separate from overlay)
+	// Overlay controller owns the desktop overlay window lifecycle.
+	overlayController = app.NewOverlayController(&wailsOverlayFactory{app: wailsApp, stopOverlay: func() { overlayController.Stop() }})
+
+	// Create hub window only (normal framed window).
 	hubW := wailsApp.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title:          "Vantare Hub",
 		Width:          1280,
@@ -96,32 +163,10 @@ func main() {
 	})
 	hubW.Show()
 
-	// Create window manager (pad=8 for safe margin)
-	winsrc := &wailsWindowHandle{w: w}
-	mgr := window.NewManager(winsrc, 8)
-
-	// Create real window handle adapter
-	_ = winsrc
-
-	// Load profile
-	profileSvc := app.NewProfileService(*profilePath, mgr, emitter)
-	if err := profileSvc.Load(); err != nil {
-		log.Printf("warning: could not load profile %s: %v (using defaults)", *profilePath, err)
-		// Create a default profile
-		profileSvc.SetProfile(&config.ProfileConfig{
-			DisplayMode: config.ModeRacing,
-			Widgets: []config.WidgetConfig{
-				{ID: "delta", Type: "delta", Enabled: true, UpdateHz: 30, Position: config.Rect{X: 760, Y: 40, W: 400, H: 48}},
-				{ID: "relative", Type: "relative", Enabled: true, UpdateHz: 15, Position: config.Rect{X: 40, Y: 600, W: 320, H: 280}},
-				{ID: "standings", Type: "standings", Enabled: true, UpdateHz: 15, Position: config.Rect{X: 1560, Y: 40, W: 340, H: 420}},
-			},
-		})
+	requestQuit := func(_ *application.WindowEvent) {
+		go wailsApp.Quit()
 	}
-
-	// Override display mode if -edit flag is set
-	if *edit {
-		profileSvc.SetDisplayMode(config.ModeEdit)
-	}
+	hubW.RegisterHook(events.Common.WindowClosing, requestQuit)
 
 	// Register profile service with Wails (frontend can call methods)
 	wailsApp.RegisterService(application.NewService(profileSvc))
@@ -131,7 +176,7 @@ func main() {
 	if cfgDir == "" {
 		log.Printf("warning: configs directory not found — hub profile CRUD disabled")
 	}
-	hubSvc := app.NewHubService(cfgDir, profileSvc, emitter)
+	hubSvc := app.NewHubService(cfgDir, profileSvc, emitter, overlayController)
 	wailsApp.RegisterService(application.NewService(hubSvc))
 
 	emitHubError := func(message string) {
@@ -191,25 +236,28 @@ func main() {
 	})
 
 	wailsApp.Event.On("hub:activate", func(event *application.CustomEvent) {
-		var data struct {
-			ID   string `json:"id"`
-			File string `json:"file"`
-		}
-		if event.Data != nil {
-			if raw, err := json.Marshal(event.Data); err == nil {
-				json.Unmarshal(raw, &data)
-			}
-		}
-		target := data.File
-		if target == "" {
-			target = data.ID
-		}
+		target := readProfileTarget(event)
 		if err := hubSvc.ActivateProfile(target); err != nil {
 			log.Printf("hub:activate error: %v", err)
 			emitHubError(err.Error())
 			return
 		}
+		profileSvc.EmitLoaded()
 		emitter.Emit("hub:profile-activated", map[string]any{"ok": true})
+	})
+
+	wailsApp.Event.On("overlay:start", func(event *application.CustomEvent) {
+		target := readProfileTarget(event)
+		_, err := hubSvc.StartOverlay(target)
+		if err != nil {
+			log.Printf("overlay:start error: %v", err)
+			emitHubError(err.Error())
+			return
+		}
+	})
+
+	wailsApp.Event.On("overlay:stop", func(event *application.CustomEvent) {
+		hubSvc.StopOverlay()
 	})
 
 	wailsApp.Event.On("profile:set-mode", func(event *application.CustomEvent) {
@@ -237,18 +285,20 @@ func main() {
 		profileSvc.EmitLoaded()
 	})
 
+	log.Printf("telemetry source: kind=%s name=%s live=%v available=%v", vapp.SourceInfo().Kind, vapp.SourceInfo().Name, vapp.SourceInfo().Live, vapp.SourceInfo().Available)
+
 	// Start telemetry
-	bridge := app.NewTelemetryBridge(vapp.Telemetry, emitter)
+	bridge = app.NewTelemetryBridge(vapp.Telemetry, emitter)
 	vapp.StartTelemetry(ctx)
 	bridge.Start()
-	defer vapp.StopTelemetry()
-	defer bridge.Stop()
 
-	// Apply profile to window (racing: shrink-wrap, edit: fullscreen)
-	profileSvc.ApplyToWindow(false)
+	// Start low-frequency ops metrics bridge
+	sourceInfo := service.InfoForSource(vapp.TelemetrySource())
+	opsBridge = app.NewOpsBridge(ops.NewRuntimeSampler(sourceInfo), emitter, ops.DefaultInterval)
+	opsBridge.Start()
 
 	// --- OBS / SSE HTTP server ---
-	httpSrv := server.New(server.ServerConfig{
+	httpSrv = server.New(server.ServerConfig{
 		Addr:   *httpAddr,
 		DistFS: distFS,
 		CfgDir: cfgDir,
@@ -256,12 +306,8 @@ func main() {
 	})
 	httpSrv.Start()
 	log.Printf("OBS overlay: http://%s/overlay?profile=%s", *httpAddr, filepath.Base(*profilePath))
-	defer httpSrv.Stop()
 
-	// Emit profile:loaded event for frontend
-	profileSvc.EmitLoaded()
-
-	// Listen for layout:save events from frontend (edit mode drag-save)
+	// Listen for layout:save events from frontend (Preview editor or edit mode drag-save)
 	wailsApp.Event.On("layout:save", func(event *application.CustomEvent) {
 		type layoutSaveData struct {
 			Widgets []config.WidgetConfig `json:"widgets"`
@@ -279,6 +325,7 @@ func main() {
 		if len(data.Widgets) > 0 {
 			if err := profileSvc.SaveLayout(data.Widgets); err != nil {
 				log.Printf("layout save error: %v", err)
+				emitHubError(err.Error())
 			}
 		}
 	})
@@ -300,10 +347,12 @@ func (h *wailsWindowHandle) SetBounds(bounds window.WailsRect) {
 		Width:  bounds.Width,
 		Height: bounds.Height,
 	})
+	h.ensureTransparent()
 }
 
 func (h *wailsWindowHandle) SetSize(width, height int) {
 	h.w.SetSize(width, height)
+	h.ensureTransparent()
 }
 
 func (h *wailsWindowHandle) SetPosition(x, y int) {
@@ -312,6 +361,7 @@ func (h *wailsWindowHandle) SetPosition(x, y int) {
 
 func (h *wailsWindowHandle) SetIgnoreMouseEvents(ignore bool) {
 	h.w.SetIgnoreMouseEvents(ignore)
+	h.ensureTransparent()
 }
 
 func (h *wailsWindowHandle) SetResizable(b bool) {
@@ -324,4 +374,87 @@ func (h *wailsWindowHandle) Fullscreen() {
 
 func (h *wailsWindowHandle) UnFullscreen() {
 	h.w.UnFullscreen()
+	h.ensureTransparent()
+}
+
+func (h *wailsWindowHandle) ensureTransparent() {
+	h.w.SetBackgroundColour(application.NewRGBA(0, 0, 0, 0))
+	h.w.ExecJS(`(() => {
+  const transparent = "transparent";
+  document.documentElement.classList.add("desktop-overlay", "desktop-overlay-boot");
+  document.documentElement.style.background = transparent;
+  document.documentElement.style.backgroundColor = transparent;
+  document.body?.classList.add("desktop-overlay");
+  if (document.body) {
+    document.body.style.background = transparent;
+    document.body.style.backgroundColor = transparent;
+  }
+  const root = document.getElementById("root");
+  if (root) {
+    root.style.background = transparent;
+    root.style.backgroundColor = transparent;
+  }
+})()`)
+}
+
+// wailsOverlayFactory creates a fresh Wails overlay window for each Start call.
+type wailsOverlayFactory struct {
+	app         *application.App
+	stopOverlay func()
+}
+
+type wailsOverlayWindow struct {
+	w *application.WebviewWindow
+}
+
+func (o *wailsOverlayWindow) Close() {
+	o.w.Close()
+}
+
+func (f *wailsOverlayFactory) NewOverlayWindow(profile *config.ProfileConfig, origin config.Rect, bounds config.Rect) (app.OverlayWindow, error) {
+	w := f.app.Window.NewWithOptions(application.WebviewWindowOptions{
+		Title:             "Vantare Overlay",
+		Width:             1920,
+		Height:            1080,
+		Frameless:         true,
+		BackgroundType:    application.BackgroundTypeTransparent,
+		BackgroundColour:  application.NewRGBA(0, 0, 0, 0),
+		IgnoreMouseEvents: false,
+		AlwaysOnTop:       true,
+		URL:               "/",
+	})
+
+	// When the user (or Stop) closes the overlay window, we must stop treating
+	// it as the current window so StartOverlay can create a fresh one next time.
+	w.OnWindowEvent(events.Common.WindowClosing, func(_ *application.WindowEvent) {
+		go func() {
+			if stop := f.stopOverlay; stop != nil {
+				stop()
+			}
+		}()
+	})
+
+	handle := &wailsWindowHandle{w: w}
+	handle.SetIgnoreMouseEvents(true)
+	handle.SetResizable(false)
+	handle.Fullscreen()
+	handle.SetIgnoreMouseEvents(true)
+	return &wailsOverlayWindow{w: w}, nil
+}
+
+// readProfileTarget extracts id/file from a Wails custom event payload.
+func readProfileTarget(event *application.CustomEvent) string {
+	var data struct {
+		ID   string `json:"id"`
+		File string `json:"file"`
+	}
+	if event.Data != nil {
+		if raw, err := json.Marshal(event.Data); err == nil {
+			_ = json.Unmarshal(raw, &data)
+		}
+	}
+	if data.File != "" {
+		return data.File
+	}
+	return data.ID
 }

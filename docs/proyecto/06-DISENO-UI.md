@@ -56,7 +56,7 @@ Cargadas en [`vantare-v2/frontend/index.html`](../../vantare-v2/frontend/index.h
 
 ```
 ┌─ Topbar (h-14, glass) ─────────────────────────────────────┐
-│ Logo · Nav: Hub | Overlays | Telemetría | Setup · Avatar   │
+│ Logo · Nav: Hub | Overlays | Preview | Telemetría | Setup · Avatar   │
 ├─ Hero (~300px) ────────────────────────────────────────────┤
 │ VANTARE (gradient) │ Panel coche / circuito / sesión       │
 ├─ Event banner (full width) ──────────────────────────────┤
@@ -83,13 +83,22 @@ Contenedor: `.glass-panel` + `rounded-xl` + `border-white/5`.
 
 ---
 
+## Temas runtime (Fase 8)
+
+- `frontend/src/themes/vantare-v5.json` contiene tokens aprobados.
+- `frontend/src/themes/vantare-lite.json` mantiene la paleta pero reduce blur/sombras/transiciones.
+- `frontend/src/lib/theme.ts` aplica variables `--v-*` y atributos `data-theme` / `data-visual-mode`.
+- CSS compartido en `frontend/src/index.css` consume las variables runtime.
+- Toggle Lite mode en la Topbar del Hub persiste en `localStorage`.
+- `hub_main_v5.html` sigue siendo la referencia visual.
+
 ## Alcance visual por fase
 
 | Fase | Alcance diseño |
 |------|----------------|
 | 4 | Tokens mínimos en widgets |
 | 5 | Hub layout completo v5 |
-| 8 | Export themes JSON + swap runtime + pixel-perfect overlay |
+| 8 | Export themes JSON + swap runtime + Lite mode |
 
 ---
 
