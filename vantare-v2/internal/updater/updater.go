@@ -1,6 +1,8 @@
 package updater
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"net/http"
@@ -8,6 +10,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"time"
 )
 
@@ -60,7 +63,9 @@ type UpdateInfo struct {
 	LatestVersion  string    `json:"latestVersion,omitempty"`
 	LatestRelease  Release   `json:"latestRelease,omitempty"`
 	HasUpdate      bool      `json:"hasUpdate"`
+	IsDowngrade    bool      `json:"isDowngrade"`
 	Releases       []Release `json:"releases,omitempty"`
+	IgnoredVersion string    `json:"ignoredVersion,omitempty"`
 }
 
 // Check fetches available releases and compares with the current version.
@@ -70,15 +75,27 @@ func (u *Updater) Check(settings *Settings) (*UpdateInfo, error) {
 		return nil, err
 	}
 	if len(releases) == 0 {
-		return &UpdateInfo{CurrentVersion: u.currentVersion}, nil
+		return &UpdateInfo{
+			CurrentVersion: u.currentVersion,
+			IgnoredVersion: settings.IgnoreVersion,
+		}, nil
 	}
 	latest := releases[0]
+	current := ParseVersion(u.currentVersion)
+	selected := ParseVersion(latest.TagName)
+	isDowngrade := selected.Compare(current) < 0
+	hasUpdate := latest.TagName != u.currentVersion && !isDowngrade
+	if settings.IgnoreVersion != "" && latest.TagName == settings.IgnoreVersion {
+		hasUpdate = false
+	}
 	return &UpdateInfo{
 		CurrentVersion: u.currentVersion,
 		LatestVersion:  latest.TagName,
 		LatestRelease:  latest,
-		HasUpdate:      latest.TagName != u.currentVersion,
+		HasUpdate:      hasUpdate,
+		IsDowngrade:    isDowngrade,
 		Releases:       releases,
+		IgnoredVersion: settings.IgnoreVersion,
 	}, nil
 }
 
@@ -110,6 +127,81 @@ func (u *Updater) Install(tag, downloadURL string, progress func(percent int)) e
 		return fmt.Errorf("failed to start installer: %w", err)
 	}
 	return nil
+}
+
+// InstallVerified downloads the installer and its SHA256 checksum when available,
+// verifies the hash, and then runs the installer.
+func (u *Updater) InstallVerified(release Release, progress func(percent int)) error {
+	installer := FindInstaller(release)
+	if installer == nil {
+		return fmt.Errorf("release %s has no installer asset", release.TagName)
+	}
+	tmpDir, err := os.MkdirTemp("", "vantare-update-*")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(tmpDir)
+
+	installerPath := filepath.Join(tmpDir, "vantare-installer.exe")
+	if progress != nil {
+		progress(0)
+	}
+	if err := u.downloadFile(installer.DownloadURL, installerPath, progress); err != nil {
+		return fmt.Errorf("download failed: %w", err)
+	}
+
+	if checksum := FindChecksumAsset(release); checksum != nil {
+		if err := u.verifyChecksum(installerPath, checksum.DownloadURL); err != nil {
+			return fmt.Errorf("checksum verification failed: %w", err)
+		}
+	}
+
+	cmd := exec.Command(installerPath)
+	if err := cmd.Start(); err != nil {
+		return fmt.Errorf("failed to start installer: %w", err)
+	}
+	return nil
+}
+
+func (u *Updater) verifyChecksum(filePath, checksumURL string) error {
+	expected, err := u.fetchChecksum(checksumURL)
+	if err != nil {
+		return err
+	}
+	f, err := os.Open(filePath)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	h := sha256.New()
+	if _, err := io.Copy(h, f); err != nil {
+		return err
+	}
+	got := hex.EncodeToString(h.Sum(nil))
+	if !strings.EqualFold(got, expected) {
+		return fmt.Errorf("hash mismatch: got %s, want %s", got, expected)
+	}
+	return nil
+}
+
+func (u *Updater) fetchChecksum(url string) (string, error) {
+	resp, err := u.httpClient.Get(url)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("http %d", resp.StatusCode)
+	}
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	parts := strings.Fields(string(data))
+	if len(parts) == 0 {
+		return "", fmt.Errorf("empty checksum file")
+	}
+	return parts[0], nil
 }
 
 func (u *Updater) downloadFile(url, dest string, progress func(int)) error {

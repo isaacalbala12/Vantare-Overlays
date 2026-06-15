@@ -37,7 +37,24 @@ func (s *UpdaterService) CheckUpdates() (*updater.UpdateInfo, error) {
 	return s.updater.Check(settings)
 }
 
-// InstallVersion downloads and launches the installer for the selected release.
+// IgnoreVersion sets the version to ignore in update notifications.
+func (s *UpdaterService) IgnoreVersion(version string) error {
+	settings, err := s.GetSettings()
+	if err != nil {
+		return err
+	}
+	settings.IgnoreVersion = version
+	return s.SaveSettings(settings)
+}
+
+// InstallVerifiedVersion downloads and verifies the installer for the selected release.
+func (s *UpdaterService) InstallVerifiedVersion(release updater.Release) error {
+	return s.updater.InstallVerified(release, func(percent int) {
+		s.emitter.Emit("updater:progress", map[string]any{"percent": percent})
+	})
+}
+
+// InstallVersion downloads and launches the installer for the selected release (legacy).
 func (s *UpdaterService) InstallVersion(tag, downloadURL string) error {
 	return s.updater.Install(tag, downloadURL, func(percent int) {
 		s.emitter.Emit("updater:progress", map[string]any{"percent": percent})

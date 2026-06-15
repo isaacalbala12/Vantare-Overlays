@@ -11,6 +11,7 @@ import (
 	"strings"
 	"sync"
 	"syscall"
+	"time"
 
 	"github.com/vantare/overlays/v2/configs"
 	"github.com/vantare/overlays/v2/frontend"
@@ -26,7 +27,7 @@ import (
 )
 
 // version is the current application version.
-var version = "v0.1.4-prealpha"
+var version = "v0.1.5-prealpha"
 
 // reorderArgs moves flag arguments to the front of os.Args so flag.Parse() can
 // see them even when the user types `vantare serve -live -profile foo.json`.
@@ -106,6 +107,14 @@ type wailsEmitter struct {
 
 func (w *wailsEmitter) Emit(name string, data any) {
 	w.wailsApp.Event.Emit(name, data)
+}
+
+// installerURL returns the direct download URL for the Windows installer asset.
+func installerURL(release updater.Release) string {
+	if asset := updater.FindInstaller(release); asset != nil {
+		return asset.DownloadURL
+	}
+	return release.HTMLURL
 }
 
 func main() {
@@ -228,6 +237,31 @@ func main() {
 	updaterSvc := app.NewUpdaterService(version, settingsPath, emitter)
 	wailsApp.RegisterService(application.NewService(updaterSvc))
 
+	// Silent update check on startup (after a short delay so the UI is ready).
+	go func() {
+		time.Sleep(5 * time.Second)
+		info, err := updaterSvc.CheckUpdates()
+		if err != nil {
+			log.Printf("startup update check error: %v", err)
+			return
+		}
+		if info.HasUpdate && info.LatestRelease.TagName != "" {
+			emitter.Emit("updater:notify", map[string]any{
+				"tag":         info.LatestRelease.TagName,
+				"name":        info.LatestRelease.Name,
+				"prerelease":  info.LatestRelease.Prerelease,
+				"downloadURL": installerURL(info.LatestRelease),
+			})
+		}
+	}()
+
+	// Version info broadcast for UI.
+	emitter.Emit("app:version", map[string]any{"version": version})
+
+	wailsApp.Event.On("app:version:get", func(event *application.CustomEvent) {
+		emitter.Emit("app:version", map[string]any{"version": version})
+	})
+
 	emitUpdaterError := func(message string) {
 		emitter.Emit("updater:error", map[string]any{"message": message})
 	}
@@ -292,6 +326,44 @@ func main() {
 		}()
 	})
 
+
+	wailsApp.Event.On("updater:ignore", func(event *application.CustomEvent) {
+		var data struct {
+			Version string `json:"version"`
+		}
+		if event.Data != nil {
+			if raw, err := json.Marshal(event.Data); err == nil {
+				json.Unmarshal(raw, &data)
+			}
+		}
+		if err := updaterSvc.IgnoreVersion(data.Version); err != nil {
+			emitUpdaterError(err.Error())
+			return
+		}
+		emitter.Emit("updater:ignored", map[string]any{"version": data.Version})
+	})
+
+	wailsApp.Event.On("updater:install:verified", func(event *application.CustomEvent) {
+		var release updater.Release
+		if event.Data != nil {
+			if raw, err := json.Marshal(event.Data); err == nil {
+				json.Unmarshal(raw, &release)
+			}
+		}
+		if release.TagName == "" {
+			emitUpdaterError("release is required")
+			return
+		}
+		emitter.Emit("updater:progress", map[string]any{"percent": 0})
+		go func() {
+			if err := updaterSvc.InstallVerifiedVersion(release); err != nil {
+				log.Printf("updater:install:verified error: %v", err)
+				emitUpdaterError(err.Error())
+				return
+			}
+			emitter.Emit("updater:installed", map[string]any{"ok": true})
+		}()
+	})
 
 	emitHubError := func(message string) {
 		emitter.Emit("hub:error", map[string]any{"message": message})

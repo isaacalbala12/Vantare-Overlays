@@ -13,6 +13,7 @@ const githubReleasesURL = "https://api.github.com/repos/isaacalbala12/Vantare-Ov
 type Release struct {
 	TagName     string    `json:"tag_name"`
 	Name        string    `json:"name"`
+	Body        string    `json:"body"`
 	Prerelease  bool      `json:"prerelease"`
 	PublishedAt time.Time `json:"published_at"`
 	HTMLURL     string    `json:"html_url"`
@@ -62,6 +63,16 @@ func listReleasesURL(client *http.Client, url string) ([]Release, error) {
 func FindInstaller(release Release) *Asset {
 	for _, a := range release.Assets {
 		if a.Name == "vantare-amd64-installer.exe" {
+			return &a
+		}
+	}
+	return nil
+}
+
+// FindChecksumAsset returns the SHA256 checksum asset for a release if present.
+func FindChecksumAsset(release Release) *Asset {
+	for _, a := range release.Assets {
+		if a.Name == "vantare-amd64-installer.exe.sha256" {
 			return &a
 		}
 	}

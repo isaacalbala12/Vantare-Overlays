@@ -1,7 +1,31 @@
 # Changelog
 
-## v0.1.4-prealpha - 2026-06-15
+## v0.1.5-prealpha - 2026-06-15
 
+Pre-alpha de robustecimiento del updater, instalador y UI antes de las features principales.
+
+### Incluido
+
+- **Updater mejorado**:
+  - Verificación SHA256 del instalador antes de ejecutarlo (`InstallVerified` y `verifyChecksum` en `internal/updater/updater.go`).
+  - Ignorar versión persistente (`ignoreVersion` en `internal/updater/settings.go` y método `IgnoreVersion`).
+  - Comparación semántica de versiones en `internal/updater/version.go` con `ParseVersion` y `Compare`.
+  - Auto-check silencioso al inicio que emite `updater:notify` cuando hay una actualización disponible.
+  - Eventos adicionales: `updater:ignore`, `updater:install:verified`, `app:version` y `app:version:get`.
+- **UI del updater**:
+  - Banner flotante `UpdateBanner` para mostrar y saltar actualizaciones desde cualquier pantalla.
+  - Changelog expandible en la lista de versiones.
+  - Confirmación de downgrade con advertencia antes de instalar una versión anterior.
+  - Botón "Saltar" para ignorar una versión sin instalarla.
+  - Enlace de descarga manual directo al asset del instalador.
+- **Topbar**: muestra la versión actual recibida por `app:version`.
+- **Instalador NSIS**: ahora usa ámbito de usuario (`RequestExecutionLevel user`, `WAILS_INSTALL_SCOPE user`) para evitar UAC y permitir actualizaciones sin administrador.
+
+### Cambiado
+
+- Versión de la app y del instalador actualizada a `0.1.5` en `cmd/vantare/main.go`, `build/config.yml` y `build/windows/nsis/project.nsi`.
+
+## v0.1.4-prealpha - 2026-06-15
 Pre-alpha con sistema de actualizaciones integrado desde GitHub.
 
 ### Incluido
