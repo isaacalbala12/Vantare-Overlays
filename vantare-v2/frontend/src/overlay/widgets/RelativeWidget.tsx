@@ -55,8 +55,7 @@ export function selectRelativeRowsByGap(
 		.filter((x) => x.gap > 0)
 		.sort((a, b) => a.gap - b.gap)
 		.slice(0, rangeAhead)
-		.map((x) => x.vehicle)
-		.reverse();
+		.map((x) => x.vehicle);
 
   const behind = withGap
     .filter((x) => x.gap < 0)
