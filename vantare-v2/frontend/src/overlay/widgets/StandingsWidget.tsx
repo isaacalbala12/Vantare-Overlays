@@ -21,10 +21,15 @@ const BAKED_CLASS_BG = "linear-gradient(90deg, #9b2226 0%, #e63946 50%, #9b2226 
 const ON_TRACK_COLOR = "#FFFFFF";
 const PIT_COLOR = "#9CA3AF";
 
-export function formatStandingsGap(v: Partial<VehicleScoring>): string {
-  if (v.place === 1) return "Leader";
-  if ((v.lapsBehindLeader ?? 0) > 0) return `+${v.lapsBehindLeader}L`;
-  if ((v.timeBehindLeader ?? 0) > 0) return `+${v.timeBehindLeader!.toFixed(3)}s`;
+export function formatStandingsGap(
+  v: Partial<VehicleScoring>,
+  classLeader: Partial<VehicleScoring> | undefined
+): string {
+  if (!classLeader || v.id === classLeader.id) return "Leader";
+  const lapsDiff = (v.lapsBehindLeader ?? 0) - (classLeader.lapsBehindLeader ?? 0);
+  if (lapsDiff > 0) return `+${lapsDiff}L`;
+  const timeDiff = (v.timeBehindLeader ?? 0) - (classLeader.timeBehindLeader ?? 0);
+  if (timeDiff > 0) return `+${timeDiff.toFixed(3)}s`;
   return "—";
 }
 
@@ -55,12 +60,13 @@ export function formatRemainingTime(seconds: number | undefined): string {
 
 export function formatStandingsGapForMode(
   mode: SessionMode,
-  v: Partial<VehicleScoring>
+  v: Partial<VehicleScoring>,
+  classLeader: Partial<VehicleScoring> | undefined
 ): string {
   if (mode === "practice" || mode === "qualifying") {
-    return v.place === 1 ? formatLapTime(v.bestLapTime) : formatLapTime(v.bestLapTime);
+    return formatLapTime(v.bestLapTime);
   }
-  return formatStandingsGap(v);
+  return formatStandingsGap(v, classLeader);
 }
 
 function tireBadgeHtml(compound: string | undefined, tireSoft: string, tireMedium: string, tireHard: string): string {
@@ -118,16 +124,18 @@ export function StandingsWidget({ editMode, telemetryMode, props, updateHz = 15 
       }
 
       const rowHeight = Math.max(18, Math.floor((container.clientHeight - 8) / Math.max(1, sorted.length)));
+      const classLeader = sorted[0];
 
       const rows = sorted.map((v, i) => {
         const bgRow = i % 2 === 0 ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.3)";
-        const isLeader = v.place === 1;
+        const isLeader = i === 0;
         const pitLabel = formatStandingsPit(v);
         const pitting = pitLabel !== "";
-        const gapText = mode === "race" && v.fastestLap ? "FASTEST" : formatStandingsGapForMode(mode, v);
+        const gapText = mode === "race" && v.fastestLap ? "FASTEST" : formatStandingsGapForMode(mode, v, classLeader);
         const gapColor = isLeader ? a.posLeaderColor : "";
-        const posColor = isLeader ? a.posLeaderColor : (v.place && v.place <= 3 ? ON_TRACK_COLOR : ON_TRACK_COLOR);
+        const posColor = isLeader ? a.posLeaderColor : ON_TRACK_COLOR;
         const rowTextColor = pitting ? PIT_COLOR : ON_TRACK_COLOR;
+        const classPlace = i + 1;
 
         const hasBrand = !!v.teamBrandColor;
         const bi = hasBrand ? brandInitial(v.driverName) : "";
@@ -159,7 +167,7 @@ export function StandingsWidget({ editMode, telemetryMode, props, updateHz = 15 
           : "";
 
         return `<div class="flex items-center text-[11px] font-bold border-b border-black/20 transition-all" style="height:${rowHeight}px;background:${bgRow};${leftInset}">
-          <div class="w-6 text-center shrink-0" style="color:${posColor}">${v.place ?? ""}</div>
+          <div class="w-6 text-center shrink-0" style="color:${posColor}">${classPlace}</div>
           ${brandCell}
           ${numberCell}
           <div class="flex-1 px-1 tracking-wide truncate" style="color:${teamColor}">${escapeHTML(v.driverName ?? "?")}</div>
