@@ -45,3 +45,7 @@ _lmu-sr-dr-investigation/
 
 # Local release archives
 *.zip
+
+# Local build and task state
+vantare-v2/.task/
+vantare-v2/frontend/bindings/

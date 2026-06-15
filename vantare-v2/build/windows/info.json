@@ -1,0 +1,15 @@
+{
+	"fixed": {
+		"file_version": "0.1.1"
+	},
+	"info": {
+		"0000": {
+			"ProductVersion": "0.1.1",
+			"CompanyName": "Vantare",
+			"FileDescription": "Vantare Overlays v2",
+			"LegalCopyright": "© 2026 Vantare",
+			"ProductName": "Vantare Overlays",
+			"Comments": "Pre-alpha v0.1.1-prealpha"
+		}
+	}
+}
