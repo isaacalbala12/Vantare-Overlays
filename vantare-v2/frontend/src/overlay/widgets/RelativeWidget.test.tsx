@@ -31,7 +31,7 @@ describe("RelativeWidget helpers", () => {
     expect(formatSignedGap(-2.5)).toBe("-2.5");
   });
 
-  it("orders cars by physical gap with closest adjacent to player", () => {
+  it("orders cars 3rd ahead at top, 1st ahead just above player", () => {
     const player = { id: 0, driverName: "Player", place: 4, isPlayer: true, timeGapToPlayer: 0 };
     const vehicles = [
       { id: 1, driverName: "Ahead3", place: 1, timeGapToPlayer: 8.0 },
@@ -44,7 +44,7 @@ describe("RelativeWidget helpers", () => {
     ];
     const rows = selectRelativeRowsByGap(vehicles, 3, 3);
     expect(rows.map((v) => v.driverName)).toEqual([
-      "Ahead1", "Ahead2", "Ahead3", "Player", "Behind1", "Behind2", "Behind3",
+      "Ahead3", "Ahead2", "Ahead1", "Player", "Behind1", "Behind2", "Behind3",
     ]);
   });
 });
