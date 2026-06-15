@@ -25,3 +25,20 @@ test-data/lmu-fixture.bin
 test-data/lmu-fixture.json
 # Local Pi runtime state
 .atl/
+
+# Local agent/session state
+.omo/run-continuation/
+.pi/
+agent-skills/
+
+# Local generated build/release artifacts
+apps/desktop/build/
+vantare-v2/release-package/
+vantare-v2/*.exe~
+
+# Local debug/probe output
+vantare-v2/*.csv
+vantare-v2/frontend/.tmp/
+tools/__pycache__/
+supabase/.temp/
+_lmu-sr-dr-investigation/

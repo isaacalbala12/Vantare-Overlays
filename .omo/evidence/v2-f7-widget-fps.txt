@@ -1,0 +1,71 @@
+Fase 7 — Widget FPS Optimization
+Fecha: 2026-06-12
+Estado: ✅ técnico (pendiente medición FPS/CPU real)
+
+Comandos ejecutados:
+- cd C:\Users\isaac\Desktop\Vantare-Overlays\vantare-v2
+- go test ./...
+- pnpm --dir frontend test
+- pnpm --dir frontend build
+
+Resultados:
+- go test ./...: OK (todas las suites pasaron)
+- pnpm --dir frontend test: OK (19 tests en 5 archivos)
+- pnpm --dir frontend build: OK (dist generado sin errores)
+
+Archivos creados:
+- vantare-v2/frontend/src/lib/frame-budget.ts
+- vantare-v2/frontend/src/lib/frame-budget.test.ts
+- vantare-v2/frontend/src/lib/dom-write.ts
+- vantare-v2/frontend/src/lib/dom-write.test.ts
+- vantare-v2/frontend/src/lib/html-escape.ts
+- vantare-v2/frontend/src/lib/html-escape.test.ts
+- .omo/evidence/v2-f7-widget-fps.txt
+
+Archivos modificados:
+- vantare-v2/frontend/vite.config.ts (test environment: happy-dom)
+- vantare-v2/frontend/package.json (+ happy-dom devDependency)
+- vantare-v2/frontend/src/overlay/CompositeApp.tsx (pasa updateHz)
+- vantare-v2/frontend/src/overlay/ObsOverlayApp.tsx (pasa updateHz)
+- vantare-v2/frontend/src/overlay/widgets/DeltaWidget.tsx (30 Hz, DOM idempotente)
+- vantare-v2/frontend/src/overlay/widgets/RelativeWidget.tsx (15 Hz, innerHTML idempotente, driverName escapado)
+- vantare-v2/frontend/src/overlay/widgets/StandingsWidget.tsx (15 Hz, innerHTML idempotente, driverName escapado)
+- docs/proyecto/04-ESTADO-ACTUAL.md (Fase 7 técnico)
+- docs/proyecto/05-PLAN-MAESTRO-FASES.md (Fase 7 técnico)
+- docs/proyecto/11-COMANDOS-Y-VERIFICACION.md (checklist F7)
+
+Archivos eliminados:
+- vantare-v2/frontend/src/lib/render-meter.ts
+- vantare-v2/frontend/src/lib/render-meter.test.ts
+
+Validación manual:
+- Racing: go run ./cmd/vantare -profile configs/example-racing.json inició sin errores.
+  Se sirvieron assets /, /assets/index-*.js, /assets/index-*.css, /favicon.svg.
+  No se observó "Loading profile..." permanente.
+- Streaming/OBS: go run ./cmd/vantare -profile configs/example-streaming.json inició servidor HTTP.
+  GET /health respondió {"ok":true}.
+  GET /api/profile?profile=example-streaming.json devolvió el perfil con updateHz por widget.
+  GET /overlay?profile=example-streaming.json devolvió HTTP 200.
+- Widgets: los perfiles de ejemplo ya tienen delta a 30 Hz y relative/standings a 15 Hz.
+
+Observaciones FPS:
+- DeltaWidget usa startFrameBudgetLoop(updateHz = 30) y helpers setTextIfChanged/setClassNameIfChanged/setStylePropertyIfChanged.
+- RelativeWidget y StandingsWidget usan startFrameBudgetLoop(updateHz = 15) y setHTMLIfChanged.
+- Los helpers evitan reescribir DOM cuando el valor no cambia.
+- No se introdujo React state para telemetría hot; sigue usando telemetry-ref.ts.
+- No se modificó la frecuencia global Go (EmitHz <= 30).
+
+Post-review fixes:
+- Escaping HTML aplicado a driverName en Relative/Standings mediante escapeHTML().
+- render-meter eliminado por estar sin uso.
+- frame-budget loop cubierto con test de RAF falso.
+- setStylePropIfChanged reemplazado por setStylePropertyIfChanged(el, prop, value) basado en getPropertyValue/setProperty.
+- Docs ajustadas a ✅ técnico; F7 no se marca como cerrada total hasta medición real.
+
+Nota sobre working tree:
+- vantare-v2/frontend/src/overlay/CompositeApp.tsx ya no contiene el bloque de botones "Guardar"/"Salir" del modo edición que aparece en git HEAD. Este cambio estaba presente en el working tree antes de iniciar F7; los únicos cambios realizados por F7 en este archivo son: (1) expandir el tipo WidgetProps para incluir updateHz, y (2) pasar updateHz al componente. No se eliminó intencionalmente ninguna UI.
+
+Limitaciones:
+- No se realizó medición real de FPS con DevTools Performance en esta sesión.
+- No se midió consumo de CPU/GPU antes/después; la optimización se basa en reducir trabajo por frame.
+- El loop de frame budget depende de requestAnimationFrame; si la pestaña está en segundo plano, el navegador puede bajar la frecuencia por debajo del target.

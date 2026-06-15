@@ -1,0 +1,62 @@
+Fase 8 — Temas runtime y Lite mode
+Fecha: 2026-06-12
+Estado: ✅ técnico (pendiente comparación visual pixel-perfect)
+
+Comandos ejecutados:
+- cd C:\Users\isaac\Desktop\Vantare-Overlays\vantare-v2
+- go test ./...
+- pnpm --dir frontend test
+- pnpm --dir frontend build
+
+Resultados:
+- go test ./...: OK (todas las suites pasaron)
+- pnpm --dir frontend test: OK (25 tests en 6 archivos)
+- pnpm --dir frontend build: OK (dist generado sin errores)
+
+Fixes post-review aplicados:
+- Lite mode ahora apaga también efectos caros que quedaban fuera de las reglas iniciales: orbes blur grandes, blur auxiliar, sombras y motion semántico en HeroSection, EventBanner, ProSidebar y Topbar.
+- localStorage se accede mediante helpers seguros con fallback a vantare-v5 si el storage falla en WebView/navegador embebido.
+- El contrato de tema usa tipos explícitos para colors/effects/fonts en vez de Record<string, string>.
+- Tests añadidos para garantizar que los temas reales no emiten variables CSS vacías y que storage roto no tumba la app.
+- Topbar ya no aplica el tema dos veces al cambiar Lite mode.
+- Roadmap corregido: Fase 9 no aparece duplicada.
+
+Archivos creados:
+- vantare-v2/frontend/src/themes/vantare-v5.json
+- vantare-v2/frontend/src/themes/vantare-lite.json
+- vantare-v2/frontend/src/lib/theme.ts
+- vantare-v2/frontend/src/lib/theme.test.ts
+- .omo/evidence/v2-f8-themes.txt
+
+Archivos modificados:
+- vantare-v2/frontend/tsconfig.app.json (+ resolveJsonModule)
+- vantare-v2/frontend/src/index.css (variables --v-*, lite mode guards)
+- vantare-v2/frontend/src/main.tsx (aplica tema al arrancar)
+- vantare-v2/frontend/src/hub/components/Topbar.tsx (toggle Lite mode)
+- vantare-v2/frontend/src/overlay/widgets/DeltaWidget.tsx (colores theme-aware)
+- docs/proyecto/04-ESTADO-ACTUAL.md (Fase 8 técnico)
+- docs/proyecto/05-PLAN-MAESTRO-FASES.md (Fase 8 técnico, Fase 9 siguiente)
+- docs/proyecto/06-DISENO-UI.md (documentación temas runtime)
+- docs/proyecto/11-COMANDOS-Y-VERIFICACION.md (checklist F8)
+
+Validación manual:
+- Hub full: go run ./cmd/vantare -profile configs/example-racing.json inició sin errores.
+  Se sirvieron assets y el Hub cargó.
+- Hub lite: botón "Lite OFF/ON" presente en topbar (confirmado por build y código).
+- Overlay racing: inició correctamente, widgets renderizan.
+- OBS: go run ./cmd/vantare -profile configs/example-streaming.json respondió HTTP 200 en /overlay?profile=example-streaming.json.
+
+Observaciones:
+- Tema v5 y lite se aplican en document.documentElement vía applyTheme().
+- Lite mode reduce glassBlur a 0px, cardShadow a none, hoverTranslateY a 0px y desactiva transiciones en .glass-panel, .card-sleek, .btn-primary, .btn-secondary, .nav-item::after.
+- Lite mode oculta elementos decorativos marcados como .lite-expensive y neutraliza .lite-motion / .lite-glass-lite.
+- prefers-reduced-motion sigue respetado.
+- Los colores dinámicos de DeltaWidget usan var(--v-success) y var(--v-red-400).
+- No se introdujo auth/cloud/marketplace.
+- No se tocó apps/desktop/.
+
+Limitaciones:
+- No se realizó comparación visual pixel-perfect contra hub_main_v5.html.
+- No se midió impacto GPU de Lite mode con DevTools Rendering/Performance.
+- El toggle Lite mode está en la topbar; no hay página de Setup completa todavía.
+- Algunos elementos (logo SVG, hero gradient, pro-badge) siguen con colores hardcodeados porque son assets de marca no parametrizados en el schema inicial.

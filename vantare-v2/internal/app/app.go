@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"io/fs"
+	"log"
 	"os"
 	"path/filepath"
 	"sync"
@@ -16,6 +17,7 @@ var openLMUSource = service.OpenLMUSource
 
 type App struct {
 	Telemetry *service.Service
+	source    service.Source
 	lmuSource *service.LMUSource
 	cancel    context.CancelFunc
 	wg        sync.WaitGroup
@@ -30,11 +32,22 @@ func New(useLiveLMU bool) *App {
 		if s, err := openLMUSource(); err == nil {
 			lmuSrc = s
 			src = s
+			log.Printf("live LMU source opened")
+		} else {
+			log.Printf("warning: live LMU source unavailable: %v (falling back to mock)", err)
 		}
 	}
 	if src == nil {
 		buf := lmu.BuildSyntheticBuffer()
-		src = service.FuncSource(func() []byte { return buf })
+		src = service.FuncSource{
+			ReadFunc: func() []byte { return buf },
+			InfoData: service.SourceInfo{
+				Kind:      service.SimulatorMock,
+				Name:      "Mock telemetry",
+				Live:      false,
+				Available: true,
+			},
+		}
 	}
 
 	svc := service.New(service.Config{
@@ -43,7 +56,7 @@ func New(useLiveLMU bool) *App {
 		Source: src,
 	})
 
-	return &App{Telemetry: svc, lmuSource: lmuSrc}
+	return &App{Telemetry: svc, source: src, lmuSource: lmuSrc}
 }
 
 func (a *App) StartTelemetry(ctx context.Context) {
@@ -73,6 +86,21 @@ func (a *App) StopTelemetry() {
 // LMUSource returns the live source when -live was used (for tests).
 func (a *App) LMUSource() *service.LMUSource {
 	return a.lmuSource
+}
+
+func (a *App) TelemetrySource() service.Source {
+	if a == nil {
+		return nil
+	}
+	return a.source
+}
+
+// SourceInfo returns metadata about the active telemetry source.
+func (a *App) SourceInfo() service.SourceInfo {
+	if a == nil {
+		return service.SourceInfo{Kind: service.SimulatorUnknown, Name: "No source", Live: false, Available: false}
+	}
+	return service.InfoForSource(a.source)
 }
 
 // FrontendDistFS locates the built Vite output (CWD, then next to executable).

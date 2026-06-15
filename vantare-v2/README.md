@@ -1,6 +1,8 @@
 # Vantare Overlays v2
 
-Reinicio del proyecto con **Go + Wails + React**. Esta carpeta es el scaffold inicial (Fase 1).
+Alpha `v0.1.0-alpha.1` del reinicio del proyecto con **Go + Wails + React**.
+
+Estado actual: Hub principal + Preview Workbench + overlay desktop fullscreen transparente bajo demanda + telemetría live de Le Mans Ultimate. `apps/desktop/` es v1 legado y no forma parte de esta alpha.
 
 Documentación: [`../docs/V2-STACK-AND-PERFORMANCE.md`](../docs/V2-STACK-AND-PERFORMANCE.md) · Plan maestro: [`../docs/V2-MASTER-PLAN.md`](../docs/V2-MASTER-PLAN.md) · **Guía completa:** [`../docs/proyecto/README.md`](../docs/proyecto/README.md)
 
@@ -14,7 +16,7 @@ Documentación: [`../docs/V2-STACK-AND-PERFORMANCE.md`](../docs/V2-STACK-AND-PER
 
 ```
 vantare-v2/
-├── cmd/vantare/            # Wails overlay app (Fase 3-4)
+├── cmd/vantare/            # Wails app: Hub + overlay runtime bajo demanda
 ├── cmd/lmu-debug/          # CLI de telemetría LMU
 ├── configs/                # perfiles JSON (racing, edit)
 ├── frontend/               # React 19 + Vite + Tailwind v4
@@ -59,19 +61,29 @@ go run ./cmd/lmu-debug -hz 10
 track=Spa | speed=54.0 km/h | gear=4 | rpm=7200 | fuel=45.2 L | lap=0
 ```
 
-## Wails overlay (Fase 3)
+## Ejecutar Vantare
 
 ```bash
 pnpm --dir frontend install
 pnpm --dir frontend test           # vitest: wire format + diff merge
 pnpm --dir frontend build
-go run ./cmd/vantare              # mock telemetry
-go run ./cmd/vantare -live        # LMU must be running
+go run ./cmd/vantare -profile configs/example-racing.json              # mock telemetry
+go run ./cmd/vantare -live -profile configs/example-racing.json        # LMU debe estar abierto/en sesión
 ```
 
-## Composite overlay (Fase 4)
+## Hub + Preview Workbench
 
-Un solo ventana overlay con 3 widgets (delta, relative, standings) driven by profile JSON.
+La app abre primero el Hub. El overlay desktop no se crea al arrancar; se crea al pulsar `Iniciar` desde el flujo de perfiles/Preview.
+
+Preview permite:
+
+- seleccionar perfil/layout;
+- activar/desactivar widgets;
+- editar posición/tamaño/apariencia;
+- guardar el JSON;
+- iniciar/detener el overlay runtime.
+
+El runtime renderiza solo widgets `enabled: true`.
 
 ### Comandos
 
@@ -80,15 +92,11 @@ go test ./...                     # Go tests
 pnpm --dir frontend test          # Frontend tests
 pnpm --dir frontend build         # Build frontend
 
-# Modo racing (shrink-wrap, click-through)
+# Modo mock
 go run ./cmd/vantare -profile configs/example-racing.json
-
-# Modo edit (fullscreen, draggable widgets)
-go run ./cmd/vantare -profile configs/example-racing.json -edit
 
 # Live con LMU
 go run ./cmd/vantare -live -profile configs/example-racing.json
-go run ./cmd/vantare -live -profile configs/example-racing.json -edit
 ```
 
 ### Perfil JSON
@@ -108,25 +116,25 @@ Los perfiles definen widgets con posiciones, tipo y props:
 }
 ```
 
-## Hub Dashboard (Fase 5)
+## Widgets Alpha
 
-Segunda ventana Wails (normal, con marco) para gestión visual de perfiles y dashboard de telemetría.
+- `standings`: conectado a vehículos LMU.
+- `relative`: conectado a vehículos LMU.
+- `delta`: UI disponible; `deltaBest` live fiable está pendiente.
+- `telemetry` y `telemetry-vertical`: velocidad/marcha/rpm/pedales según datos disponibles.
+- `pedals`: visual inicial con throttle/brake/clutch; clutch live queda pendiente si LMU no expone offset.
 
-```bash
-go run ./cmd/vantare                 # Abre overlay + hub window
-go run ./cmd/vantare -live           # Con LMU en vivo
-```
-
-### Hub features
+## Hub features
 
 - **Dashboard**: Hero VANTARE cinematográfico, panel coche/circuito/sesión, banner evento, ratings driver + safety, gráfico iRating (canvas), carreras recientes, sidebar Pro + ecosistema
-- **Overlays (Perfiles)**: Lista, crear, activar, eliminar perfiles JSON
+- **Overlays / Preview**: Lista perfiles, editor visual, iniciar/detener overlay, activar/desactivar widgets
 - **Diseño**: Portado fiel desde `hub_main_v5.html` — Tailwind v4, glass-panel, card-sleek, paleta `vantare-*`
 
-### Modos
+## Modos
 
-- **Racing**: Ventana shrink-wrap al bbox de widgets, click-through (`SetIgnoreMouseEvents`)
-- **Edit**: Ventana fullscreen, widgets arrastrables, guarda posiciones a JSON
+- **Racing desktop**: ventana fullscreen, transparente, always-on-top y click-through.
+- **Streaming/OBS**: página HTTP en `/overlay?profile=...` + SSE `/telemetry/stream`.
+- **Preview**: editor dentro del Hub; la ventana desktop no se usa para editar.
 
 ## Próximos pasos
 

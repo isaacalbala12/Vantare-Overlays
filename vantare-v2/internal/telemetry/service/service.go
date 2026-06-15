@@ -135,14 +135,18 @@ func (s *Service) processRead() {
 
 func (s *Service) flushEmit() {
 	s.latestMu.Lock()
-	if !s.dirty || s.latest == nil {
+	if s.latest == nil {
 		s.latestMu.Unlock()
 		return
 	}
+	// Always emit the latest snapshot at EmitHz so subscribers receive fresh
+	// data even when the telemetry values are unchanged (e.g. paused sim).
 	snap := s.latest
-	s.dirty = false
 	prevEmit := s.lastEmit
-	s.lastEmit = snap
+	if s.dirty {
+		s.dirty = false
+		s.lastEmit = snap
+	}
 	s.latestMu.Unlock()
 
 	s.seq++

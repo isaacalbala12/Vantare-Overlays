@@ -49,9 +49,9 @@ func TestTelemetryStream(t *testing.T) {
 	svc := service.New(service.Config{
 		ReadHz: 1000,
 		EmitHz: 1000,
-		Source: service.FuncSource(func() []byte {
+		Source: service.FuncSource{ReadFunc: func() []byte {
 			return lmu.BuildSyntheticBuffer()
-		}),
+		}},
 	})
 	go svc.Run(ctx)
 	time.Sleep(50 * time.Millisecond)
@@ -83,9 +83,9 @@ func TestTelemetryStreamEmitsEvents(t *testing.T) {
 	svc := service.New(service.Config{
 		ReadHz: 1000,
 		EmitHz: 100,
-		Source: service.FuncSource(func() []byte {
+		Source: service.FuncSource{ReadFunc: func() []byte {
 			return lmu.BuildSyntheticBuffer()
-		}),
+		}},
 	})
 	go svc.Run(ctx)
 	time.Sleep(50 * time.Millisecond)
@@ -113,9 +113,9 @@ func TestTelemetryStreamFormat(t *testing.T) {
 	svc := service.New(service.Config{
 		ReadHz: 1000,
 		EmitHz: 100,
-		Source: service.FuncSource(func() []byte {
+		Source: service.FuncSource{ReadFunc: func() []byte {
 			return lmu.BuildSyntheticBuffer()
-		}),
+		}},
 	})
 	go svc.Run(ctx)
 	time.Sleep(50 * time.Millisecond)

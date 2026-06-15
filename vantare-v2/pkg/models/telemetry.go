@@ -12,6 +12,7 @@ type PlayerTelemetry struct {
 	DeltaBest   float64 `json:"deltaBest,omitempty"`
 	Throttle    float64 `json:"throttle,omitempty"`
 	Brake       float64 `json:"brake,omitempty"`
+	Clutch      float64 `json:"clutch,omitempty"`
 	Steering    float64 `json:"steering,omitempty"`
 	VehicleName string  `json:"vehicleName,omitempty"`
 	TrackName   string  `json:"trackName,omitempty"`

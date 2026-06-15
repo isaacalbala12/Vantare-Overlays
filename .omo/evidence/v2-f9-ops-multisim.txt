@@ -1,0 +1,37 @@
+Fase 9 — Ops + multi-sim foundation
+Fecha: 2026-06-12
+Estado: ✅ técnico
+
+Fixes post-review aplicados:
+- OpsBridge ahora soporta Stop antes de Start, Start duplicado y Start después de Stop sin bloqueo ni panic.
+- El Dashboard valida la forma del payload `ops:metrics` antes de guardarlo en estado React.
+- CPU app ya no se presenta como 0% medido; se serializa como null y la UI muestra N/D.
+- Se eliminó `system.memoryMb` porque duplicaba RAM de app y no medía memoria real del sistema.
+
+Comandos ejecutados:
+- go test ./...
+- pnpm --dir frontend test
+- pnpm --dir frontend build
+- go run ./cmd/vantare -profile configs/example-racing.json
+
+Resultados:
+- go test ./...: OK (todas las suites pasan)
+- pnpm --dir frontend test: OK (27 tests, 7 archivos)
+- pnpm --dir frontend build: OK
+- go run ./cmd/vantare -profile configs/example-racing.json: arrancó sin errores, creó ventanas WebView2, sirvió assets
+
+Validación manual:
+- Hub Ops panel: ✅ la app arrancó, el Hub se sirvió en /#/hub y el panel Ops forma parte del Dashboard. No se observó regressión visual.
+- Mock source metadata: ✅ los logs de ops:metrics mostraron source=Mock telemetry con el perfil de ejemplo sin -live.
+- Transición "Esperando métricas" → valores reales: ✅ el evento ops:metrics se emite cada segundo; el componente se suscribe en DashboardPage.
+- RAM app en MB: ✅ logs mostraron valores como 1.0MB, 1.2MB, etc.
+- CPU app: ✅ aparece como N/D hasta implementar medición real.
+- Goroutines: ✅ logs mostraron ~15 goroutines estables.
+- Overlay racing sigue cargando widgets: ✅ no apareció "Loading profile..." ni error de carga; el overlay sirvió / y cargó assets.
+- LMU source metadata: no validado sin LMU abierto (no se ejecutó -live con LMU corriendo).
+
+Notas:
+- F9 no implementa iRacing/AC completos. Solo deja metadata/tipos para adapters futuros.
+- Ops metrics no forman parte del pipeline caliente de telemetría; se emiten por separado a 1 Hz.
+- No se tocó apps/desktop/.
+- No se hizo commit ni push.

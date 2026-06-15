@@ -13,12 +13,23 @@ import { WidgetHost } from "./WidgetHost";
 import { DeltaWidget } from "./widgets/DeltaWidget";
 import { RelativeWidget } from "./widgets/RelativeWidget";
 import { StandingsWidget } from "./widgets/StandingsWidget";
+import { TelemetryWidget } from "./widgets/TelemetryWidget";
+import { TelemetryVerticalWidget } from "./widgets/TelemetryVerticalWidget";
+import { PedalsWidget } from "./widgets/PedalsWidget";
+import { applyOverlayDocumentMode } from "./overlay-document";
 
-type WidgetProps = { editMode: boolean; props?: Record<string, unknown> };
+type WidgetProps = {
+  editMode: boolean;
+  updateHz?: number;
+  props?: Record<string, unknown>;
+};
 const WIDGETS: Record<string, ComponentType<WidgetProps>> = {
   delta: DeltaWidget,
   relative: RelativeWidget,
   standings: StandingsWidget,
+  telemetry: TelemetryWidget,
+  "telemetry-vertical": TelemetryVerticalWidget,
+  pedals: PedalsWidget,
 };
 
 const STREAMING_MODE_HINT = "obs-streaming";
@@ -30,8 +41,7 @@ export function ObsOverlayApp() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    document.body.classList.add("desktop-overlay");
-    return () => document.body.classList.remove("desktop-overlay");
+    return applyOverlayDocumentMode();
   }, []);
 
   useEffect(() => {
@@ -104,13 +114,8 @@ export function ObsOverlayApp() {
         }
         const localPos = toWindowLocal(w.position, layoutOrigin);
         return (
-          <WidgetHost
-            key={w.id}
-            id={w.id}
-            position={localPos}
-            editMode={false}
-          >
-            <Component editMode={false} props={w.props} />
+          <WidgetHost key={w.id} id={w.id} position={localPos}>
+            <Component editMode={false} updateHz={w.updateHz} props={{ ...w.props, style: w.style ?? w.props?.style }} />
           </WidgetHost>
         );
       })}

@@ -1,12 +1,16 @@
 export type VehicleScoring = {
   id: number;
   driverName?: string;
+  driverNumber?: string;
   place?: number;
   totalLaps?: number;
   vehicleClass?: string;
   isPlayer?: boolean;
   inPits?: boolean;
   timeBehindLeader?: number;
+  teamBrandColor?: string;
+  tireCompound?: string;
+  fastestLap?: boolean;
 };
 
 export type PlayerDiff = {
@@ -15,6 +19,8 @@ export type PlayerDiff = {
   gear?: number;
   fuel?: number;
   deltaBest?: number;
+  throttle?: number;
+  brake?: number;
 };
 
 export type SessionDiff = {
@@ -34,6 +40,8 @@ export type TelemetryPayload = {
       engineRPM: number;
       fuel?: number;
       deltaBest?: number;
+      throttle?: number;
+      brake?: number;
     };
     session?: {
       trackName?: string;
@@ -57,6 +65,9 @@ export type TelemetryRefState = {
   fuel: number;
   deltaBest: number;
   trackName: string;
+  throttle: number;
+  brake: number;
+  clutch: number;
   vehicles: VehicleScoring[];
 };
 
@@ -69,6 +80,9 @@ const state: TelemetryRefState = {
   fuel: 0,
   deltaBest: 0,
   trackName: "",
+  throttle: 0,
+  brake: 0,
+  clutch: 0,
   vehicles: [],
 };
 
@@ -97,6 +111,8 @@ export function applyTelemetryUpdate(payload: TelemetryPayload) {
     state.rpm = p.engineRPM;
     if (p.fuel != null) state.fuel = p.fuel;
     if (p.deltaBest != null) state.deltaBest = p.deltaBest;
+  if (p.throttle != null) state.throttle = normalizeInputToPercent(p.throttle);
+  if (p.brake != null) state.brake = normalizeInputToPercent(p.brake);
   }
 
   const s = payload.snapshot?.session;
@@ -118,6 +134,8 @@ export function applyTelemetryUpdate(payload: TelemetryPayload) {
       if (pd.gear != null) state.gear = pd.gear;
       if (pd.fuel != null) state.fuel = pd.fuel;
       if (pd.deltaBest != null) state.deltaBest = pd.deltaBest;
+    if (pd.throttle != null) state.throttle = normalizeInputToPercent(pd.throttle);
+    if (pd.brake != null) state.brake = normalizeInputToPercent(pd.brake);
     }
     const sd = d.session as SessionDiff | undefined;
     if (sd) {
@@ -139,5 +157,14 @@ export function resetTelemetryRefForTests() {
   state.fuel = 0;
   state.deltaBest = 0;
   state.trackName = "";
+  state.throttle = 0;
+  state.brake = 0;
+  state.clutch = 0;
   state.vehicles = [];
+}
+
+function normalizeInputToPercent(value: number): number {
+  if (!Number.isFinite(value)) return 0;
+  // Live sims send 0..1; HTML gauges expect 0..100. If already >1, assume percent.
+  return value <= 1 ? Math.round(value * 100) : Math.round(value);
 }

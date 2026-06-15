@@ -1,0 +1,47 @@
+Fecha: 2026-06-11
+Fase: Vantare v2 F6 OBS / SSE
+
+Resumen:
+- Servidor HTTP embebido para OBS en 127.0.0.1:39261.
+- Endpoints implementados: /health, /overlay, /api/profile, /telemetry/stream.
+- Assets Vite servidos desde frontend/dist para evitar overlay en blanco en OBS.
+- Perfil streaming añadido: vantare-v2/configs/example-streaming.json.
+- /api/profile acepta filename o id JSON, por ejemplo example-streaming.json y default-streaming.
+- Modo streaming mueve la ventana overlay desktop off-screen a 1x1 y sale de fullscreen si venía de edit.
+- ObsOverlayApp usa fetch + EventSource y no depende de @wailsio/runtime.
+
+Fixes post-review aplicados:
+- -http se registra antes de flag.Parse().
+- /assets/... responde desde dist.
+- Resolución profile id != filename.
+- ModeStreaming llama UnFullscreen().
+- Stop HTTP usa Shutdown con timeout.
+- Eliminado helper SSE muerto.
+- EventSource se abre solo tras cargar perfil.
+
+Verificación ejecutada:
+
+1) go test ./...
+Resultado: PASS
+Paquetes relevantes:
+- internal/server PASS
+- internal/window PASS
+- internal/app PASS
+- internal/telemetry/* PASS
+
+2) pnpm --dir frontend test
+Resultado: PASS
+Test Files: 2 passed
+Tests: 10 passed
+
+3) pnpm --dir frontend build
+Resultado: PASS
+Vite build generado:
+- dist/index.html
+- dist/assets/index-xPNXI9_o.css
+- dist/assets/index-02R14ZfS.js
+
+Validación manual pendiente:
+- Abrir OBS y crear Browser Source con:
+  http://127.0.0.1:39261/overlay?profile=example-streaming.json
+- Confirmar visualmente que widgets aparecen a 1920x1080 y reciben telemetría mock/live.

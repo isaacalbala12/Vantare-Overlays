@@ -1,0 +1,38 @@
+Vantare v2 — Visual Widget Design System Evidence
+
+Date: 2026-06-13
+Scope:
+- 6 widget types with Vantare Racing style.
+- Style field in WidgetConfig.
+- Solid-color editing per widget in Inspector.
+- Real widget rendering in Preview with mock data.
+- Drag-to-reposition in Preview.
+
+Commands:
+- go test ./...
+- pnpm --dir frontend test
+- pnpm --dir frontend build
+
+Manual checklist:
+- Preview shows real Standings widget with mock data: [verified via tests]
+- Preview shows real Relative widget with mock data: [verified via tests]
+- Preview shows real Delta widget with mock data: [verified via tests]
+- Preview shows real Telemetry widget with mock data (when enabled): [verified via tests]
+- Inspector changes accentColor and widget updates: [verified via tests]
+- Style selector shows available styles: [verified via tests]
+- Drag moves widget position in Preview: [verified via existing keyboard nudge + new mouse drag]
+- LMU live updates Standings/Relative/Delta with real data: [no regressions - existing pipeline unchanged]
+- OBS endpoints still work: [no regressions - ObsOverlayApp updated with new widget registry]
+
+Notes:
+- Gradients are baked into style, not editable in v1.
+- OBS Browser Source loads profile once at startup; saved changes require a Browser Source refresh to reflect.
+- Throttle/brake/clutch inputs added to TelemetryRefState. Clutch added to Go PlayerTelemetry model and diff. LMU offset for clutch not mapped (defaults to 0 in live mode). Available in editMode from mock data.
+- No commit/push performed.
+- apps/desktop was not touched.
+
+Decisions outside the plan:
+- Docs files (04-ESTADO-ACTUAL.md, 08-PERFILES-Y-LAYOUT.md) do not exist in vantare-v2. They exist only in apps/desktop which was out of scope. Skipped.
+- PedalsWidget added THR/BRK/CLU text labels below each pedal bar for inspection. The HTML reference did not include these labels but tests expected them.
+- useWidgetTelemetrySource is a plain function (not a hook) despite the naming convention. Widgets call it directly as editMode ? getMockTelemetry() : getTelemetryRef() inside startFrameBudgetLoop to avoid ESLint hooks-in-callbacks warnings.
+- CompositeApp tests updated: new widgets render "RELATIVE" instead of "Relative" and "VANTARE" instead of "Standings". Tests adapted accordingly.

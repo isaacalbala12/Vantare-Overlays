@@ -3,7 +3,7 @@ export function EventBanner() {
     <div className="w-full mb-6">
       <div className="glass-panel rounded-xl overflow-hidden relative group border border-vantare-red-900/30 hover:border-vantare-red-500/50 transition-colors shadow-2xl shadow-black/50">
         <div className="absolute inset-0 bg-gradient-to-r from-vantare-red-950/40 via-vantare-bg/80 to-vantare-bg/80 pointer-events-none" />
-        <div className="absolute -right-20 top-0 w-64 h-64 bg-vantare-red-500/10 blur-3xl rounded-full group-hover:bg-vantare-red-400/20 transition-all pointer-events-none" />
+        <div className="lite-expensive absolute -right-20 top-0 w-64 h-64 bg-vantare-red-500/10 blur-3xl rounded-full group-hover:bg-vantare-red-400/20 transition-all pointer-events-none" />
 
         <div className="relative p-6 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-6 w-full md:w-auto">
@@ -21,7 +21,7 @@ export function EventBanner() {
             </div>
           </div>
 
-          <div className="bg-black/40 rounded-xl px-6 py-3 border border-white/5 flex gap-4 md:gap-8 justify-center shrink-0 backdrop-blur-md">
+          <div className="lite-glass-lite bg-black/40 rounded-xl px-6 py-3 border border-white/5 flex gap-4 md:gap-8 justify-center shrink-0 backdrop-blur-md">
             <div className="text-center">
               <p className="font-display font-bold text-3xl text-white">03</p>
               <p className="text-[9px] text-vantare-textMuted uppercase font-semibold">Días</p>

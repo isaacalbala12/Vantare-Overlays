@@ -11,7 +11,7 @@ import (
 
 func TestServiceEmitsOnSubscribe(t *testing.T) {
 	buf := lmu.BuildSyntheticBuffer()
-	src := service.FuncSource(func() []byte { return buf })
+	src := service.FuncSource{ReadFunc: func() []byte { return buf }}
 
 	svc := service.New(service.Config{
 		ReadHz: 60,
@@ -39,7 +39,7 @@ func TestServiceEmitsOnSubscribe(t *testing.T) {
 
 func TestServiceSubscribeReplay(t *testing.T) {
 	buf := lmu.BuildSyntheticBuffer()
-	src := service.FuncSource(func() []byte { return buf })
+	src := service.FuncSource{ReadFunc: func() []byte { return buf }}
 
 	svc := service.New(service.Config{
 		ReadHz: 60,
@@ -67,9 +67,9 @@ func TestServiceSubscribeReplay(t *testing.T) {
 	}
 }
 
-func TestServiceNoEmitWhenStable(t *testing.T) {
+func TestServiceHeartbeatEmitWhenStable(t *testing.T) {
 	buf := lmu.BuildSyntheticBuffer()
-	src := service.FuncSource(func() []byte { return buf })
+	src := service.FuncSource{ReadFunc: func() []byte { return buf }}
 
 	svc := service.New(service.Config{
 		ReadHz: 60,
@@ -88,25 +88,21 @@ func TestServiceNoEmitWhenStable(t *testing.T) {
 		t.Fatalf("seq: got %d want 1", first.Seq)
 	}
 
-	deadline := time.After(300 * time.Millisecond)
-	for {
-		select {
-		case upd := <-sub:
-			t.Fatalf("unexpected duplicate emit seq=%d when telemetry stable", upd.Seq)
-		case <-deadline:
-			return
-		}
+	// With the heartbeat emit, stable telemetry still re-emits at EmitHz.
+	second := readUpdate(t, sub, 200*time.Millisecond)
+	if second.Seq != first.Seq+1 {
+		t.Fatalf("expected heartbeat emit seq=%d, got %d", first.Seq+1, second.Seq)
 	}
 }
 
 func TestServiceEmitRateCapped(t *testing.T) {
 	var tick int
-	src := service.FuncSource(func() []byte {
+	src := service.FuncSource{ReadFunc: func() []byte {
 		buf := lmu.BuildSyntheticBuffer()
 		lmu.SetPlayerSpeedMPS(buf, 15+float64(tick)*0.2)
 		tick++
 		return buf
-	})
+	}}
 
 	svc := service.New(service.Config{
 		ReadHz: 60,
@@ -140,7 +136,7 @@ loop:
 
 func TestServiceClosesSubscribersOnShutdown(t *testing.T) {
 	buf := lmu.BuildSyntheticBuffer()
-	src := service.FuncSource(func() []byte { return buf })
+	src := service.FuncSource{ReadFunc: func() []byte { return buf }}
 
 	svc := service.New(service.Config{
 		ReadHz: 60,
@@ -169,12 +165,12 @@ func TestServiceClosesSubscribersOnShutdown(t *testing.T) {
 
 func TestServiceUnsubscribeStopsDelivery(t *testing.T) {
 	var tick int
-	src := service.FuncSource(func() []byte {
+	src := service.FuncSource{ReadFunc: func() []byte {
 		buf := lmu.BuildSyntheticBuffer()
 		lmu.SetPlayerSpeedMPS(buf, 15+float64(tick)*0.5)
 		tick++
 		return buf
-	})
+	}}
 
 	svc := service.New(service.Config{
 		ReadHz: 60,

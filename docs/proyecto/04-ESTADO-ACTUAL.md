@@ -1,6 +1,6 @@
 # 04 — Estado actual del proyecto
 
-> **Fecha de corte:** 2026-06-11  
+> **Fecha de corte:** 2026-06-15
 > Verificar siempre con `go test ./...` y git status antes de confiar en este doc.
 
 ---
@@ -16,8 +16,48 @@
 | 4 | Layout + modos | ✅ | JSON perfil, racing/edit, 3 widgets, SaveLayout |
 | 5 | Hub React | ✅ | Dashboard v5 + CRUD perfiles + segunda ventana |
 | 6 | OBS / SSE | ✅ técnico | HTTP localhost, `/overlay`, `/api/profile`, SSE; pendiente validación visual OBS real |
+| 7 | Optimización UI | ✅ técnico | FPS por widget: delta 30 Hz, relative/standings 15 Hz, DOM idempotente; pendiente medición FPS/CPU real |
+| 8 | Temas | ✅ técnico | Tokens v5 exportados a JSON, CSS variables runtime, Lite mode toggle; pendiente comparación visual pixel-perfect |
+| 9 | Ops + multi-sim | ✅ técnico | Ops panel 1 Hz con RAM/goroutines + metadata de fuente; CPU queda N/D; iRacing/AC quedan como foundation, no adapters completos |
 
-**Siguiente fase recomendada:** **Fase 7 — Optimización UI** (FPS por widget, DOM directo/canvas donde aplique), tras validar F6 en OBS real.
+**Siguiente fase recomendada:** preparación de alpha `v0.1.0-alpha.1` y cierre del único hueco funcional principal: Delta live (`deltaBest`) real.
+
+---
+
+## Cierre técnico MVP
+
+Estado: MVP técnico validado manualmente, con pendientes externos documentados.
+
+## Alpha 0.1
+
+Estado: candidata a `v0.1.0-alpha.1`.
+
+Validado manualmente por Isaac:
+
+- Hub abre solo.
+- Preview Workbench usable.
+- Overlay desktop abre bajo demanda.
+- Overlay desktop fullscreen transparente y click-through.
+- Rendimiento percibido correcto.
+- LMU live funciona.
+- Relative y Standings muestran datos reales.
+- Diseño visual inicial de widgets cargado.
+
+Limitación principal de alpha:
+
+- `Delta` todavía no está conectado a un `deltaBest` live fiable. No falsificar este dato.
+
+Pendiente antes de post-MVP:
+
+- Validar OBS real o dejar constancia explícita de que solo HTTP/SSE fue validado.
+- Registrar medición manual F7/F8 si DevTools está disponible.
+- Confirmar Ops panel en Hub (validado mediante emisión de eventos; UI visual pendiente de confirmación directa).
+- Mantener F6-F9 como `✅ técnico` hasta validación completa de experiencia.
+
+Evidencia:
+
+- `.omo/evidence/v2-mvp-closeout.txt`
+- `.omo/evidence/v2-mvp-manual-checklist.md`
 
 ---
 
@@ -25,16 +65,18 @@
 
 ### Overlay (`/`)
 
-- Perfil JSON carga widgets delta, relative, standings.
-- Modo **racing**: ventana shrink-wrap, click-through.
-- Modo **edit** (`-edit` o `displayMode: "edit"`): fullscreen, arrastrar, guardar a JSON.
-- Modo **streaming**: ventana overlay desktop se mueve off-screen 1×1; OBS usa Browser Source HTTP.
+- Perfil JSON carga widgets delta, relative, standings, telemetry y pedals según el perfil.
+- Modo **racing desktop**: ventana fullscreen transparente, click-through y always-on-top.
+- La edición ya no se hace en la ventana desktop; se hace en Preview dentro del Hub.
+- Modo **streaming**: OBS usa Browser Source HTTP; no requiere ventana desktop.
 - Telemetría mock por defecto; `-live` con LMU en pista.
 
 ### Hub (`/#/hub`)
 
 - **Dashboard**: hero, banner evento, ratings, gráfico iRating (canvas), carreras recientes, sidebar Pro — datos mayormente **mock** (OK para MVP F5).
-- **Overlays (perfiles)**: listar, crear, activar, eliminar perfiles en `configs/`.
+- **Overlays (perfiles)**: listar, crear, seleccionar y abrir en Preview.
+- **Preview Workbench**: selector de perfil, canvas real, lista de widgets, inspector, guardar, iniciar/detener overlay.
+- **Ops**: RAM, goroutines y fuente de telemetría a baja frecuencia.
 - Diseño portado desde `hub_main_v5.html` (tokens en `frontend/src/index.css`).
 
 ### Perfiles
@@ -71,6 +113,10 @@ Tests añadidos: `hub_service_test.go` (activate by id, save path, traversal, du
 
 ---
 
+### Preview Workbench
+
+Estado: implementado como flujo principal de edición/control de perfiles. El diseño visual inicial por widget ya se ha empezado a portar desde HTML/mockups externos.
+
 ## Pendiente / deuda conocida
 
 | Item | Fase | Prioridad |
@@ -79,8 +125,9 @@ Tests añadidos: `hub_service_test.go` (activate by id, save path, traversal, du
 | Rename perfil desde UI | 5+ | Baja |
 | Páginas Telemetría / Setup (nav stub) | 5+ | Media |
 | Validación visual en OBS real | 6 | Alta |
-| FPS por widget optimizado | 7 | Media |
-| Temas runtime + Lite mode | 8 | Media |
+| Delta live real (`deltaBest`) | alpha | Alta |
+| FPS por widget con medición formal | 7 | Media |
+| Temas runtime + Lite mode con comparación visual formal | 8 | Media |
 | iRacing / AC adapters | 9 | Media |
 | Auth Supabase / freemium | post-MVP | Baja |
 | Mover `hub_main_v5.html` → `docs/reference/` | docs | Baja |

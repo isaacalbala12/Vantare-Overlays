@@ -31,6 +31,7 @@ const (
 	vehicleTelemetryFuelCapacity     = 608
 	vehicleTelemetryFilteredThrottle = 420
 	vehicleTelemetryFilteredBrake    = 428
+	vehicleTelemetryFilteredClutch   = 412
 	vehicleTelemetryFilteredSteering = 436
 	vehicleTelemetryDeltaBest        = 696
 )

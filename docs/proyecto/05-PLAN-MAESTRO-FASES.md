@@ -15,9 +15,9 @@
 | 4 | Layout | JSON + racing/edit + 3 widgets | ✅ |
 | 5 | Hub | Dashboard v5 + CRUD perfiles | ✅ |
 | 6 | OBS / SSE | HTTP localhost + Browser Source | ✅ técnico |
-| 7 | Optimización UI | FPS por widget, DOM directo | ⬜ **SIGUIENTE** |
-| 8 | Temas | CSS variables, Lite mode | ⬜ |
-| 9 | Ops + multi-sim | CPU/RAM widget, iRacing/AC | ⬜ |
+| 7 | Optimización UI | FPS por widget, DOM directo | ✅ técnico |
+| 8 | Temas | CSS variables, Lite mode | ✅ técnico |
+| 9 | Ops + multi-sim | Ops panel + multi-sim foundation | ✅ técnico |
 
 ---
 
@@ -70,7 +70,7 @@ Referencia: [`06-DISENO-UI.md`](./06-DISENO-UI.md)
 
 ## Fase 9 — Ops + multi-sim
 
-- Widget System Performance (CPU/RAM de la app).
+- Widget System Performance (RAM/goroutines de la app; CPU queda N/D hasta medición real).
 - Settings compat GPU.
 - Segundo sim: adapter iRacing o AC → mismo `pkg/models`.
 
@@ -95,6 +95,46 @@ Referencia: [`06-DISENO-UI.md`](./06-DISENO-UI.md)
 3. `v2-f8-themes.md` — temas runtime
 4. `v2-f9-multisim.md` — adapter iRacing o AC
 5. `v2-f5-polish.md` — hero live, rename perfil, páginas nav (opcional)
+
+---
+
+## Cierre técnico MVP
+
+Fases 6-9 están en estado `✅ técnico` con validación automática completa y validación manual parcial documentada en `.omo/evidence/v2-mvp-closeout.txt` y `.omo/evidence/v2-mvp-manual-checklist.md`.
+
+Pendientes explícitos antes de abrir post-MVP:
+
+- Validación visual en OBS real (actualmente solo HTTP/SSE validado).
+- Medición manual FPS/CPU F7 si se requiere cifra exacta.
+- Confirmación visual directa de Lite mode y Ops panel en Hub.
+
+---
+
+## Alpha 0.1
+
+Hito actual: preparar `v0.1.0-alpha.1` en GitHub.
+
+Incluye:
+
+- Hub + Preview Workbench.
+- Overlay desktop fullscreen transparente bajo demanda.
+- LMU live.
+- Relative y Standings con datos reales.
+- Widgets visuales iniciales.
+- OBS/HTTP/SSE técnico.
+
+Limitación conocida:
+
+- Delta live real (`deltaBest`) queda pendiente y debe aparecer en release notes.
+
+Verificación mínima:
+
+```powershell
+cd C:\Users\isaac\Desktop\Vantare-Overlays\vantare-v2
+go test ./...
+pnpm --dir frontend test
+pnpm --dir frontend build
+```
 
 ---
 

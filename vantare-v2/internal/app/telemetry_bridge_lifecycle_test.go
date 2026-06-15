@@ -15,7 +15,7 @@ func TestTelemetryBridgeStopReturns(t *testing.T) {
 	svc := service.New(service.Config{
 		ReadHz: 60,
 		EmitHz: 30,
-		Source: service.FuncSource(func() []byte { return buf }),
+		Source: service.FuncSource{ReadFunc: func() []byte { return buf }},
 	})
 
 	fe := &captureEmitter{}

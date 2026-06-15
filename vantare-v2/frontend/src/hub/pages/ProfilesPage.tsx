@@ -1,15 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { Events } from "@wailsio/runtime";
+import { profileLabel, type ProfileEntry } from "../state/overlay-workbench";
 
-type ProfileEntry = {
-  id: string;
-  file: string;
-  name?: string;
-  displayMode: string;
-  widgets: number;
+type ProfilesPageProps = {
+  onOpenPreview?: () => void;
 };
 
-export function ProfilesPage() {
+export function ProfilesPage({ onOpenPreview }: ProfilesPageProps) {
   const [profiles, setProfiles] = useState<ProfileEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -72,7 +69,7 @@ export function ProfilesPage() {
   }, [newName]);
 
   const handleDelete = useCallback((profile: ProfileEntry) => {
-    const label = profile.name || profile.id;
+    const label = profileLabel(profile);
     if (!window.confirm(`¿Eliminar el perfil "${label}"? Esta acción no se puede deshacer.`)) {
       return;
     }
@@ -80,15 +77,16 @@ export function ProfilesPage() {
     Events.Emit("hub:delete", { id: profile.id, file: profile.file });
   }, []);
 
-  const handleActivate = useCallback((profile: ProfileEntry) => {
+  const handleSelect = useCallback((profile: ProfileEntry) => {
     setError(null);
-    Events.Emit("hub:activate", { id: profile.id, file: profile.file });
+    Events.Emit("overlay:start", { id: profile.id, file: profile.file });
   }, []);
 
-  const handleExitEdit = useCallback(() => {
+  const handlePreview = useCallback((profile: ProfileEntry) => {
     setError(null);
-    Events.Emit("profile:set-mode", { mode: "racing" });
-  }, []);
+    Events.Emit("hub:activate", { id: profile.id, file: profile.file });
+    onOpenPreview?.();
+  }, [onOpenPreview]);
 
   return (
     <div className="max-w-[1200px] mx-auto px-6 py-8">
@@ -96,15 +94,10 @@ export function ProfilesPage() {
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
             <h1 className="font-display font-bold text-3xl text-white mb-2">Overlays</h1>
-            <p className="text-vantare-textMuted text-sm">Gestiona tus perfiles de overlay. Crea, activa o elimina configuraciones.</p>
+            <p className="text-vantare-textMuted text-sm">
+              Gestiona tus perfiles. Usa <strong className="text-vantare-text">Preview</strong> para editar posiciones y colores, o <strong className="text-vantare-text">Abrir overlay</strong> para lanzarlo en escritorio.
+            </p>
           </div>
-          <button
-            type="button"
-            onClick={handleExitEdit}
-            className="btn-secondary px-4 py-2 rounded-lg text-xs font-bold text-white hover:text-vantare-red-300 whitespace-nowrap"
-          >
-            Salir de edición
-          </button>
         </div>
       </div>
 
@@ -154,7 +147,7 @@ export function ProfilesPage() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="font-display font-semibold text-white text-lg">{p.name || p.id}</h3>
+                  <h3 className="font-display font-semibold text-white text-lg">{profileLabel(p)}</h3>
                   <p className="text-xs text-vantare-textMuted font-mono mt-0.5">
                     {p.displayMode} · {p.widgets} widgets
                   </p>
@@ -163,10 +156,17 @@ export function ProfilesPage() {
               <div className="flex items-center gap-3">
                 <button
                   type="button"
-                  onClick={() => handleActivate(p)}
+                  onClick={() => handlePreview(p)}
                   className="btn-primary px-5 py-2 rounded-lg text-xs font-bold text-white whitespace-nowrap"
                 >
-                  Activar
+                  Preview
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSelect(p)}
+                  className="btn-secondary px-4 py-2 rounded-lg text-xs font-medium text-vantare-textMuted hover:text-white whitespace-nowrap"
+                >
+                  Abrir overlay
                 </button>
                 <button
                   type="button"

@@ -1,0 +1,120 @@
+import type { WidgetAppearance } from "../../lib/profile";
+
+export type StyleEntry = {
+  id: string;
+  name: string;
+  defaults: WidgetAppearance;
+};
+
+const CATALOG: Record<string, StyleEntry[]> = {
+  telemetry: [
+    {
+      id: "vantare-racing",
+      name: "Vantare Racing",
+      defaults: {
+        accentColor: "#9b2226",
+        textColor: "#FFFFFF",
+        backgroundColor: "#1a0104",
+        borderColor: "#9b2226",
+        rpmGreen: "#2ecc71",
+        rpmYellow: "#f1c40f",
+        rpmRed: "#e74c3c",
+        rpmBlue: "#3498db",
+        pedalThrottleColor: "#2ecc71",
+        pedalBrakeColor: "#e74c3c",
+      },
+    },
+  ],
+  "telemetry-vertical": [
+    {
+      id: "vantare-racing",
+      name: "Vantare Racing",
+      defaults: {
+        accentColor: "#9b2226",
+        textColor: "#FFFFFF",
+        backgroundColor: "#1a0104",
+        borderColor: "#9b2226",
+        rpmGreen: "#2ecc71",
+        rpmYellow: "#f1c40f",
+        rpmRed: "#e74c3c",
+        rpmBlue: "#3498db",
+        pedalThrottleColor: "#2ecc71",
+        pedalBrakeColor: "#e74c3c",
+        pedalClutchColor: "#3498db",
+      },
+    },
+  ],
+  standings: [
+    {
+      id: "vantare-racing",
+      name: "Vantare Racing",
+      defaults: {
+        accentColor: "#9b2226",
+        textColor: "#FFFFFF",
+        backgroundColor: "#3a050a",
+        borderColor: "#9b2226",
+        posLeaderColor: "#f1c40f",
+        pitColor: "#f1c40f",
+        tireSoftColor: "#E63946",
+        tireMediumColor: "#f1c40f",
+        tireHardColor: "#ffffff",
+      },
+    },
+  ],
+  relative: [
+    {
+      id: "vantare-racing",
+      name: "Vantare Racing",
+      defaults: {
+        accentColor: "#E63946",
+        textColor: "#FFFFFF",
+        backgroundColor: "#3a050a",
+        borderColor: "#9b2226",
+        gapAheadColor: "#f87171",
+        gapBehindColor: "#4ade80",
+      },
+    },
+  ],
+  delta: [
+    {
+      id: "vantare-racing",
+      name: "Vantare Racing",
+      defaults: {
+        positiveColor: "#e74c3c",
+        negativeColor: "#2ecc71",
+        textColor: "#FFFFFF",
+        backgroundColor: "#000000",
+      },
+    },
+  ],
+  pedals: [
+    {
+      id: "vantare-racing",
+      name: "Vantare Racing",
+      defaults: {
+        accentColor: "#9b2226",
+        textColor: "#FFFFFF",
+        backgroundColor: "#1a0104",
+        pedalThrottleColor: "#2ecc71",
+        pedalBrakeColor: "#e74c3c",
+        pedalClutchColor: "#3498db",
+      },
+    },
+  ],
+};
+
+const FALLBACK: WidgetAppearance = {
+  accentColor: "#9b2226",
+  textColor: "#FFFFFF",
+  backgroundColor: "#000000",
+};
+
+export function getStylesForType(widgetType: string): StyleEntry[] {
+  return CATALOG[widgetType] ?? [];
+}
+
+export function getDefaultAppearance(widgetType: string, styleId: string): WidgetAppearance {
+  const styles = CATALOG[widgetType] ?? [];
+  const entry = styles.find((s) => s.id === styleId);
+  return entry?.defaults ?? FALLBACK;
+}

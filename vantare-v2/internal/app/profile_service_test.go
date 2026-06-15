@@ -1,6 +1,7 @@
 package app_test
 
 import (
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -135,5 +136,124 @@ func TestProfileServiceEmitLoaded(t *testing.T) {
 
 	if len(spy.events) != 1 || spy.events[0] != "profile:loaded" {
 		t.Fatalf("events=%v, want [profile:loaded]", spy.events)
+	}
+}
+
+func TestProfileServiceEmitLoadedWithoutWindowManagerUsesFullscreenOrigin(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "test.json")
+	if err := config.SaveFile(path, &config.ProfileConfig{
+		DisplayMode: config.ModeRacing,
+		Widgets: []config.WidgetConfig{
+			{ID: "delta", Type: "delta", Enabled: true, Position: config.Rect{X: 760, Y: 40, W: 400, H: 48}},
+		},
+	}); err != nil {
+		t.Fatal(err)
+	}
+
+	spy := &spyEmitter{}
+	svc := app.NewProfileService(path, nil, spy)
+	if err := svc.Load(); err != nil {
+		t.Fatal(err)
+	}
+
+	svc.EmitLoaded()
+
+	payload, ok := spy.data[0].(map[string]any)
+	if !ok {
+		t.Fatalf("payload type=%T", spy.data[0])
+	}
+	origin, ok := payload["layoutOrigin"].(config.Rect)
+	if !ok {
+		t.Fatalf("layoutOrigin type=%T", payload["layoutOrigin"])
+	}
+	if origin.X != 0 || origin.Y != 0 {
+		t.Fatalf("origin=(%d,%d), want fullscreen origin (0,0)", origin.X, origin.Y)
+	}
+}
+
+
+func TestProfileServiceSaveLayoutWithoutWindowManager(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "test.json")
+	original := &config.ProfileConfig{
+		DisplayMode: config.ModeRacing,
+		Widgets: []config.WidgetConfig{
+			{ID: "delta", Type: "delta", Enabled: true, Position: config.Rect{X: 10, Y: 20, W: 100, H: 50}},
+		},
+	}
+	if err := config.SaveFile(path, original); err != nil {
+		t.Fatal(err)
+	}
+
+	svc := app.NewProfileService(path, nil, nil)
+	if err := svc.Load(); err != nil {
+		t.Fatal(err)
+	}
+
+	updated := []config.WidgetConfig{
+		{ID: "delta", Type: "delta", Enabled: true, Position: config.Rect{X: 30, Y: 40, W: 120, H: 60}},
+	}
+	if err := svc.SaveLayout(updated); err != nil {
+		t.Fatal(err)
+	}
+
+	reloaded, err := config.LoadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if reloaded.Widgets[0].Position.X != 30 {
+		t.Fatalf("X=%d, want 30", reloaded.Widgets[0].Position.X)
+	}
+}
+
+func TestProfileServiceSaveLayoutWithoutLoadedProfileReturnsError(t *testing.T) {
+	svc := app.NewProfileService(filepath.Join(t.TempDir(), "missing.json"), nil, nil)
+
+	err := svc.SaveLayout([]config.WidgetConfig{
+		{ID: "delta", Type: "delta", Enabled: true, Position: config.Rect{X: 1, Y: 2, W: 3, H: 4}},
+	})
+
+	if err == nil {
+		t.Fatal("expected error when saving without loaded profile")
+	}
+}
+
+func TestProfileServiceSaveLayoutRestoresWidgetsOnDiskError(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "test.json")
+	original := &config.ProfileConfig{
+		DisplayMode: config.ModeRacing,
+		Widgets: []config.WidgetConfig{
+			{ID: "w1", Type: "delta", Enabled: true, Position: config.Rect{X: 10, Y: 20, W: 100, H: 50}},
+		},
+	}
+	if err := config.SaveFile(path, original); err != nil {
+		t.Fatal(err)
+	}
+
+	svc := app.NewProfileService(path, nil, nil)
+	if err := svc.Load(); err != nil {
+		t.Fatal(err)
+	}
+
+	updated := []config.WidgetConfig{
+		{ID: "w1", Type: "delta", Enabled: true, Position: config.Rect{X: 99, Y: 88, W: 120, H: 60}},
+	}
+
+	// Turn the file path into a directory so SaveFile fails.
+	if err := os.Remove(path); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Mkdir(path, 0755); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := svc.SaveLayout(updated); err == nil {
+		t.Fatal("expected save error")
+	}
+
+	if svc.GetProfile().Widgets[0].Position.X != 10 {
+		t.Fatalf("in-memory X=%d, want 10 after failed save", svc.GetProfile().Widgets[0].Position.X)
 	}
 }

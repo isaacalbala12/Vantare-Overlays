@@ -1,34 +1,64 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: 'Inter', sans-serif;
-  --font-display: 'Rajdhani', sans-serif;
-  --font-mono: 'Space Mono', monospace;
+  --font-sans: var(--v-font-sans);
+  --font-display: var(--v-font-display);
+  --font-mono: var(--v-font-mono);
 
-  --color-vantare-bg: #080808;
-  --color-vantare-surface: #0F0F0F;
-  --color-vantare-panel: #141414;
-  --color-vantare-border: #1E1E1E;
-  --color-vantare-borderHover: #2A2A2A;
-  --color-vantare-text: #E8E8E8;
-  --color-vantare-textMuted: #7A7A7A;
-  --color-vantare-textDim: #4A4A4A;
+  --color-vantare-bg: var(--v-bg);
+  --color-vantare-surface: var(--v-surface);
+  --color-vantare-panel: var(--v-panel);
+  --color-vantare-border: var(--v-border);
+  --color-vantare-borderHover: var(--v-border-hover);
+  --color-vantare-text: var(--v-text);
+  --color-vantare-textMuted: var(--v-text-muted);
+  --color-vantare-textDim: var(--v-text-dim);
   --color-vantare-red-50: #FFE5E5;
   --color-vantare-red-100: #FFCCCC;
   --color-vantare-red-200: #FF9999;
   --color-vantare-red-300: #FF6666;
-  --color-vantare-red-400: #E63946;
-  --color-vantare-red-500: #C1121F;
-  --color-vantare-red-600: #9B2226;
-  --color-vantare-red-700: #800020;
+  --color-vantare-red-400: var(--v-red-400);
+  --color-vantare-red-500: var(--v-red-500);
+  --color-vantare-red-600: var(--v-red-600);
+  --color-vantare-red-700: var(--v-red-700);
   --color-vantare-red-800: #66001A;
-  --color-vantare-red-900: #4A0012;
-  --color-vantare-red-950: #2A000A;
-  --color-vantare-wine: #722F37;
-  --color-vantare-burgundy: #4A0E16;
-  --color-vantare-blood: #8B0000;
+  --color-vantare-red-900: var(--v-red-900);
+  --color-vantare-red-950: var(--v-red-950);
+  --color-vantare-wine: var(--v-wine);
+  --color-vantare-burgundy: var(--v-burgundy);
+  --color-vantare-blood: var(--v-blood);
 
   --animate-fade-in-up: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+:root {
+  --v-bg: #080808;
+  --v-surface: #0F0F0F;
+  --v-panel: #141414;
+  --v-border: #1E1E1E;
+  --v-border-hover: #2A2A2A;
+  --v-text: #E8E8E8;
+  --v-text-muted: #7A7A7A;
+  --v-text-dim: #4A4A4A;
+  --v-red-400: #E63946;
+  --v-red-500: #C1121F;
+  --v-red-600: #9B2226;
+  --v-red-700: #800020;
+  --v-red-900: #4A0012;
+  --v-red-950: #2A000A;
+  --v-wine: #722F37;
+  --v-burgundy: #4A0E16;
+  --v-blood: #8B0000;
+  --v-success: #34D399;
+  --v-warning: #FFD700;
+  --v-glass-alpha: 0.6;
+  --v-glass-blur: 20px;
+  --v-card-shadow: 0 4px 20px rgba(139, 0, 0, 0.1);
+  --v-hover-translate-y: -2px;
+  --v-motion-scale: 1;
+  --v-font-sans: 'Inter', sans-serif;
+  --v-font-display: 'Rajdhani', sans-serif;
+  --v-font-mono: 'Space Mono', monospace;
 }
 
 @keyframes fadeInUp {
@@ -50,13 +80,18 @@ html, body, #root {
 }
 
 body {
-  background: #080808;
-  color: #E8E8E8;
-  font-family: 'Inter', sans-serif;
+  background: var(--v-bg);
+  color: var(--v-text);
+  font-family: var(--v-font-sans);
 }
 
-body.desktop-overlay {
-  background: transparent;
+html.desktop-overlay,
+html.desktop-overlay body,
+html.desktop-overlay #root,
+body.desktop-overlay,
+#root.desktop-overlay {
+  background: transparent !important;
+  background-color: transparent !important;
 }
 
 body.hub {
@@ -64,16 +99,27 @@ body.hub {
 }
 
 .premium-bg {
-  background-color: #080808;
+  background-color: var(--v-bg);
   background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
   background-size: 32px 32px;
 }
 
+/* Streaming hint: OBS Browser Source renders without body.hub, so force transparent everywhere */
+body:not(.hub) {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+body:not(.hub) #root {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
 @layer components {
   .glass-panel {
-    background: rgba(20, 20, 20, 0.6);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    background: color-mix(in srgb, var(--v-panel) calc(var(--v-glass-alpha) * 100%), transparent);
+    backdrop-filter: blur(var(--v-glass-blur));
+    -webkit-backdrop-filter: blur(var(--v-glass-blur));
     border: 1px solid rgba(255, 255, 255, 0.04);
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
@@ -87,10 +133,10 @@ body.hub {
     border: 1px solid rgba(255,255,255,0.03);
   }
   .card-sleek:hover {
-    transform: translateY(-2px);
+    transform: translateY(var(--v-hover-translate-y));
     background: linear-gradient(180deg, rgba(25,25,25,0.9) 0%, rgba(20,20,20,0.9) 100%);
     border-color: rgba(139, 0, 0, 0.3);
-    box-shadow: 0 4px 20px rgba(139, 0, 0, 0.1);
+    box-shadow: var(--v-card-shadow);
   }
 
   .btn-primary {
@@ -101,7 +147,7 @@ body.hub {
   .btn-primary:hover {
     background: linear-gradient(135deg, #C1121F 0%, #9B2226 100%);
     box-shadow: 0 0 20px rgba(193, 18, 31, 0.4);
-    transform: translateY(-2px);
+    transform: translateY(var(--v-hover-translate-y));
   }
 
   .btn-secondary {
@@ -134,7 +180,7 @@ body.hub {
     width: 100%;
   }
   .nav-item:hover {
-    color: #E8E8E8;
+    color: var(--v-text);
   }
 
   .hero-text-huge {
@@ -167,5 +213,43 @@ body.hub {
 
   .live-indicator {
     animation: pulse-red 2s infinite;
+  }
+}
+
+[data-visual-mode="lite"] .glass-panel,
+[data-visual-mode="lite"] .card-sleek,
+[data-visual-mode="lite"] .btn-primary,
+[data-visual-mode="lite"] .btn-secondary,
+[data-visual-mode="lite"] .nav-item::after,
+[data-visual-mode="lite"] .lite-motion {
+  transition: none;
+}
+
+[data-visual-mode="lite"] .glass-panel,
+[data-visual-mode="lite"] .lite-glass-lite {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+}
+
+[data-visual-mode="lite"] .card-sleek:hover,
+[data-visual-mode="lite"] .btn-primary:hover,
+[data-visual-mode="lite"] .lite-motion:hover,
+[data-visual-mode="lite"] .lite-motion:is(:where(.group):hover *) {
+  transform: none;
+  translate: none;
+  scale: none;
+  box-shadow: none;
+}
+
+[data-visual-mode="lite"] .lite-expensive {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

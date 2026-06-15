@@ -84,6 +84,9 @@ func diffPlayer(d map[string]any, prev, next *models.PlayerTelemetry) {
 	if prev == nil || core.ShouldEmit(prev.Brake, next.Brake, 0.01) {
 		pd["brake"] = next.Brake
 	}
+	if prev == nil || core.ShouldEmit(prev.Clutch, next.Clutch, 0.01) {
+		pd["clutch"] = next.Clutch
+	}
 	if prev == nil || core.ShouldEmit(prev.Steering, next.Steering, 0.01) {
 		pd["steering"] = next.Steering
 	}

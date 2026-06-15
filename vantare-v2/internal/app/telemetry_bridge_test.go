@@ -24,7 +24,7 @@ func (f *captureEmitter) Emit(name string, data any) {
 
 func TestTelemetryBridgeEmits(t *testing.T) {
 	buf := lmu.BuildSyntheticBuffer()
-	src := service.FuncSource(func() []byte { return buf })
+	src := service.FuncSource{ReadFunc: func() []byte { return buf }}
 	svc := service.New(service.Config{
 		ReadHz: 60,
 		EmitHz: 30,
@@ -57,7 +57,7 @@ func TestTelemetryBridgeEmits(t *testing.T) {
 
 func TestTelemetryBridgeWireJSONCamelCase(t *testing.T) {
 	buf := lmu.BuildSyntheticBuffer()
-	src := service.FuncSource(func() []byte { return buf })
+	src := service.FuncSource{ReadFunc: func() []byte { return buf }}
 	svc := service.New(service.Config{
 		ReadHz: 60,
 		EmitHz: 30,
@@ -123,7 +123,7 @@ func TestUpdateWireFromSyntheticService(t *testing.T) {
 	svc := service.New(service.Config{
 		ReadHz: 60,
 		EmitHz: 30,
-		Source: service.FuncSource(func() []byte { return buf }),
+		Source: service.FuncSource{ReadFunc: func() []byte { return buf }},
 	})
 
 	ctx, cancel := context.WithCancel(context.Background())

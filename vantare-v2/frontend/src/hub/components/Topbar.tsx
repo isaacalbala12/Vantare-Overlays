@@ -1,10 +1,22 @@
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
+import {
+  applyTheme,
+  getStoredThemeId,
+  persistThemeId,
+  type VantareTheme,
+} from "../../lib/theme";
+import vantareV5 from "../../themes/vantare-v5.json";
+import vantareLite from "../../themes/vantare-lite.json";
+
+const v5Theme = vantareV5 as unknown as VantareTheme;
+const liteTheme = vantareLite as unknown as VantareTheme;
 
 type NavItem = { label: string; id: string; active?: boolean };
 
 const NAV_ITEMS: NavItem[] = [
   { label: "Hub", id: "dashboard", active: true },
   { label: "Overlays", id: "profiles" },
+  { label: "Preview", id: "preview" },
   { label: "Telemetría", id: "telemetry" },
   { label: "Setup", id: "setup" },
 ];
@@ -15,6 +27,16 @@ type TopbarProps = {
 };
 
 export function Topbar({ activeSection, onNavigate }: TopbarProps) {
+  const [liteMode, setLiteMode] = useState(
+    () => getStoredThemeId() === "vantare-lite",
+  );
+
+  useEffect(() => {
+    const theme = liteMode ? liteTheme : v5Theme;
+    applyTheme(theme);
+    persistThemeId(theme.id === "vantare-lite" ? "vantare-lite" : "vantare-v5");
+  }, [liteMode]);
+
   const handleNav = useCallback(
     (id: string) => (e: React.MouseEvent) => {
       e.preventDefault();
@@ -22,6 +44,10 @@ export function Topbar({ activeSection, onNavigate }: TopbarProps) {
     },
     [onNavigate],
   );
+
+  function toggleLiteMode() {
+    setLiteMode((current) => !current);
+  }
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass-panel border-b border-white/5">
@@ -66,7 +92,14 @@ export function Topbar({ activeSection, onNavigate }: TopbarProps) {
         <div className="flex items-center gap-4">
           <button
             type="button"
-            className="btn-secondary px-4 py-1.5 rounded-lg text-sm font-medium flex items-center gap-2 transition-all hover:scale-105"
+            onClick={toggleLiteMode}
+            className="btn-secondary px-3 py-1.5 rounded-lg text-xs font-bold text-vantare-textMuted hover:text-white"
+          >
+            {liteMode ? "Lite ON" : "Lite OFF"}
+          </button>
+          <button
+            type="button"
+            className="lite-motion btn-secondary px-4 py-1.5 rounded-lg text-sm font-medium flex items-center gap-2 transition-all hover:scale-105"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
@@ -74,7 +107,7 @@ export function Topbar({ activeSection, onNavigate }: TopbarProps) {
             <span className="hidden sm:inline">Notificaciones</span>
           </button>
           <div className="flex items-center gap-2 pl-4 border-l border-white/5 cursor-pointer group">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-vantare-red-600 to-vantare-burgundy flex items-center justify-center text-xs font-bold group-hover:shadow-[0_0_15px_rgba(193,18,31,0.5)] transition-all">
+            <div className="lite-motion w-8 h-8 rounded-full bg-gradient-to-br from-vantare-red-600 to-vantare-burgundy flex items-center justify-center text-xs font-bold group-hover:shadow-[0_0_15px_rgba(193,18,31,0.5)] transition-all">
               IA
             </div>
             <span className="text-sm font-medium hidden lg:block group-hover:text-white transition-colors">Isaac Albala</span>
