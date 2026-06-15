@@ -12,8 +12,8 @@ func TestParsePlayerTelemetrySynthetic(t *testing.T) {
 	if player == nil {
 		t.Fatal("expected player telemetry")
 	}
-	if math.Abs(player.Speed-15) > 0.01 {
-		t.Fatalf("speed: got %v want 15", player.Speed)
+	if math.Abs(player.Speed-50) > 0.01 {
+		t.Fatalf("speed: got %v want 50", player.Speed)
 	}
 	if player.Gear != 4 {
 		t.Fatalf("gear: got %d want 4", player.Gear)
@@ -35,8 +35,8 @@ func TestParseSessionSynthetic(t *testing.T) {
 	if session.TrackName != "Spa" {
 		t.Fatalf("track: got %q", session.TrackName)
 	}
-	if session.NumVehicles != 3 {
-		t.Fatalf("numVehicles: got %d", session.NumVehicles)
+	if session.NumVehicles != 10 {
+		t.Fatalf("numVehicles: got %d want 10", session.NumVehicles)
 	}
 }
 
@@ -46,8 +46,8 @@ func TestParseFullSynthetic(t *testing.T) {
 	if tele == nil || tele.Player == nil || tele.Session == nil {
 		t.Fatal("expected full parse")
 	}
-	if len(tele.Vehicles) != 3 {
-		t.Fatalf("vehicles: got %d want 3 valid rows", len(tele.Vehicles))
+	if len(tele.Vehicles) != 10 {
+		t.Fatalf("vehicles: got %d want 10 valid rows", len(tele.Vehicles))
 	}
 }
 
