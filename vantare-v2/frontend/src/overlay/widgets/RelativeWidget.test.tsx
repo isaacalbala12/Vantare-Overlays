@@ -31,20 +31,22 @@ describe("RelativeWidget helpers", () => {
     expect(formatSignedGap(-2.5)).toBe("-2.5");
   });
 
-  it("selects 3 ahead and 3 behind with closest adjacent to player", () => {
+  it("orders cars by physical gap with closest adjacent to player", () => {
+    // 3rd ahead is farthest and rendered at the top of the panel;
+    // 1st ahead is closest and rendered just above the player.
     const player = { id: 0, driverName: "Player", place: 4, isPlayer: true, timeGapToPlayer: 0 };
     const vehicles = [
-      { id: 1, driverName: "FarAhead", place: 1, timeGapToPlayer: 8.0 },
+      { id: 1, driverName: "Ahead3", place: 1, timeGapToPlayer: 8.0 },
       { id: 2, driverName: "Ahead2", place: 2, timeGapToPlayer: 3.0 },
       { id: 3, driverName: "Ahead1", place: 3, timeGapToPlayer: 1.5 },
       player,
       { id: 5, driverName: "Behind1", place: 5, timeGapToPlayer: -2.0 },
       { id: 6, driverName: "Behind2", place: 6, timeGapToPlayer: -5.0 },
-      { id: 7, driverName: "FarBehind", place: 7, timeGapToPlayer: -12.0 },
+      { id: 7, driverName: "Behind3", place: 7, timeGapToPlayer: -12.0 },
     ];
     const rows = selectRelativeRowsByGap(vehicles, 3, 3);
     expect(rows.map((v) => v.driverName)).toEqual([
-      "Ahead1", "Ahead2", "FarAhead", "Player", "Behind1", "Behind2", "FarBehind",
+      "Ahead3", "Ahead2", "Ahead1", "Player", "Behind1", "Behind2", "Behind3",
     ]);
   });
 });
