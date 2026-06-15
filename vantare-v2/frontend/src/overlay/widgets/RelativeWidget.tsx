@@ -51,11 +51,11 @@ export function selectRelativeRowsByGap(
     .filter((v) => !v.isPlayer && v.timeGapToPlayer != null && Number.isFinite(v.timeGapToPlayer))
     .map((v) => ({ vehicle: v, gap: v.timeGapToPlayer! }));
 
-  const ahead = withGap
-    .filter((x) => x.gap > 0)
-    .sort((a, b) => a.gap - b.gap)
-    .slice(0, rangeAhead)
-    .map((x) => x.vehicle);
+	const ahead = withGap
+		.filter((x) => x.gap > 0)
+		.sort((a, b) => a.gap - b.gap)
+		.slice(0, rangeAhead)
+		.map((x) => x.vehicle);
 
   const behind = withGap
     .filter((x) => x.gap < 0)

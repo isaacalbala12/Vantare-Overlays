@@ -31,7 +31,7 @@ describe("RelativeWidget helpers", () => {
     expect(formatSignedGap(-2.5)).toBe("-2.5");
   });
 
-  it("selects 3 ahead and 3 behind by time gap", () => {
+  it("selects 3 ahead and 3 behind with closest adjacent to player", () => {
     const player = { id: 0, driverName: "Player", place: 4, isPlayer: true, timeGapToPlayer: 0 };
     const vehicles = [
       { id: 1, driverName: "FarAhead", place: 1, timeGapToPlayer: 8.0 },
@@ -81,12 +81,12 @@ describe("RelativeWidget", () => {
     expect(screen.getByText("-1.0")).toBeTruthy();
   });
 
-	it("uses ahead color for cars ahead on track", () => {
-		render(
-			<RelativeWidget editMode={true} updateHz={15} props={{ appearance: { gapAheadColor: "#ff0000" } }} />,
-		);
-		tick(100);
-		const redSpan = screen.getByText("+2.4");
-		expect(redSpan.style.color).toBe("#ff0000");
-	});
+  it("uses ahead color for cars ahead on track", () => {
+    render(
+      <RelativeWidget editMode={true} updateHz={15} props={{ appearance: { gapAheadColor: "#ff0000" } }} />,
+    );
+    tick(100);
+    const redSpan = screen.getByText("+2.4");
+    expect(redSpan.style.color).toBe("#ff0000");
+  });
 });

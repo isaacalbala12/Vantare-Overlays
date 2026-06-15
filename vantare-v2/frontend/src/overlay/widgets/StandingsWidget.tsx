@@ -18,6 +18,8 @@ type StandingsProps = {
 const BAKED_PANEL_BG = "linear-gradient(180deg, #3a050a 0%, #0d0102 100%)";
 const BAKED_HEADER_BG = "linear-gradient(180deg, #9b2226 0%, #3a050a 100%)";
 const BAKED_CLASS_BG = "linear-gradient(90deg, #9b2226 0%, #e63946 50%, #9b2226 100%)";
+const ON_TRACK_COLOR = "#FFFFFF";
+const PIT_COLOR = "#9CA3AF";
 
 export function formatStandingsGap(v: Partial<VehicleScoring>): string {
   if (v.place === 1) return "Leader";
@@ -47,6 +49,10 @@ export function formatStandingsGapForMode(
     return v.place === 1 ? formatLapTime(v.bestLapTime) : formatLapTime(v.bestLapTime);
   }
   return formatStandingsGap(v);
+}
+
+function isInPits(v: Partial<VehicleScoring>): boolean {
+  return !!v.inGarageStall || !!v.pitting || !!v.inPits || (!!v.pitState && v.pitState !== "NONE");
 }
 
 function tireBadgeHtml(compound: string | undefined, tireSoft: string, tireMedium: string, tireHard: string): string {
@@ -94,17 +100,19 @@ export function StandingsWidget({ editMode, telemetryMode, props, updateHz = 15 
         const bgRow = i % 2 === 0 ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.3)";
         const isLeader = v.place === 1;
         const pitLabel = formatStandingsPit(v);
+        const pitting = isInPits(v);
         const gapText = mode === "race" && v.fastestLap ? "FASTEST" : formatStandingsGapForMode(mode, v);
         const gapColor = isLeader ? a.posLeaderColor : "";
-        const posColor = isLeader ? a.posLeaderColor : (v.place && v.place <= 3 ? "#FFFFFF" : "#9CA3AF");
+        const posColor = isLeader ? a.posLeaderColor : (v.place && v.place <= 3 ? ON_TRACK_COLOR : ON_TRACK_COLOR);
+        const rowTextColor = pitting ? PIT_COLOR : ON_TRACK_COLOR;
 
         const hasBrand = !!v.teamBrandColor;
         const bi = hasBrand ? brandInitial(v.driverName) : "";
         const teamBg = v.teamBrandColor || "transparent";
-        const tc = hasBrand ? brandTextColor(teamBg) : "#9CA3AF";
-        const numColor = pitLabel ? "#000000" : (hasBrand ? brandTextColor(v.teamBrandColor!) : "#FFFFFF");
+        const tc = hasBrand ? brandTextColor(teamBg) : rowTextColor;
+        const numColor = pitLabel ? "#000000" : rowTextColor;
         const numBg = pitLabel ? a.pitColor : (v.teamBrandColor || "transparent");
-        const teamColor = isLeader ? a.posLeaderColor : (v.place && v.place <= 3 ? "#FFFFFF" : "#D1D5DB");
+        const teamColor = isLeader ? a.posLeaderColor : rowTextColor;
 
         const leaderShadow = isLeader ? `box-shadow: inset 2px 0 0 0 ${a.posLeaderColor}` : "";
         const fastestShadow = v.fastestLap ? `box-shadow: inset 2px 0 0 0 ${a.textColor}` : "";
@@ -132,7 +140,7 @@ export function StandingsWidget({ editMode, telemetryMode, props, updateHz = 15 
           ${brandCell}
           ${numberCell}
           <div class="flex-1 px-1 tracking-wide truncate" style="color:${teamColor}">${escapeHTML(v.driverName ?? "?")}</div>
-          <div class="px-2 flex items-center justify-end font-mono text-[9px] shrink-0 gap-1">
+          <div class="px-2 flex items-center justify-end font-mono text-[9px] shrink-0 gap-1" style="color:${rowTextColor}">
             ${tireBadgeHtml(v.tireCompound, a.tireSoftColor, a.tireMediumColor, a.tireHardColor)}
             <span style="${gapColor ? `color:${gapColor}` : ""}">${gapText}</span>
           </div>
