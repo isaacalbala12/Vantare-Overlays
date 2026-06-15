@@ -78,19 +78,19 @@ export function selectRelativeRowsByGap(
     .filter((v) => !v.isPlayer && v.timeGapToPlayer != null && Number.isFinite(v.timeGapToPlayer))
     .map((v) => ({ vehicle: v, gap: v.timeGapToPlayer! }));
 
-  const ahead = withGap
-    .filter((x) => x.gap > 0)
-    .sort((a, b) => a.gap - b.gap)
-    .slice(0, rangeAhead)
-    .map((x) => x.vehicle);
+	const ahead = withGap
+		.filter((x) => x.gap > 0)
+		.sort((a, b) => a.gap - b.gap)
+		.slice(0, rangeAhead)
+		.map((x) => x.vehicle);
 
-  const behind = withGap
-    .filter((x) => x.gap < 0)
-    .sort((a, b) => b.gap - a.gap)
-    .slice(0, rangeBehind)
-    .map((x) => x.vehicle);
+	const behind = withGap
+		.filter((x) => x.gap < 0)
+		.sort((a, b) => b.gap - a.gap)
+		.slice(0, rangeBehind)
+		.map((x) => x.vehicle);
 
-  return [...ahead, player, ...behind];
+	return [...ahead, player, ...behind];
 }
 
 function truncate(name: string, max: number): string {
@@ -159,50 +159,51 @@ export function RelativeWidget({ editMode, telemetryMode, props, updateHz = 15 }
       ).join("|");
       if (fingerprint === lastFingerprintRef.current) return;
       lastFingerprintRef.current = fingerprint;
+		const rowHeight = Math.max(20, Math.floor((container.clientHeight - 8) / Math.max(1, visible.length)));
 
-      const rows = visible.map((v, idx) => {
-        const isP = v.isPlayer;
-        const bgRow = idx % 2 === 0 ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.3)";
+		const rows = visible.map((v, idx) => {
+			const isP = v.isPlayer;
+			const bgRow = idx % 2 === 0 ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.3)";
 
-        let gapDisplay: string;
-        let gapColor: string;
-        if (isP) {
-          gapDisplay = "—";
-          gapColor = a.textColor;
-        } else if (hasTimeGaps && v.timeGapToPlayer != null) {
-          gapDisplay = formatSignedGap(v.timeGapToPlayer);
-          gapColor = v.timeGapToPlayer > 0 ? a.gapAheadColor : a.gapBehindColor;
-        } else {
-          gapDisplay = formatRelativeGap(v, player);
-          gapColor = relativeGapColor(v, player, a.gapAheadColor, a.gapBehindColor, a.textColor);
-        }
+			let gapDisplay: string;
+			let gapColor: string;
+			if (isP) {
+				gapDisplay = "—";
+				gapColor = a.textColor;
+			} else if (hasTimeGaps && v.timeGapToPlayer != null) {
+				gapDisplay = formatSignedGap(v.timeGapToPlayer);
+				gapColor = v.timeGapToPlayer > 0 ? a.gapAheadColor : a.gapBehindColor;
+			} else {
+				gapDisplay = formatRelativeGap(v, player);
+				gapColor = relativeGapColor(v, player, a.gapAheadColor, a.gapBehindColor, a.textColor);
+			}
 
-        const hasBrand = !!v.teamBrandColor;
-        const teamBg = v.teamBrandColor || "transparent";
-        const tc = hasBrand ? brandTextColor(teamBg) : "#9CA3AF";
+			const hasBrand = !!v.teamBrandColor;
+			const teamBg = v.teamBrandColor || "transparent";
+			const tc = hasBrand ? brandTextColor(teamBg) : "#9CA3AF";
 
-        const leftInset = isP ? `box-shadow: inset 3px 0 0 0 ${a.accentColor}` : "";
+			const leftInset = isP ? `box-shadow: inset 3px 0 0 0 ${a.accentColor}` : "";
 
-        const numberCell = v.driverNumber
-          ? `<div class="w-7 h-full flex items-center justify-center py-[2px] px-[2px] ml-1 shrink-0">
-            <div class="w-full h-full flex items-center justify-center" style="background:${teamBg}">
-              <span class="font-black text-[11px]" style="color:${tc}">${escapeHTML(v.driverNumber)}</span>
-            </div>
-          </div>`
-          : "";
+			const numberCell = v.driverNumber
+				? `<div class="w-7 flex items-center justify-center py-[2px] px-[2px] ml-1 shrink-0" style="height:${rowHeight}px">
+						<div class="w-full h-full flex items-center justify-center" style="background:${teamBg}">
+							<span class="font-black text-[11px]" style="color:${tc}">${escapeHTML(v.driverNumber)}</span>
+						</div>
+					</div>`
+				: "";
 
-        return `<div class="flex items-center h-[26px] text-[11px] font-bold border-b border-black/20 transition-all" style="background:${isP ? BAKED_PLAYER_BG : bgRow};${leftInset}">
-          <div class="w-6 text-center shrink-0" style="color:#9CA3AF">${v.place ?? ""}</div>
-          <div class="w-1.5 h-full shrink-0" style="background:${resolveClassColor(v.vehicleClass, a)}"></div>
-          ${numberCell}
-          <div class="flex-1 px-2 tracking-wide truncate" style="color:${isP ? "#FFFFFF" : "#E5E7EB"}">${escapeHTML(truncate(v.driverName ?? "?", 18))}</div>
-          <div class="px-2 flex items-center justify-end font-mono text-[10px] shrink-0">
-            <span style="color:${gapColor}">${gapDisplay}</span>
-          </div>
-        </div>`;
-      });
+			return `<div class="flex items-center text-[11px] font-bold border-b border-black/20 transition-all" style="height:${rowHeight}px;background:${isP ? BAKED_PLAYER_BG : bgRow};${leftInset}">
+				<div class="w-6 text-center shrink-0" style="color:#9CA3AF">${v.place ?? ""}</div>
+				<div class="w-1.5 h-full shrink-0" style="background:${resolveClassColor(v.vehicleClass, a)}"></div>
+				${numberCell}
+				<div class="flex-1 px-2 tracking-wide truncate" style="color:${isP ? "#FFFFFF" : "#E5E7EB"}">${escapeHTML(truncate(v.driverName ?? "?", 18))}</div>
+				<div class="px-2 flex items-center justify-end font-mono text-[10px] shrink-0">
+					<span style="color:${gapColor}">${gapDisplay}</span>
+				</div>
+			</div>`;
+		});
 
-      setHTMLIfChanged(container, rows.join(""));
+		setHTMLIfChanged(container, rows.join(""));
     });
   }, [rangeAhead, rangeBehind, updateHz, editMode, telemetryMode, props]);
 

@@ -19,12 +19,11 @@ const BAKED_PANEL_BG = "linear-gradient(180deg, #3a050a 0%, #0d0102 100%)";
 const BAKED_HEADER_BG = "linear-gradient(180deg, #9b2226 0%, #3a050a 100%)";
 const BAKED_CLASS_BG = "linear-gradient(90deg, #9b2226 0%, #e63946 50%, #9b2226 100%)";
 
-
 export function formatStandingsGap(v: Partial<VehicleScoring>): string {
-	if (v.place === 1) return "Leader";
-	if ((v.lapsBehindLeader ?? 0) > 0) return `+${v.lapsBehindLeader}L`;
-	if ((v.timeBehindLeader ?? 0) > 0) return `+${v.timeBehindLeader!.toFixed(3)}s`;
-	return "—";
+  if (v.place === 1) return "Leader";
+  if ((v.lapsBehindLeader ?? 0) > 0) return `+${v.lapsBehindLeader}L`;
+  if ((v.timeBehindLeader ?? 0) > 0) return `+${v.timeBehindLeader!.toFixed(3)}s`;
+  return "—";
 }
 
 export function formatStandingsPit(v: Partial<VehicleScoring>): string {
@@ -79,17 +78,18 @@ export function StandingsWidget({ editMode, telemetryMode, props, updateHz = 15 
       const container = containerRef.current;
       if (!container) return;
 
-      const sorted = [...t.vehicles]
-        .sort((x, y) => (x.place ?? 99) - (y.place ?? 99))
-        .slice(0, maxRows);
+      const allVehicles = [...t.vehicles].sort((x, y) => (x.place ?? 99) - (y.place ?? 99));
+      const sorted = allVehicles.slice(0, Math.min(maxRows, allVehicles.length));
 
       const mode = resolveSessionMode(t.sessionType, t.sessionName);
 
-		const fingerprint = mode + "|" + sorted.map(v =>
-			`${v.id}:${v.place}:${v.inPits}:${v.pitState}:${v.pitting}:${v.inGarageStall}:${v.fastestLap}:${v.bestLapTime?.toFixed(1)}:${v.timeBehindLeader?.toFixed(3)}:${v.lapsBehindLeader}:${v.tireCompound}`
-		).join("|");
-		if (fingerprint === lastFingerprintRef.current) return;
-		lastFingerprintRef.current = fingerprint;
+      const fingerprint = mode + "|" + sorted.map(v =>
+        `${v.id}:${v.place}:${v.inPits}:${v.pitState}:${v.pitting}:${v.inGarageStall}:${v.fastestLap}:${v.bestLapTime?.toFixed(1)}:${v.timeBehindLeader?.toFixed(3)}:${v.lapsBehindLeader}:${v.tireCompound}`
+      ).join("|");
+      if (fingerprint === lastFingerprintRef.current) return;
+      lastFingerprintRef.current = fingerprint;
+
+      const rowHeight = Math.max(18, Math.floor((container.clientHeight - 8) / Math.max(1, sorted.length)));
 
       const rows = sorted.map((v, i) => {
         const bgRow = i % 2 === 0 ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.3)";
@@ -112,22 +112,22 @@ export function StandingsWidget({ editMode, telemetryMode, props, updateHz = 15 
         const leftInset = fastestShadow || leaderShadow;
 
         const brandCell = hasBrand
-          ? `<div class="w-7 h-full flex items-center justify-center py-[2px] px-[2px] shrink-0">
+          ? `<div class="w-7 flex items-center justify-center py-[2px] px-[2px] shrink-0" style="height:${rowHeight}px">
             <div class="w-full h-full flex items-center justify-center" style="background:${teamBg}">
               <span class="font-black text-[10px]" style="color:${tc}">${bi}</span>
             </div>
           </div>`
           : "";
         const numberCell = v.driverNumber
-          ? `<div class="w-7 h-full flex items-center justify-center py-[2px] pr-[2px] shrink-0 relative">
+          ? `<div class="w-7 flex items-center justify-center py-[2px] pr-[2px] shrink-0 relative" style="height:${rowHeight}px">
             <div class="w-full h-full flex items-center justify-center" style="background:${numBg};${pitLabel ? `border:1px solid ${a.pitColor}` : ""}">
               <span class="font-black text-[11px]" style="color:${numTc}">${escapeHTML(v.driverNumber)}</span>
             </div>
-            ${pitLabel ? `<div class="absolute -top-1 -left-0 text-[7px] px-1 rounded" style="background:${a.pitColor};color:#000">PIT</div>` : ""}
+            ${pitLabel ? `<div class="absolute -top-0.5 left-1/2 -translate-x-1/2 text-[6px] px-0.5 rounded-sm leading-none whitespace-nowrap" style="background:${a.pitColor};color:#000">PIT</div>` : ""}
           </div>`
           : "";
 
-        return `<div class="flex items-center h-[26px] text-[11px] font-bold border-b border-black/20 transition-all" style="background:${bgRow};${leftInset}">
+        return `<div class="flex items-center text-[11px] font-bold border-b border-black/20 transition-all" style="height:${rowHeight}px;background:${bgRow};${leftInset}">
           <div class="w-6 text-center shrink-0" style="color:${posColor}">${v.place ?? ""}</div>
           ${brandCell}
           ${numberCell}
