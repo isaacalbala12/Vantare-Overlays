@@ -20,20 +20,22 @@ const (
 )
 
 const (
-	vehicleTelemetryID               = 0
-	vehicleTelemetryLapNumber        = 20
-	vehicleTelemetryLocalVel         = 184
-	vehicleTelemetryVehicleName      = 32
-	vehicleTelemetryTrackName        = 96
-	vehicleTelemetryGear             = 352
-	vehicleTelemetryEngineRPM        = 356
-	vehicleTelemetryFuel             = 524
-	vehicleTelemetryFuelCapacity     = 608
-	vehicleTelemetryFilteredThrottle = 420
-	vehicleTelemetryFilteredBrake    = 428
-	vehicleTelemetryFilteredClutch   = 412
-	vehicleTelemetryFilteredSteering = 436
-	vehicleTelemetryDeltaBest        = 696
+	vehicleTelemetryID                 = 0
+	vehicleTelemetryLapNumber          = 20
+	vehicleTelemetryLocalVel           = 184
+	vehicleTelemetryVehicleName        = 32
+	vehicleTelemetryTrackName          = 96
+	vehicleTelemetryGear               = 352
+	vehicleTelemetryEngineRPM          = 356
+	vehicleTelemetryFuel               = 524
+	vehicleTelemetryFuelCapacity       = 608
+	vehicleTelemetryFilteredThrottle   = 420
+	vehicleTelemetryFilteredBrake      = 428
+	vehicleTelemetryFilteredSteering   = 436
+	vehicleTelemetryFilteredClutch     = 444
+	vehicleTelemetryDeltaBest          = 696
+	vehicleTelemetryTimeGapPlaceAhead  = 788
+	vehicleTelemetryTimeGapPlaceBehind = 792
 )
 
 const (
@@ -48,14 +50,33 @@ const (
 )
 
 const (
-	vehicleScoringID               = 0
-	vehicleScoringDriverName       = 4
-	vehicleScoringTotalLaps        = 100
-	vehicleScoringIsPlayer         = 196
-	vehicleScoringInPits           = 198
-	vehicleScoringPlace            = 199
-	vehicleScoringVehicleClass     = 200
-	vehicleScoringTimeBehindLeader = 244
+	vehicleScoringID                 = 0
+	vehicleScoringDriverName         = 4
+	vehicleScoringVehicleName        = 36
+	vehicleScoringTotalLaps          = 100
+	vehicleScoringSector             = 102
+	vehicleScoringFinishStatus       = 103
+	vehicleScoringLapDistance        = 104
+	vehicleScoringBestLapTime        = 144
+	vehicleScoringLastLapTime        = 168
+	vehicleScoringCurrentSectorTime1 = 176
+	vehicleScoringCurrentSectorTime2 = 184
+	vehicleScoringPitstops           = 192
+	vehicleScoringPenalties          = 194
+	vehicleScoringIsPlayer           = 196
+	vehicleScoringInPits             = 198
+	vehicleScoringPlace              = 199
+	vehicleScoringVehicleClass       = 200
+	vehicleScoringTimeBehindNext     = 232
+	vehicleScoringLapsBehindNext     = 240
+	vehicleScoringTimeBehindLeader   = 244
+	vehicleScoringLapsBehindLeader   = 252
+	vehicleScoringPitState           = 457
+	vehicleScoringQualification      = 460
+	vehicleScoringEstimatedLapTime   = 472
+	vehicleScoringPitGroup           = 480
+	vehicleScoringFlag               = 504
+	vehicleScoringFuelFraction       = 578
 )
 
 // Size assertions (from pyLMUSharedMemory ctypes layout):

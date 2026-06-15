@@ -78,3 +78,77 @@ func TestFilterEmitsVehiclePlaceChange(t *testing.T) {
 		t.Fatal("vehicle place change must publish")
 	}
 }
+
+func TestFilterAnnotatesAndEmitsSessionEpochChanges(t *testing.T) {
+	f := pipeline.NewFilter()
+	base := sampleTelemetry(20)
+	base.PlayerHasVehicle = true
+	base.Session = &models.SessionInfo{TrackName: "Spa", SessionType: 10, NumVehicles: 2, PlayerName: "Isaac"}
+
+	first, ok := f.ShouldPublish(base)
+	if !ok {
+		t.Fatal("first snapshot must publish")
+	}
+	if first.SessionEpoch != 1 || first.SessionState != "session" {
+		t.Fatalf("epoch/state: got %d/%q", first.SessionEpoch, first.SessionState)
+	}
+
+	next := sampleTelemetry(20)
+	next.PlayerHasVehicle = true
+	next.Session = &models.SessionInfo{TrackName: "Monza", SessionType: 10, NumVehicles: 2, PlayerName: "Isaac"}
+	changed, ok := f.ShouldPublish(next)
+	if !ok {
+		t.Fatal("new track session must publish")
+	}
+	if changed.SessionEpoch != 2 {
+		t.Fatalf("epoch: got %d want 2", changed.SessionEpoch)
+	}
+}
+
+func TestFilterEmitsRestSessionFieldChanges(t *testing.T) {
+	f := pipeline.NewFilter()
+	base := sampleTelemetry(20)
+	base.PlayerHasVehicle = true
+	base.Session = &models.SessionInfo{
+		TrackName:                "Spa",
+		SessionName:              "PRACTICE1",
+		TimeRemainingInGamePhase: 600,
+		NumVehicles:              2,
+		PlayerName:               "Isaac",
+		YellowFlagState:          "NONE",
+		SectorFlags:              []string{"GREEN", "GREEN", "GREEN"},
+	}
+	_, _ = f.ShouldPublish(base)
+
+	changed := sampleTelemetry(20)
+	changed.PlayerHasVehicle = true
+	changed.Session = &models.SessionInfo{
+		TrackName:                "Spa",
+		SessionName:              "RACE",
+		TimeRemainingInGamePhase: 590,
+		NumVehicles:              2,
+		PlayerName:               "Isaac",
+		YellowFlagState:          "FULL",
+		SectorFlags:              []string{"YELLOW", "GREEN", "GREEN"},
+	}
+	out, ok := f.ShouldPublish(changed)
+	if !ok {
+		t.Fatal("REST session field changes must publish")
+	}
+	if out.SessionEpoch == base.SessionEpoch {
+		t.Fatalf("session epoch should change when session name changes: got %d", out.SessionEpoch)
+	}
+}
+
+func TestFilterEmitsClutchChange(t *testing.T) {
+	f := pipeline.NewFilter()
+	base := sampleTelemetry(20)
+	base.Player.Clutch = 0.1
+	_, _ = f.ShouldPublish(base)
+
+	changed := sampleTelemetry(20)
+	changed.Player.Clutch = 0.3
+	if _, ok := f.ShouldPublish(changed); !ok {
+		t.Fatal("clutch change must publish")
+	}
+}

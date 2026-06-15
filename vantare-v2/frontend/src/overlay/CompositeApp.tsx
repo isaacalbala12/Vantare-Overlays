@@ -20,9 +20,10 @@ import { TelemetryVerticalWidget } from "./widgets/TelemetryVerticalWidget";
 import { PedalsWidget } from "./widgets/PedalsWidget";
 import { applyOverlayDocumentMode } from "./overlay-document";
 import type { ComponentType } from "react";
+import type { WidgetTelemetryMode } from "./widgets/use-widget-telemetry";
 
 // Widget registry — maps widget type to component
-const WIDGETS: Record<string, ComponentType<{ editMode: boolean; updateHz?: number; props?: Record<string, unknown> }>> = {
+const WIDGETS: Record<string, ComponentType<{ editMode: boolean; telemetryMode?: WidgetTelemetryMode; updateHz?: number; props?: Record<string, unknown> }>> = {
   delta: DeltaWidget,
   relative: RelativeWidget,
   standings: StandingsWidget,
@@ -101,7 +102,7 @@ export function CompositeApp() {
         const localPos = toWindowLocal(w.position, layoutOrigin);
         return (
           <WidgetHost key={w.id} id={w.id} position={localPos}>
-            <Component editMode={false} updateHz={w.updateHz} props={{ ...w.props, style: w.style ?? w.props?.style }} />
+            <Component editMode={false} telemetryMode="live" updateHz={w.updateHz} props={{ ...w.props, style: w.style ?? w.props?.style }} />
           </WidgetHost>
         );
       })}

@@ -1,0 +1,48 @@
+Vantare v2 LMU review bugfixes evidence
+
+Date: 2026-06-15
+
+Plan:
+- .omo/plans/v2-lmu-review-bugfixes.md
+
+Fixes applied:
+1. LMU shared-memory parser now reads primitive field widths correctly:
+   - float32 time gaps via readFloat32.
+   - byte pit state and flag via explicit mappings.
+   - byte fuel fraction.
+   - int16 pitstops/penalties.
+2. REST LMU polling no longer runs inside ReadTelemetry().
+   - Added background lmuRESTCache with mutex-protected snapshot.
+   - ReadTelemetry() reads shared memory plus cached REST data only.
+   - Cache TTL prevents stale REST data from living indefinitely.
+3. Session filter/diff now includes REST session fields:
+   - sessionName, sessionType, playerName, timeRemainingInGamePhase, ambientTemp, trackTemp, yellowFlagState, sectorFlags.
+   - sessionKey includes sessionName.
+4. Service seq increment is protected under latestMu before subscribers receive updates.
+5. Frontend telemetry-ref now merges clutch from snapshot and diff.
+6. Relative widget now:
+   - displays lapDistance delta for physically relative rows;
+   - uses ahead color for cars ahead and behind color for cars behind.
+7. Added regression tests for parser field widths, session filter/diff, non-blocking enriched source reads, clutch merge, and relative gap/color semantics.
+
+Verification commands run from C:\Users\isaac\Desktop\Vantare-Overlays\vantare-v2:
+- go test ./internal/telemetry/lmu ./internal/telemetry/pipeline ./internal/telemetry/diff ./internal/app
+  Result: PASS
+- pnpm --dir frontend test -- src/lib/telemetry-ref.test.ts src/overlay/widgets/RelativeWidget.test.tsx
+  Result: PASS
+- gofmt -w on changed Go files
+  Result: PASS/no output
+- go test ./...
+  Result: PASS (15 packages ok, 5 no tests)
+- pnpm --dir frontend test
+  Result: PASS (25 files, 83 tests)
+- pnpm --dir frontend build
+  Result: PASS (tsc -b + vite build success)
+
+Not run:
+- Live LMU in-session SSE/manual visual check. Requires Isaac to put LMU on track.
+- go test -race: unavailable on this workstation because cgo requires gcc and gcc is not installed.
+
+Notes:
+- No commit or push performed.
+- Did not intentionally touch apps/desktop. Existing untracked apps/desktop/sprint8-hub-ui.png remains untouched.

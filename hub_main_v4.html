@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vantare — Hub Principal v4</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Rajdhani', 'sans-serif'],
+          },
+          colors: {
+            vantare: {
+              bg: '#080808',
+              surface: '#0F0F0F',
+              panel: '#141414',
+              border: '#1E1E1E',
+              borderHover: '#2A2A2A',
+              text: '#E8E8E8',
+              textMuted: '#7A7A7A',
+              textDim: '#4A4A4A',
+              red: {
+                50: '#FFE5E5',
+                100: '#FFCCCC',
+                200: '#FF9999',
+                300: '#FF6666',
+                400: '#E63946',
+                500: '#C1121F',
+                600: '#9B2226',
+                700: '#800020',
+                800: '#66001A',
+                900: '#4A0012',
+                950: '#2A000A',
+              },
+              wine: '#722F37',
+              burgundy: '#4A0E16',
+              blood: '#8B0000',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { scrollbar-width: thin; scrollbar-color: #2A2A2A #0F0F0F; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0F0F0F; }
+    ::-webkit-scrollbar-thumb { background: #2A2A2A; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3A3A3A; }
+
+    body {
+      background: #080808;
+      color: #E8E8E8;
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+    }
+
+    .glass-panel {
+      background: rgba(20, 20, 20, 0.6);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .glass-panel-hover:hover {
+      border-color: rgba(139, 0, 0, 0.3);
+      background: rgba(20, 20, 20, 0.8);
+    }
+
+    .red-glow {
+      box-shadow: 0 0 40px rgba(139, 0, 0, 0.15), 0 0 80px rgba(139, 0, 0, 0.05);
+    }
+
+    .hero-gradient {
+      background: linear-gradient(180deg, rgba(8,8,8,0) 0%, rgba(8,8,8,0.4) 50%, rgba(8,8,8,1) 100%),
+                  linear-gradient(135deg, rgba(139,0,0,0.2) 0%, rgba(8,8,8,0) 50%, rgba(114,47,55,0.1) 100%);
+    }
+
+    .card-sleek {
+      transition: all 0.3s ease;
+      background: linear-gradient(180deg, rgba(20,20,20,0.8) 0%, rgba(15,15,15,0.8) 100%);
+      border: 1px solid rgba(255,255,255,0.03);
+    }
+    .card-sleek:hover {
+      background: linear-gradient(180deg, rgba(25,25,25,0.9) 0%, rgba(20,20,20,0.9) 100%);
+      border-color: rgba(139, 0, 0, 0.3);
+      box-shadow: 0 4px 20px rgba(139, 0, 0, 0.1);
+    }
+
+    .activity-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      transition: all 0.2s;
+    }
+    .activity-dot:hover { transform: scale(1.3); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #9B2226 0%, #66001A 100%);
+      border: 1px solid rgba(255,255,255,0.1);
+      transition: all 0.2s;
+    }
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #C1121F 0%, #9B2226 100%);
+      box-shadow: 0 0 20px rgba(193, 18, 31, 0.4);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      transition: all 0.2s;
+    }
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.06);
+      border-color: rgba(139,0,0,0.3);
+    }
+
+    .nav-item {
+      position: relative;
+      transition: all 0.2s;
+    }
+    .nav-item::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 50%;
+      width: 0;
+      height: 2px;
+      background: linear-gradient(90deg, #C1121F, #800020);
+      transition: all 0.3s;
+      transform: translateX(-50%);
+    }
+    .nav-item:hover::after, .nav-item.active::after {
+      width: 100%;
+    }
+    .nav-item:hover { color: #E8E8E8; }
+
+    .pro-badge {
+      background: linear-gradient(135deg, #FFD700 0%, #B8860B 100%);
+      color: #000;
+      font-weight: 700;
+      font-size: 0.65rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      letter-spacing: 0.05em;
+    }
+
+    .rating-badge-gold {
+      background: linear-gradient(135deg, #FFD700 0%, #B8860B 100%);
+      color: #000;
+    }
+
+    .track-map-placeholder {
+      background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
+      position: relative;
+      overflow: hidden;
+    }
+    .track-map-placeholder::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: 
+        radial-gradient(circle at 30% 50%, rgba(139,0,0,0.1) 0%, transparent 50%),
+        radial-gradient(circle at 70% 50%, rgba(114,47,55,0.1) 0%, transparent 50%);
+    }
+
+    @keyframes pulse-red {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+    .live-indicator {
+      animation: pulse-red 2s infinite;
+    }
+
+    .grid-bg {
+      background-image: 
+        linear-gradient(rgba(255,255,255,0.01) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.01) 1px, transparent 1px);
+      background-size: 50px 50px;
+    }
+
+    .hero-text-shadow {
+      text-shadow: 0 0 60px rgba(139, 0, 0, 0.5), 0 0 120px rgba(139, 0, 0, 0.2);
+    }
+
+    .logo-v {
+      filter: drop-shadow(0 0 10px rgba(139, 0, 0, 0.6));
+    }
+    
+    /* Active Session pulsing effect */
+    .pulse-ring {
+      animation: pulse-ring 3s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+    }
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(193, 18, 31, 0.7); }
+      70% { transform: scale(1); box-shadow: 0 0 0 20px rgba(193, 18, 31, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(193, 18, 31, 0); }
+    }
+  </style>
+<base target="_blank">
+</head>
+<body class="min-h-screen grid-bg">
+
+  <!-- Top Navigation -->
+  <nav class="fixed top-0 left-0 right-0 z-50 glass-panel border-b border-white/5">
+    <div class="max-w-[1920px] mx-auto px-6 h-14 flex items-center justify-between">
+      <div class="flex items-center gap-8">
+        <div class="flex items-center gap-3">
+          <svg class="w-8 h-8 logo-v" viewBox="0 0 40 40" fill="none">
+            <defs>
+              <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#FF6B6B"/>
+                <stop offset="50%" style="stop-color:#C1121F"/>
+                <stop offset="100%" style="stop-color:#800020"/>
+              </linearGradient>
+            </defs>
+            <path d="M20 2 L38 38 L28 38 L20 18 L12 38 L2 38 Z" fill="url(#logoGrad)" stroke="rgba(255,255,255,0.2)" stroke-width="0.5"/>
+            <path d="M20 8 L32 34 L26 34 L20 20 L14 34 L8 34 Z" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/>
+          </svg>
+          <span class="font-display font-bold text-xl tracking-wider text-white">VANTARE</span>
+        </div>
+
+        <div class="hidden md:flex items-center gap-6 text-sm font-medium text-vantare-textMuted">
+          <a href="#" class="nav-item active text-vantare-text">Hub</a>
+          <a href="#" class="nav-item">Overlays</a>
+          <a href="#" class="nav-item">Telemetría</a>
+          <a href="#" class="nav-item">Setup</a>
+          <a href="#" class="nav-item flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-vantare-red-500 live-indicator"></span>
+            Live
+          </a>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <button class="btn-secondary px-4 py-1.5 rounded-lg text-sm font-medium flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+          <span class="hidden sm:inline">Notificaciones</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="pt-14">
+
+    <!-- Hero Banner: Redesigned from big "VANTARE" to a "Driver Dashboard / Active Session" header -->
+    <section class="relative h-[240px] overflow-hidden">
+      <div class="absolute inset-0 track-map-placeholder">
+        <svg class="absolute inset-0 w-full h-full opacity-20" viewBox="0 0 1920 280" preserveAspectRatio="none">
+          <path d="M0,140 Q200,80 400,120 T800,100 T1200,140 T1600,80 T1920,140" fill="none" stroke="#8B0000" stroke-width="2"/>
+          <path d="M0,160 Q200,100 400,140 T800,120 T1200,160 T1600,100 T1920,160" fill="none" stroke="#722F37" stroke-width="1" opacity="0.5"/>
+        </svg>
+        <div class="absolute inset-0" style="background-image: linear-gradient(rgba(139,0,0,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(139,0,0,0.03) 1px, transparent 1px); background-size: 100px 100px;"></div>
+      </div>
+      <div class="absolute inset-0 hero-gradient"></div>
+
+      <div class="relative max-w-[1920px] mx-auto px-6 h-full flex flex-col justify-center">
+        <!-- New Driver Profile Header (Replaces big VANTARE) -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div class="flex items-center gap-6">
+            <!-- Avatar with pulse -->
+            <div class="relative">
+              <div class="w-20 h-20 rounded-full bg-gradient-to-br from-vantare-red-600 to-vantare-burgundy flex items-center justify-center text-2xl font-display font-bold text-white shadow-xl z-10 relative">
+                IA
+              </div>
+              <div class="absolute inset-0 rounded-full pulse-ring z-0"></div>
+            </div>
+            
+            <div>
+              <p class="text-emerald-400 text-xs font-bold tracking-widest uppercase mb-1 flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                Le Mans Ultimate Activo
+              </p>
+              <h1 class="font-display font-bold text-4xl text-white hero-text-shadow tracking-wide">ISAAC ALBALA</h1>
+              <p class="text-vantare-textMuted font-medium tracking-wide">Piloto Oficial • Sesión en curso</p>
+            </div>
+          </div>
+          
+          <div class="hidden md:flex gap-8 bg-black/40 p-4 rounded-xl border border-white/5 backdrop-blur-sm">
+            <div class="text-center">
+              <p class="text-[10px] text-vantare-textMuted uppercase font-semibold mb-1">Horas Totales</p>
+              <p class="font-display font-bold text-2xl text-white">482<span class="text-sm text-vantare-textDim ml-1">h</span></p>
+            </div>
+            <div class="w-px bg-white/10"></div>
+            <div class="text-center">
+              <p class="text-[10px] text-vantare-textMuted uppercase font-semibold mb-1">Coche Actual</p>
+              <p class="font-display font-bold text-xl text-vantare-red-300">Porsche 963</p>
+            </div>
+            <div class="w-px bg-white/10"></div>
+            <div class="text-center">
+              <p class="text-[10px] text-vantare-textMuted uppercase font-semibold mb-1">IRating</p>
+              <p class="font-display font-bold text-2xl text-white">2.4k</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Grid -->
+    <div class="max-w-[1920px] mx-auto px-6 py-6">
+      
+      <!-- FULL WIDTH ROW: Next Event Horizontal Banner -->
+      <div class="w-full mb-6">
+        <div class="glass-panel rounded-xl overflow-hidden relative group border border-vantare-red-900/30 hover:border-vantare-red-500/50 transition-colors">
+          <div class="absolute inset-0 bg-gradient-to-r from-vantare-red-950/40 via-vantare-bg to-vantare-bg opacity-80 pointer-events-none"></div>
+          <div class="absolute -right-20 top-0 w-64 h-64 bg-vantare-red-500/10 blur-3xl rounded-full group-hover:bg-vantare-red-400/20 transition-all pointer-events-none"></div>
+          
+          <div class="relative p-6 flex flex-col md:flex-row items-center justify-between gap-6">
+            
+            <!-- Event Info -->
+            <div class="flex items-center gap-6 w-full md:w-auto">
+              <div class="w-16 h-16 rounded-lg bg-black/50 border border-white/10 flex items-center justify-center shrink-0 shadow-lg">
+                <svg class="w-8 h-8 text-vantare-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              </div>
+              <div>
+                <span class="text-[10px] bg-vantare-red-950 text-vantare-red-400 border border-vantare-red-900/50 font-bold uppercase px-2 py-0.5 rounded tracking-widest mb-2 inline-block">Próximo Evento Especial</span>
+                <h2 class="font-display font-bold text-3xl text-white">24h de Le Mans Virtual</h2>
+                <p class="text-sm text-vantare-textMuted mt-1">Circuit de la Sarthe • Endurance • Configuración Seca</p>
+              </div>
+            </div>
+
+            <!-- Countdown -->
+            <div class="bg-black/30 rounded-xl px-6 py-3 border border-white/5 flex gap-4 md:gap-8 justify-center shrink-0">
+              <div class="text-center">
+                <p class="font-display font-bold text-3xl text-white">03</p>
+                <p class="text-[9px] text-vantare-textMuted uppercase font-semibold">Días</p>
+              </div>
+              <div class="text-center">
+                <p class="font-display font-bold text-3xl text-white">14</p>
+                <p class="text-[9px] text-vantare-textMuted uppercase font-semibold">Horas</p>
+              </div>
+              <div class="text-center">
+                <p class="font-display font-bold text-3xl text-vantare-red-400">22</p>
+                <p class="text-[9px] text-vantare-red-400/70 uppercase font-semibold">Min</p>
+              </div>
+            </div>
+
+            <!-- Action -->
+            <div class="w-full md:w-auto shrink-0 flex gap-4">
+              <button class="w-full md:w-auto btn-primary px-8 py-3 rounded-lg font-bold text-sm text-white shadow-lg shadow-vantare-red-900/20 whitespace-nowrap">
+                Gestionar Inscripción
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- MAIN 12-COL GRID (Below Next Event) -->
+      <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
+        
+        <!-- Left Column (8 cols): Ratings, Heatmap, History -->
+        <div class="xl:col-span-8 flex flex-col gap-6">
+          
+          <!-- Ratings Row -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Driver Rating -->
+            <section class="glass-panel rounded-xl overflow-hidden relative group border border-amber-900/30 hover:border-amber-700/50 transition-colors">
+              <div class="absolute inset-0 bg-gradient-to-br from-amber-950/40 via-vantare-bg to-vantare-bg opacity-80"></div>
+              <div class="relative p-6">
+                <div class="flex items-center justify-between mb-2">
+                  <h2 class="font-display font-semibold text-sm tracking-[0.15em] text-vantare-textMuted uppercase">
+                    Driver Rating
+                  </h2>
+                  <span class="rating-badge-gold text-[10px] font-bold px-2 py-0.5 rounded tracking-wider shadow-[0_0_10px_rgba(255,215,0,0.3)]">GOLD</span>
+                </div>
+                <div class="flex items-end gap-3 mb-6">
+                  <span class="text-6xl font-display font-bold text-white drop-shadow-md">B1</span>
+                  <div class="flex flex-col pb-2">
+                    <span class="text-sm font-semibold text-amber-500">Top 12%</span>
+                    <span class="text-xs text-vantare-textMuted">Rango Global</span>
+                  </div>
+                </div>
+                <div class="space-y-2">
+                  <div class="flex justify-between text-xs text-vantare-textMuted font-medium">
+                    <span>Progreso a A3</span>
+                    <span class="text-white">85%</span>
+                  </div>
+                  <div class="h-2 bg-vantare-surface rounded-full overflow-hidden border border-white/5">
+                    <div class="h-full bg-gradient-to-r from-amber-700 to-amber-400 rounded-full" style="width: 85%; box-shadow: 0 0 10px rgba(255,191,0,0.5);"></div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Safety Rating -->
+            <section class="glass-panel rounded-xl overflow-hidden relative group border border-emerald-900/30 hover:border-emerald-700/50 transition-colors">
+              <div class="absolute inset-0 bg-gradient-to-br from-emerald-950/40 via-vantare-bg to-vantare-bg opacity-80"></div>
+              <div class="relative p-6">
+                <div class="flex items-center justify-between mb-2">
+                  <h2 class="font-display font-semibold text-sm tracking-[0.15em] text-vantare-textMuted uppercase">
+                    Safety Rating
+                  </h2>
+                  <span class="bg-emerald-900/50 text-emerald-400 border border-emerald-700/50 text-[10px] font-bold px-2 py-0.5 rounded tracking-wider shadow-[0_0_10px_rgba(16,185,129,0.2)]">SAFE</span>
+                </div>
+                <div class="flex items-end gap-3 mb-6">
+                  <span class="text-6xl font-display font-bold text-white drop-shadow-md">S</span>
+                  <div class="flex flex-col pb-2">
+                    <span class="text-sm font-semibold text-emerald-500">4.99</span>
+                    <span class="text-xs text-vantare-textMuted">Puntos SR</span>
+                  </div>
+                </div>
+                <div class="space-y-2">
+                  <div class="flex justify-between text-xs text-vantare-textMuted font-medium">
+                    <span>Carreras limpias (Racha)</span>
+                    <span class="text-white">12 Carreras</span>
+                  </div>
+                  <div class="h-2 bg-vantare-surface rounded-full overflow-hidden border border-white/5">
+                    <div class="h-full bg-gradient-to-r from-emerald-700 to-emerald-400 rounded-full" style="width: 98%; box-shadow: 0 0 10px rgba(52,211,153,0.5);"></div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <!-- Activity Heatmap -->
+          <section class="glass-panel rounded-xl p-6">
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="font-display font-semibold text-lg tracking-wide text-white flex items-center gap-2">
+                <svg class="w-5 h-5 text-vantare-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                ACTIVIDAD RECIENTE
+              </h2>
+              <div class="flex items-center gap-3 text-[10px] text-vantare-textMuted uppercase font-semibold">
+                <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-[2px] bg-vantare-red-950 border border-vantare-red-900/30"></span> 0h</span>
+                <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-[2px] bg-vantare-red-900/60"></span> 1h</span>
+                <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-[2px] bg-vantare-red-700"></span> 2h</span>
+                <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-[2px] bg-vantare-red-500"></span> 3h+</span>
+              </div>
+            </div>
+
+            <div class="flex gap-1 overflow-x-auto pb-2 scrollbar-hide">
+              <div class="flex flex-col gap-1">
+                <div class="flex gap-1"><span class="text-[10px] text-vantare-textDim w-8 text-right pr-2">Lun</span><div class="flex gap-1" id="heatmap-mon"></div></div>
+                <div class="flex gap-1"><span class="text-[10px] text-vantare-textDim w-8 text-right pr-2">Mar</span><div class="flex gap-1" id="heatmap-tue"></div></div>
+                <div class="flex gap-1"><span class="text-[10px] text-vantare-textDim w-8 text-right pr-2">Mié</span><div class="flex gap-1" id="heatmap-wed"></div></div>
+                <div class="flex gap-1"><span class="text-[10px] text-vantare-textDim w-8 text-right pr-2">Jue</span><div class="flex gap-1" id="heatmap-thu"></div></div>
+                <div class="flex gap-1"><span class="text-[10px] text-vantare-textDim w-8 text-right pr-2">Vie</span><div class="flex gap-1" id="heatmap-fri"></div></div>
+                <div class="flex gap-1"><span class="text-[10px] text-vantare-textDim w-8 text-right pr-2">Sáb</span><div class="flex gap-1" id="heatmap-sat"></div></div>
+                <div class="flex gap-1"><span class="text-[10px] text-vantare-textDim w-8 text-right pr-2">Dom</span><div class="flex gap-1" id="heatmap-sun"></div></div>
+              </div>
+            </div>
+            <div class="flex justify-between mt-3 text-[10px] font-semibold text-vantare-textDim px-9 uppercase">
+              <span>Jun</span><span>Jul</span><span>Ago</span><span>Sep</span><span>Oct</span><span>Nov</span><span>Dic</span><span>Ene</span><span>Feb</span><span>Mar</span><span>Abr</span><span>May</span><span>Jun</span>
+            </div>
+          </section>
+
+          <!-- Recent Races (Redesigned - Sleek List Cards) -->
+          <section>
+            <div class="flex items-center justify-between mb-4 mt-2">
+              <h2 class="font-display font-semibold text-lg tracking-wide text-white flex items-center gap-2">
+                <svg class="w-5 h-5 text-vantare-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                CARRERAS RECIENTES
+              </h2>
+              <a href="#" class="text-xs text-vantare-red-400 hover:text-vantare-red-300 font-medium transition-colors">Ver historial completo →</a>
+            </div>
+
+            <div class="flex flex-col gap-3">
+              <!-- Race Item 1 -->
+              <div class="card-sleek rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 relative overflow-hidden group">
+                <div class="absolute left-0 top-0 bottom-0 w-1 bg-vantare-red-500"></div>
+                
+                <div class="flex items-center gap-4 z-10 w-full md:w-1/3">
+                  <div class="w-12 h-12 rounded-lg bg-vantare-surface border border-white/5 flex items-center justify-center shrink-0">
+                    <span class="text-lg">🇫🇷</span>
+                  </div>
+                  <div>
+                    <h3 class="font-display font-bold text-white text-lg">Le Mans 24h</h3>
+                    <p class="text-xs text-vantare-textMuted">Porsche 963 LMDh • Hace 2 días</p>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-6 z-10 w-full md:w-2/3 justify-between md:justify-end">
+                  <div class="text-center md:text-right hidden sm:block">
+                    <p class="text-[10px] text-vantare-textMuted uppercase mb-1">SOF</p>
+                    <p class="font-display font-semibold text-white">2847</p>
+                  </div>
+                  <div class="text-center md:text-right">
+                    <p class="text-[10px] text-vantare-textMuted uppercase mb-1">Posición</p>
+                    <p class="font-display font-bold text-lg text-white">P4</p>
+                  </div>
+                  <div class="text-center md:text-right">
+                    <p class="text-[10px] text-vantare-textMuted uppercase mb-1">SR</p>
+                    <p class="font-display font-bold text-emerald-400">+0.28</p>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Race Item 2 & 3 hidden for brevity, can be expanded if needed -->
+              <div class="card-sleek rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 relative overflow-hidden group">
+                <div class="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500"></div>
+                <div class="flex items-center gap-4 z-10 w-full md:w-1/3">
+                  <div class="w-12 h-12 rounded-lg bg-vantare-surface border border-white/5 flex items-center justify-center shrink-0"><span class="text-lg">🇧🇪</span></div>
+                  <div>
+                    <h3 class="font-display font-bold text-white text-lg">Spa 6h Endurance</h3>
+                    <p class="text-xs text-vantare-textMuted">Cadillac V-Series.R • Hace 5 días</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-6 z-10 w-full md:w-2/3 justify-between md:justify-end">
+                  <div class="text-center md:text-right hidden sm:block">
+                    <p class="text-[10px] text-vantare-textMuted uppercase mb-1">SOF</p>
+                    <p class="font-display font-semibold text-white">3124</p>
+                  </div>
+                  <div class="text-center md:text-right">
+                    <p class="text-[10px] text-vantare-textMuted uppercase mb-1">Pos</p>
+                    <p class="font-display font-bold text-lg text-emerald-400">P2</p>
+                  </div>
+                  <div class="text-center md:text-right">
+                    <p class="text-[10px] text-vantare-textMuted uppercase mb-1">SR</p>
+                    <p class="font-display font-bold text-emerald-400">+0.45</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+        </div>
+
+        <!-- Right Column (4 cols): Ecosystem & Upgrades -->
+        <div class="xl:col-span-4 flex flex-col gap-6">
+
+          <!-- Vantare Pro Promo (Kept beautiful styling) -->
+          <div class="relative rounded-xl overflow-hidden red-glow group cursor-pointer border border-vantare-red-900/50 hover:border-vantare-red-500/50 transition-colors">
+            <div class="absolute inset-0 bg-gradient-to-br from-vantare-red-900/60 via-vantare-burgundy/40 to-vantare-bg"></div>
+            <div class="absolute right-0 top-0 w-32 h-32 bg-vantare-red-500/20 blur-3xl rounded-full group-hover:bg-vantare-red-400/30 transition-all"></div>
+            <div class="relative p-6">
+              <div class="flex items-center justify-between mb-4">
+                <span class="pro-badge">PRO</span>
+                <span class="text-xs text-vantare-red-300 font-semibold bg-vantare-red-950/50 px-2 py-1 rounded-full border border-vantare-red-900/30">-50% Lanzamiento</span>
+              </div>
+              <h3 class="font-display font-bold text-2xl text-white mb-2">Vantare Pro</h3>
+              <p class="text-sm text-vantare-textMuted mb-6">Desbloquea overlays avanzados, telemetría en tiempo real y análisis de stint con IA.</p>
+              <div class="flex items-baseline gap-2 mb-6">
+                <span class="text-4xl font-display font-bold text-white">4.99€</span>
+                <span class="text-sm text-vantare-textMuted line-through">9.99€</span>
+                <span class="text-xs text-vantare-textMuted">/mes</span>
+              </div>
+              <button class="w-full btn-primary py-3 rounded-lg font-semibold text-sm text-white shadow-lg shadow-vantare-red-900/20">
+                Actualizar a Pro
+              </button>
+            </div>
+          </div>
+
+          <!-- Vantare Ecosystem -->
+          <div class="glass-panel rounded-xl p-6 border border-white/5 relative overflow-hidden flex-1">
+            <div class="absolute top-0 right-0 w-40 h-40 bg-vantare-wine/10 blur-3xl rounded-full pointer-events-none"></div>
+            <h3 class="font-display font-semibold text-lg text-white mb-4 flex items-center gap-2">
+              <svg class="w-5 h-5 text-vantare-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+              Ecosistema Vantare
+            </h3>
+            
+            <div class="space-y-4">
+              <!-- App 1: Vantare Ingeniero -->
+              <div class="group flex flex-col gap-3 p-4 rounded-xl bg-vantare-surface border border-white/5 hover:border-vantare-red-900/50 hover:bg-gradient-to-br hover:from-vantare-surface hover:to-vantare-red-950/20 transition-all cursor-pointer">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-vantare-red-700 to-vantare-burgundy flex items-center justify-center shrink-0 shadow-lg">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                  </div>
+                  <div>
+                    <h4 class="text-sm font-bold text-white group-hover:text-vantare-red-100 transition-colors">Vantare Ingeniero</h4>
+                    <p class="text-[10px] text-vantare-textMuted uppercase tracking-wider">Control de setup & pitstops</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- App 2: Vantare Telemetría -->
+              <div class="group flex flex-col gap-3 p-4 rounded-xl bg-vantare-surface border border-white/5 hover:border-vantare-red-900/50 hover:bg-gradient-to-br hover:from-vantare-surface hover:to-vantare-red-950/20 transition-all cursor-pointer">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-vantare-wine to-vantare-burgundy flex items-center justify-center shrink-0 shadow-lg">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
+                  </div>
+                  <div>
+                    <h4 class="text-sm font-bold text-white group-hover:text-vantare-red-100 transition-colors">Vantare Telemetría</h4>
+                    <p class="text-[10px] text-vantare-textMuted uppercase tracking-wider">Análisis de stints avanzado</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    // Generate activity heatmap
+    const days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+    const levels = [
+      'bg-vantare-red-950 border border-vantare-red-900/30',
+      'bg-vantare-red-900/60',
+      'bg-vantare-red-700',
+      'bg-vantare-red-500',
+      'bg-vantare-red-400'
+    ];
+
+    days.forEach(day => {
+      const container = document.getElementById('heatmap-' + day);
+      if (container) {
+        for (let i = 0; i < 52; i++) {
+          const dot = document.createElement('div');
+          const level = Math.random() > 0.6 ? Math.floor(Math.random() * levels.length) : 0;
+          dot.className = 'activity-dot shrink-0 ' + levels[level];
+          dot.title = (level * 0.5 + (level > 0 ? 0.5 : 0)) + 'h';
+          container.appendChild(dot);
+        }
+      }
+    });
+  </script>
+</body>
+</html>

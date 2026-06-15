@@ -1,5 +1,7 @@
 package service
 
+import "github.com/vantare/overlays/v2/pkg/models"
+
 type SimulatorKind string
 
 const (
@@ -19,6 +21,11 @@ type SourceInfo struct {
 
 type Source interface {
 	Read() []byte
+}
+
+type TelemetrySource interface {
+	Source
+	ReadTelemetry() *models.Telemetry
 }
 
 type SourceWithInfo interface {

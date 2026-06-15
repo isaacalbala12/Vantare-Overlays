@@ -30,6 +30,7 @@ Si abres una sesión nueva, empieza por **[PROMPT-ORQUESTADOR.md](./PROMPT-ORQUE
 | 09 | [Eventos e IPC](./09-EVENTOS-IPC.md) | hub:*, profile:loaded, telemetría |
 | 10 | [Workflow de desarrollo](./10-WORKFLOW-DESARROLLO.md) | Orquestador + ejecutor, miniplanes, evidencia |
 | 11 | [Comandos y verificación](./11-COMANDOS-Y-VERIFICACION.md) | Tests, build, flags CLI |
+| 12 | [Fuentes de telemetría LMU](./12-FUENTES-TELEMETRIA-LMU.md) | Shared memory, REST local, SSE/Wails, matriz por overlay |
 | — | **[Prompt orquestador](./PROMPT-ORQUESTADOR.md)** | **Pegar en nueva sesión de Cursor** |
 
 ---

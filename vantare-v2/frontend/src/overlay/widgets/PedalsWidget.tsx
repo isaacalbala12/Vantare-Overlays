@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useRef } from "react";
 import { getWidgetTelemetrySource } from "./use-widget-telemetry";
+import type { WidgetTelemetryMode } from "./use-widget-telemetry";
 import { resolveWidgetAppearance } from "./widget-appearance";
 import { setStylePropertyIfChanged, setTextIfChanged } from "../../lib/dom-write";
 import { startFrameBudgetLoop } from "../../lib/frame-budget";
 
 type PedalsProps = {
   editMode: boolean;
+  telemetryMode?: WidgetTelemetryMode;
   updateHz?: number;
   props?: Record<string, unknown>;
 };
@@ -13,7 +15,7 @@ type PedalsProps = {
 const BAKED_PANEL_BG = "linear-gradient(180deg, #1a0104 0%, #0d0102 100%)";
 const HISTORY_SIZE = 100;
 
-export function PedalsWidget({ editMode, updateHz = 30, props }: PedalsProps) {
+export function PedalsWidget({ editMode, telemetryMode, updateHz = 30, props }: PedalsProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const gearRef = useRef<HTMLSpanElement>(null);
   const speedRef = useRef<HTMLSpanElement>(null);
@@ -27,7 +29,10 @@ export function PedalsWidget({ editMode, updateHz = 30, props }: PedalsProps) {
   const steeringRef_ = useRef(0);
   const { appearance: a } = resolveWidgetAppearance("pedals", props);
 
-  const getTelemetry = useMemo(() => getWidgetTelemetrySource(editMode), [editMode]);
+  const getTelemetry = useMemo(
+    () => getWidgetTelemetrySource(telemetryMode ?? (editMode ? "mock" : "live")),
+    [editMode, telemetryMode],
+  );
 
   useEffect(() => {
     return startFrameBudgetLoop(updateHz, () => {

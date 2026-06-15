@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/vantare/overlays/v2/internal/telemetry/lmu"
 	"github.com/vantare/overlays/v2/internal/telemetry/service"
 )
 
@@ -31,23 +30,14 @@ func New(useLiveLMU bool) *App {
 	if useLiveLMU {
 		if s, err := openLMUSource(); err == nil {
 			lmuSrc = s
-			src = s
+			src = wrapLMUSourceWithREST(s)
 			log.Printf("live LMU source opened")
 		} else {
 			log.Printf("warning: live LMU source unavailable: %v (falling back to mock)", err)
 		}
 	}
 	if src == nil {
-		buf := lmu.BuildSyntheticBuffer()
-		src = service.FuncSource{
-			ReadFunc: func() []byte { return buf },
-			InfoData: service.SourceInfo{
-				Kind:      service.SimulatorMock,
-				Name:      "Mock telemetry",
-				Live:      false,
-				Available: true,
-			},
-		}
+		src = createMockSource()
 	}
 
 	svc := service.New(service.Config{
@@ -77,6 +67,9 @@ func (a *App) StopTelemetry() {
 		a.cancel()
 	}
 	a.wg.Wait()
+	if closer, ok := a.source.(interface{ Close() error }); ok {
+		_ = closer.Close()
+	}
 	if a.lmuSource != nil {
 		_ = a.lmuSource.Close()
 		a.lmuSource = nil

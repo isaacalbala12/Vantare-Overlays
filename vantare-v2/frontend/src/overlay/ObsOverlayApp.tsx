@@ -17,9 +17,11 @@ import { TelemetryWidget } from "./widgets/TelemetryWidget";
 import { TelemetryVerticalWidget } from "./widgets/TelemetryVerticalWidget";
 import { PedalsWidget } from "./widgets/PedalsWidget";
 import { applyOverlayDocumentMode } from "./overlay-document";
+import type { WidgetTelemetryMode } from "./widgets/use-widget-telemetry";
 
 type WidgetProps = {
   editMode: boolean;
+  telemetryMode?: WidgetTelemetryMode;
   updateHz?: number;
   props?: Record<string, unknown>;
 };
@@ -115,7 +117,7 @@ export function ObsOverlayApp() {
         const localPos = toWindowLocal(w.position, layoutOrigin);
         return (
           <WidgetHost key={w.id} id={w.id} position={localPos}>
-            <Component editMode={false} updateHz={w.updateHz} props={{ ...w.props, style: w.style ?? w.props?.style }} />
+            <Component editMode={false} telemetryMode="live" updateHz={w.updateHz} props={{ ...w.props, style: w.style ?? w.props?.style }} />
           </WidgetHost>
         );
       })}

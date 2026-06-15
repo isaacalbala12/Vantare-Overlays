@@ -1,0 +1,42 @@
+F3.4 — DashboardPage.tsx Integration
+=====================================
+File: apps/desktop/src/renderer/hub/pages/DashboardPage.tsx
+
+STRUCTURAL REVIEW:
+
+CHECK 1: All 5 Panels
+   ✅ PANELS config array on lines 15-21 includes:
+     - overlays (hero, to='/overlays')
+     - sim (medium, to='/overlays')
+     - themes (small, to='/themes')
+     - account (small, to='/account')
+     - settings (small, to='/settings')
+
+CHECK 2: CanvasParticles Integration
+   ✅ Line 3: import CanvasParticles from '../components/CanvasParticles';
+   ✅ Line 51: <CanvasParticles /> rendered inside root div
+
+CHECK 3: Layout B CSS Classes
+   ✅ Line 53: className="dashboard-layout-desktop dashboard-layout-tablet dashboard-layout-mobile p-4 relative"
+   Verified: All 3 responsive layout classes applied simultaneously.
+
+CHECK 4: Stagger Animation
+   ✅ Lines 41-47: panelStyle callback returns { animationDelay: `${index * 0.1}s`, animationFillMode: 'backwards' }
+     Only when mounted && !prefersReducedMotion.current
+   ✅ Lines 62-63: style={panelStyle(index)} and className conditional for 'dashboard-panel-enter'
+   ✅ Line 34-37: useRef + setTimeout pattern for mount-only detection
+
+CHECK 5: Async Data Loading
+   ✅ Line 28: useThemePreview() — triggers async theme fetch
+   ✅ Line 29: useOverlayWindows() — triggers async overlay windows fetch
+   ✅ Line 30: useAccountStatus() — triggers auth session load
+
+CHECK 6: Loading States
+   ✅ Panel-level loading passed via hooks (useOverlayWindows has loading, useThemePreview has loading)
+   ✅ Each panel handles loading internally
+
+CHECK 7: data-testid
+   ✅ Line 50: data-testid="dashboard-page" on root div
+   ✅ Each panel receives correct testId from PANELS config
+
+Verdict: ✅ PASS

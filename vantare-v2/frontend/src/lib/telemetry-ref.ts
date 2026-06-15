@@ -101,6 +101,7 @@ export type TelemetryPayload = {
     };
   session?: {
     trackName?: string;
+    sessionType?: number;
     sessionName?: string;
     sessionTime?: number;
     timeRemainingInGamePhase?: number;

@@ -7,26 +7,31 @@ import {
 } from "../../lib/dom-write";
 import { startFrameBudgetLoop } from "../../lib/frame-budget";
 import { useMemo } from "react";
+import type { WidgetTelemetryMode } from "./use-widget-telemetry";
 
 type DeltaProps = {
   editMode: boolean;
+  telemetryMode?: WidgetTelemetryMode;
   updateHz?: number;
   props?: Record<string, unknown>;
 };
 
-function formatDelta(delta: number): string {
+export function formatDelta(delta: number): string {
   if (!Number.isFinite(delta)) return "—";
   if (delta === 0) return "—";
   const sign = delta > 0 ? "+" : "";
   return `${sign}${delta.toFixed(3)}s`;
 }
 
-export function DeltaWidget({ editMode, updateHz = 30, props }: DeltaProps) {
+export function DeltaWidget({ editMode, telemetryMode, updateHz = 30, props }: DeltaProps) {
   const { appearance: a } = resolveWidgetAppearance("delta", props);
   const deltaRef = useRef<HTMLSpanElement>(null);
   const fillRef = useRef<HTMLDivElement>(null);
 
-  const getTelemetry = useMemo(() => getWidgetTelemetrySource(editMode), [editMode]);
+  const getTelemetry = useMemo(
+    () => getWidgetTelemetrySource(telemetryMode ?? (editMode ? "mock" : "live")),
+    [editMode, telemetryMode],
+  );
 
   useEffect(() => {
     return startFrameBudgetLoop(updateHz, () => {

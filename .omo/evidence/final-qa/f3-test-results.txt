@@ -1,0 +1,31 @@
+F3 — Test Results Summary
+===========================
+Command: npx vitest run src/renderer/hub/__tests__/DashboardPage.test.tsx
+
+Result: ✅ 18/18 TESTS PASSED
+
+Individual Test Results:
+  ✓ renders dashboard root with correct test ID
+  ✓ renders all 5 panels with correct test IDs
+  ✓ has CanvasParticles canvas element
+  ✓ shows overlay panel with default state from mock
+  ✓ shows Open All and Close All buttons in overlays panel
+  ✓ shows "No sim detected" when sim disconnected
+  ✓ shows OFFLINE badge when sim disconnected
+  ✓ shows "Connect a simulator to begin" info text
+  ✓ displays theme preview from mock
+  ✓ shows "Sign in to sync your setup" when logged out
+  ✓ shows settings panel with demo mode toggle (default off)
+  ✓ overlays panel link navigates to /overlays
+  ✓ settings panel link navigates to /settings
+  ✓ themes panel link navigates to /themes
+  ✓ account panel link navigates to /account
+  ✓ CanvasParticles canvas has aria-hidden attribute
+  ✓ renders all panels without error when prefers-reduced-motion is set
+  ✓ renders panel titles in dashboard
+
+Duration: 2.80s
+Test File: 1 passed
+
+Note: "Not implemented: HTMLCanvasElement's getContext()" warnings are expected
+(jsdom does not implement canvas) and do NOT affect test results.

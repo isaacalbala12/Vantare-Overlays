@@ -49,14 +49,14 @@ export function selectRelativeRows(vehicles: Partial<VehicleScoring>[], rangeAhe
 
 export function resolveClassColor(
   vehicleClass: string | undefined,
-  a: Record<string, string>
+  a: Record<string, unknown>
 ): string {
   const cls = (vehicleClass ?? "").toUpperCase();
-  if (cls === "HYPERCAR") return a.classHypercarColor;
-  if (cls === "LMP2") return a.classLmp2Color;
-  if (cls === "LMP3") return a.classLmp3Color;
-  if (cls === "GT3" || cls === "LMGT3") return a.classGt3Color;
-  return a.classUnknownColor;
+  if (cls === "HYPERCAR") return a.classHypercarColor as string;
+  if (cls === "LMP2") return a.classLmp2Color as string;
+  if (cls === "LMP3") return a.classLmp3Color as string;
+  if (cls === "GT3" || cls === "LMGT3") return a.classGt3Color as string;
+  return a.classUnknownColor as string;
 }
 
 export function formatSignedGap(seconds: number | undefined): string {
@@ -131,12 +131,12 @@ export function RelativeWidget({ editMode, telemetryMode, props, updateHz = 15 }
   const containerRef = useRef<HTMLDivElement>(null);
   const rangeAhead = (props?.rangeAhead as number) ?? 3;
   const rangeBehind = (props?.rangeBehind as number) ?? 3;
+  const lastFingerprintRef = useRef("");
   const { appearance: a } = resolveWidgetAppearance("relative", props);
 
   useEffect(() => {
     return startFrameBudgetLoop(updateHz, () => {
       const t = (telemetryMode ?? (editMode ? "mock" : "live")) === "mock" ? getMockTelemetry() : getTelemetryRef();
-      const a = resolveWidgetAppearance("relative", props).appearance;
       const container = containerRef.current;
       if (!container) return;
 
@@ -152,6 +152,13 @@ export function RelativeWidget({ editMode, telemetryMode, props, updateHz = 15 }
         setHTMLIfChanged(container, `<div class="text-xs font-mono p-2" style="color:color-mix(in srgb, ${a.textColor} 30%, transparent)">No player</div>`);
         return;
       }
+
+      // Fingerprint check — skip HTML rebuild if no vehicle state changed
+      const fingerprint = visible.map(v =>
+        `${v.id}:${v.place}:${v.timeGapToPlayer?.toFixed(2)}:${v.inPits}:${v.vehicleClass}:${v.driverNumber}:${v.driverName}:${v.teamBrandColor}:${v.isPlayer}`
+      ).join("|");
+      if (fingerprint === lastFingerprintRef.current) return;
+      lastFingerprintRef.current = fingerprint;
 
       const rows = visible.map((v, idx) => {
         const isP = v.isPlayer;

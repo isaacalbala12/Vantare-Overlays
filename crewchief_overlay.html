@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vantare — CrewChief Hub</title>
+  
+  <!-- Tailwind & Chart.js -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Rajdhani:wght@400;500;600;700&family=Space+Mono&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Rajdhani', 'sans-serif'],
+            mono: ['Space Mono', 'monospace'],
+          },
+          colors: {
+            vantare: {
+              bg: '#080808',
+              surface: '#0F0F0F',
+              panel: '#141414',
+              border: '#1E1E1E',
+              borderHover: '#2A2A2A',
+              text: '#E8E8E8',
+              textMuted: '#7A7A7A',
+              textDim: '#4A4A4A',
+              red: {
+                50: '#FFE5E5',
+                100: '#FFCCCC',
+                200: '#FF9999',
+                300: '#FF6666',
+                400: '#E63946',
+                500: '#C1121F',
+                600: '#9B2226',
+                700: '#800020',
+                800: '#66001A',
+                900: '#4A0012',
+                950: '#2A000A',
+              },
+              wine: '#722F37',
+              burgundy: '#4A0E16',
+              blood: '#8B0000',
+            }
+          },
+          animation: {
+            'fade-in-up': 'fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+          },
+          keyframes: {
+            fadeInUp: {
+              '0%': { opacity: '0', transform: 'translateY(20px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style>
+    * { scrollbar-width: thin; scrollbar-color: #2A2A2A #0F0F0F; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0F0F0F; }
+    ::-webkit-scrollbar-thumb { background: #2A2A2A; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #C1121F; }
+
+    body {
+      background: #080808;
+      color: #E8E8E8;
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+    }
+
+    .glass-panel {
+      background: rgba(20, 20, 20, 0.6);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .glass-panel:hover {
+      border-color: rgba(193, 18, 31, 0.2);
+    }
+
+    .card-sleek {
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      background: linear-gradient(180deg, rgba(20,20,20,0.8) 0%, rgba(15,15,15,0.8) 100%);
+      border: 1px solid rgba(255,255,255,0.03);
+    }
+    .card-sleek:hover {
+      transform: translateY(-2px);
+      background: linear-gradient(180deg, rgba(25,25,25,0.9) 0%, rgba(20,20,20,0.9) 100%);
+      border-color: rgba(139, 0, 0, 0.3);
+      box-shadow: 0 4px 20px rgba(139, 0, 0, 0.1);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #9B2226 0%, #66001A 100%);
+      border: 1px solid rgba(255,255,255,0.1);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #C1121F 0%, #9B2226 100%);
+      box-shadow: 0 0 20px rgba(193, 18, 31, 0.4);
+      transform: translateY(-2px);
+    }
+    
+    .btn-success {
+      background: linear-gradient(135deg, #059669 0%, #064E3B 100%);
+      border: 1px solid rgba(255,255,255,0.1);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .btn-success:hover {
+      background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      transition: all 0.2s;
+    }
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.06);
+      border-color: rgba(139,0,0,0.3);
+    }
+
+    .custom-input {
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #fff;
+      transition: border-color 0.2s;
+    }
+    .custom-input:focus {
+      outline: none;
+      border-color: #C1121F;
+    }
+
+    .slider {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 4px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 2px;
+      outline: none;
+    }
+    .slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #C1121F;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .slider::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+      box-shadow: 0 0 10px rgba(193, 18, 31, 0.5);
+    }
+
+    .console-text {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.8rem;
+      color: #A0A0A0;
+      line-height: 1.5;
+    }
+    .console-timestamp {
+      color: #4A4A4A;
+      margin-right: 8px;
+    }
+    .console-info {
+      color: #3B82F6;
+    }
+    .console-success {
+      color: #10B981;
+    }
+
+    .premium-bg {
+      background-color: #080808;
+      background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+      background-size: 32px 32px;
+    }
+
+    .logo-v {
+      filter: drop-shadow(0 0 10px rgba(139, 0, 0, 0.6));
+    }
+    
+    .nav-item {
+      position: relative;
+      transition: all 0.2s;
+    }
+    .nav-item::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 50%;
+      width: 0;
+      height: 2px;
+      background: linear-gradient(90deg, #C1121F, #800020);
+      transition: all 0.3s;
+      transform: translateX(-50%);
+    }
+    .nav-item:hover::after, .nav-item.active::after {
+      width: 100%;
+    }
+    .nav-item:hover { color: #E8E8E8; }
+    
+    @keyframes pulse-red {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+    .live-indicator {
+      animation: pulse-red 2s infinite;
+    }
+    
+    /* Animation Delays */
+    .delay-100 { animation-delay: 100ms; }
+    .delay-200 { animation-delay: 200ms; }
+    .delay-300 { animation-delay: 300ms; }
+    .delay-400 { animation-delay: 400ms; }
+  </style>
+</head>
+<body class="min-h-screen premium-bg relative">
+
+  <!-- Top Navigation -->
+  <nav class="fixed top-0 left-0 right-0 z-50 glass-panel border-b border-white/5">
+    <div class="max-w-[1920px] mx-auto px-6 h-14 flex items-center justify-between">
+      <div class="flex items-center gap-8">
+        <div class="flex items-center gap-3">
+          <svg class="w-8 h-8 logo-v" viewBox="0 0 40 40" fill="none">
+            <defs>
+              <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#FF6B6B"/>
+                <stop offset="50%" style="stop-color:#C1121F"/>
+                <stop offset="100%" style="stop-color:#800020"/>
+              </linearGradient>
+            </defs>
+            <path d="M20 2 L38 38 L28 38 L20 18 L12 38 L2 38 Z" fill="url(#logoGrad)" stroke="rgba(255,255,255,0.2)" stroke-width="0.5"/>
+            <path d="M20 8 L32 34 L26 34 L20 20 L14 34 L8 34 Z" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/>
+          </svg>
+          <span class="font-display font-bold text-xl tracking-wider text-white">VANTARE <span class="text-vantare-red-500 font-medium">CREWCHIEF</span></span>
+        </div>
+
+        <div class="hidden md:flex items-center gap-6 text-sm font-medium text-vantare-textMuted">
+          <a href="#" class="nav-item">Hub</a>
+          <a href="#" class="nav-item active text-vantare-text">Ingeniero (CrewChief)</a>
+          <a href="#" class="nav-item">Telemetría</a>
+          <a href="#" class="nav-item">Setup</a>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <span class="text-xs font-mono text-vantare-textMuted flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-vantare-textDim"></span>
+          Desconectado
+        </span>
+        <div class="flex items-center gap-2 pl-4 border-l border-white/5 cursor-pointer group">
+          <div class="w-8 h-8 rounded-full bg-gradient-to-br from-vantare-red-600 to-vantare-burgundy flex items-center justify-center text-xs font-bold group-hover:shadow-[0_0_15px_rgba(193,18,31,0.5)] transition-all">IA</div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="pt-20 pb-8 px-6 max-w-[1920px] mx-auto opacity-0 animate-fade-in-up">
+    
+    <!-- Top Action Bar -->
+    <div class="glass-panel rounded-xl p-4 flex flex-col md:flex-row items-center justify-between gap-6 mb-6 border border-vantare-red-900/30">
+      
+      <!-- Game Selector & Profile -->
+      <div class="flex items-center gap-4 w-full md:w-auto">
+        <div class="flex flex-col">
+          <label class="text-[10px] text-vantare-textMuted uppercase font-bold tracking-wider mb-1">Simulador</label>
+          <select class="custom-input rounded-lg px-3 py-2 text-sm w-48 font-display">
+            <option>Le Mans Ultimate</option>
+            <option>iRacing</option>
+            <option>Assetto Corsa Competizione</option>
+            <option>Automobilista 2</option>
+          </select>
+        </div>
+        
+        <div class="flex flex-col">
+          <label class="text-[10px] text-vantare-textMuted uppercase font-bold tracking-wider mb-1">Tu Nombre</label>
+          <input type="text" class="custom-input rounded-lg px-3 py-2 text-sm w-32 font-display" placeholder="Isaac">
+        </div>
+      </div>
+
+      <!-- Center Action Button -->
+      <button class="btn-success px-12 py-3 rounded-lg font-display font-bold text-lg tracking-wider text-white shadow-lg flex items-center gap-3">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        INICIAR INGENIERO
+      </button>
+
+      <!-- Quick Actions -->
+      <div class="flex items-center gap-3 w-full md:w-auto justify-end">
+        <button class="btn-secondary px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider">Propiedades</button>
+        <button class="btn-secondary px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider">Macros</button>
+      </div>
+
+    </div>
+
+    <!-- Main Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      
+      <!-- Left Column: Audio & Settings -->
+      <div class="lg:col-span-3 flex flex-col gap-6">
+        
+        <!-- Volumes -->
+        <div class="card-sleek rounded-xl p-5 border border-white/5 opacity-0 animate-fade-in-up delay-100">
+          <h3 class="font-display font-bold text-sm text-vantare-text uppercase tracking-widest mb-5 border-b border-white/10 pb-2">Niveles de Audio</h3>
+          
+          <div class="space-y-6">
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-xs text-vantare-textMuted font-medium">Volumen de Mensajes</span>
+                <span class="text-xs text-white font-mono">80%</span>
+              </div>
+              <input type="range" min="1" max="100" value="80" class="slider">
+            </div>
+
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-xs text-vantare-textMuted font-medium">Volumen de Fondo</span>
+                <span class="text-xs text-white font-mono">20%</span>
+              </div>
+              <input type="range" min="1" max="100" value="20" class="slider">
+            </div>
+            
+            <div class="pt-2">
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-xs text-vantare-textMuted font-medium">Multiplicador de Combustible</span>
+                <span class="text-xs text-vantare-red-400 font-mono font-bold">x1.0</span>
+              </div>
+              <input type="number" value="1.0" step="0.1" class="custom-input rounded px-2 py-1 text-xs w-full font-mono text-center">
+            </div>
+          </div>
+        </div>
+
+        <!-- Devices & Voices -->
+        <div class="card-sleek rounded-xl p-5 border border-white/5 opacity-0 animate-fade-in-up delay-200">
+          <h3 class="font-display font-bold text-sm text-vantare-text uppercase tracking-widest mb-5 border-b border-white/10 pb-2">Dispositivos y Voces</h3>
+          
+          <div class="space-y-4">
+            <div class="flex flex-col">
+              <label class="text-[10px] text-vantare-textMuted uppercase mb-1">Reproducción Mensajes</label>
+              <select class="custom-input rounded-lg px-2 py-1.5 text-xs text-vantare-text">
+                <option>Altavoces (4- Pebble V3)</option>
+                <option>Predeterminado del sistema</option>
+              </select>
+            </div>
+            
+            <div class="flex flex-col">
+              <label class="text-[10px] text-vantare-textMuted uppercase mb-1">Entrada de Voz</label>
+              <select class="custom-input rounded-lg px-2 py-1.5 text-xs text-vantare-text">
+                <option>Micrófono (5- Logitech PRO X)</option>
+                <option>Predeterminado del sistema</option>
+              </select>
+            </div>
+            
+            <div class="flex flex-col">
+              <label class="text-[10px] text-vantare-textMuted uppercase mb-1">Reproducción Fondo</label>
+              <select class="custom-input rounded-lg px-2 py-1.5 text-xs text-vantare-text">
+                <option>Altavoces (4- Pebble V3)</option>
+                <option>Predeterminado del sistema</option>
+              </select>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-3 pt-2 border-t border-white/5">
+              <div class="flex flex-col">
+                <label class="text-[10px] text-vantare-textMuted uppercase mb-1">Voz Ingeniero</label>
+                <select class="custom-input rounded-lg px-2 py-1.5 text-xs text-vantare-text">
+                  <option>Jim (default)</option>
+                </select>
+              </div>
+              <div class="flex flex-col">
+                <label class="text-[10px] text-vantare-textMuted uppercase mb-1">Voz Spotter</label>
+                <select class="custom-input rounded-lg px-2 py-1.5 text-xs text-vantare-text">
+                  <option>Jim (default)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Voice Recognition Mode -->
+        <div class="card-sleek rounded-xl p-5 border border-white/5 opacity-0 animate-fade-in-up delay-300">
+          <h3 class="font-display font-bold text-sm text-vantare-text uppercase tracking-widest mb-4 border-b border-white/10 pb-2">Reconocimiento de Voz</h3>
+          
+          <div class="space-y-2">
+            <label class="flex items-center gap-3 cursor-pointer group">
+              <input type="radio" name="voice_mode" class="hidden" checked>
+              <div class="w-4 h-4 rounded-full border border-vantare-red-500 flex items-center justify-center bg-vantare-red-900/30">
+                <div class="w-2 h-2 rounded-full bg-vantare-red-500"></div>
+              </div>
+              <span class="text-sm text-white group-hover:text-vantare-red-200 transition-colors">Desactivado</span>
+            </label>
+            <label class="flex items-center gap-3 cursor-pointer group">
+              <input type="radio" name="voice_mode" class="hidden">
+              <div class="w-4 h-4 rounded-full border border-white/20 flex items-center justify-center group-hover:border-vantare-red-500 transition-colors"></div>
+              <span class="text-sm text-vantare-textMuted group-hover:text-white transition-colors">Mantener botón</span>
+            </label>
+            <label class="flex items-center gap-3 cursor-pointer group">
+              <input type="radio" name="voice_mode" class="hidden">
+              <div class="w-4 h-4 rounded-full border border-white/20 flex items-center justify-center group-hover:border-vantare-red-500 transition-colors"></div>
+              <span class="text-sm text-vantare-textMuted group-hover:text-white transition-colors">Presionar y soltar</span>
+            </label>
+            <label class="flex items-center gap-3 cursor-pointer group">
+              <input type="radio" name="voice_mode" class="hidden">
+              <div class="w-4 h-4 rounded-full border border-white/20 flex items-center justify-center group-hover:border-vantare-red-500 transition-colors"></div>
+              <span class="text-sm text-vantare-textMuted group-hover:text-white transition-colors">Siempre activo</span>
+            </label>
+            <label class="flex items-center gap-3 cursor-pointer group">
+              <input type="radio" name="voice_mode" class="hidden">
+              <div class="w-4 h-4 rounded-full border border-white/20 flex items-center justify-center group-hover:border-vantare-red-500 transition-colors"></div>
+              <span class="text-sm text-vantare-textMuted group-hover:text-white transition-colors">Palabra clave ("Crew Chief")</span>
+            </label>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Center & Right Column: Console & Controls -->
+      <div class="lg:col-span-9 flex flex-col gap-6">
+        
+        <!-- Console Window -->
+        <div class="glass-panel rounded-xl flex flex-col h-[500px] border border-white/5 overflow-hidden opacity-0 animate-fade-in-up delay-200 relative group">
+          <div class="absolute inset-0 bg-gradient-to-b from-black/80 to-black/95 z-0"></div>
+          
+          <div class="relative z-10 flex items-center justify-between px-4 py-2 border-b border-white/10 bg-black/40">
+            <h3 class="font-display font-semibold text-xs tracking-widest text-vantare-textMuted uppercase flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              Terminal de Ingeniero
+            </h3>
+            <div class="flex gap-1.5">
+              <div class="w-2.5 h-2.5 rounded-full bg-vantare-textDim hover:bg-vantare-red-500 transition-colors cursor-pointer"></div>
+              <div class="w-2.5 h-2.5 rounded-full bg-vantare-textDim hover:bg-amber-500 transition-colors cursor-pointer"></div>
+              <div class="w-2.5 h-2.5 rounded-full bg-vantare-textDim hover:bg-emerald-500 transition-colors cursor-pointer"></div>
+            </div>
+          </div>
+          
+          <div class="relative z-10 p-4 overflow-y-auto flex-1 console-text">
+            <div><span class="console-timestamp">11:41:59.561:</span> Preparing sound effects</div>
+            <div><span class="console-timestamp">11:41:59.650:</span> Prepare sound effects completed</div>
+            <div><span class="console-timestamp">11:41:59.651:</span> Preparing driver names</div>
+            <div><span class="console-timestamp">11:41:59.699:</span> Prepare driver names completed</div>
+            <div class="text-amber-500/80"><span class="console-timestamp">11:41:59.699:</span> No name has been selected for personalised messages</div>
+            <div><span class="console-timestamp">11:41:59.702:</span> Preparing voice messages</div>
+            <div class="console-info"><span class="console-timestamp">11:41:59.712:</span> Spotter Jim (default) has oval-specific sounds - these will be used for tracks marked as 'oval'</div>
+            <div><span class="console-timestamp">11:42:03.721:</span> Prepare voice message completed</div>
+            <div><span class="console-timestamp">11:42:03.722:</span> Finished preparing sounds cache, found 11182 driver names and 3234 sound sets. Loaded 434 message sounds</div>
+            <div class="text-vantare-textDim"><span class="console-timestamp">11:42:03.842:</span> Cmnt: Reading driver name mappings</div>
+            <div class="text-vantare-textDim"><span class="console-timestamp">11:42:03.853:</span> Cmnt: Read 2164 driver name mappings</div>
+            <div class="text-vantare-textDim"><span class="console-timestamp">11:42:03.864:</span> Cmnt: Read 425 driver name mappings</div>
+            <div><span class="console-timestamp">11:42:03.951:</span> Loading controller settings</div>
+            <div><span class="console-timestamp">11:42:03.951:</span> Load controller settings complete</div>
+            <div class="console-success"><span class="console-timestamp">11:42:03.951:</span> Boot trace 4</div>
+            <div><span class="console-timestamp">11:42:04.633:</span> Checking for updates</div>
+            <div><span class="console-timestamp">11:42:04.644:</span> Loading screen closed</div>
+            <div class="console-info"><span class="console-timestamp">11:42:05.553:</span> Got soundpack update data from primary URL: <a href="#" class="text-blue-400 hover:underline">https://thecrewchief.org</a></div>
+            <div class="console-success"><span class="console-timestamp">11:42:05.611:</span> Check for updates completed</div>
+            <div class="mt-2 text-vantare-red-400 opacity-80 animate-pulse">_ Esperando telemetría...</div>
+          </div>
+        </div>
+
+        <!-- Bottom Lists (Controllers & Actions & Updates) -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 opacity-0 animate-fade-in-up delay-300">
+          
+          <!-- Available Controllers -->
+          <div class="card-sleek rounded-xl p-4 border border-white/5 flex flex-col h-64">
+            <h4 class="font-display font-semibold text-xs text-vantare-textMuted uppercase mb-3 border-b border-white/5 pb-2">Controladores Disponibles</h4>
+            <div class="flex-1 bg-black/40 rounded border border-white/5 p-2 overflow-y-auto mb-3">
+              <!-- Empty state for sleekness -->
+              <div class="text-xs text-vantare-textDim text-center mt-10">Sin controladores detectados</div>
+            </div>
+            <button class="btn-secondary w-full py-2 rounded text-xs font-semibold uppercase">Escanear</button>
+          </div>
+
+          <!-- Assigned Actions -->
+          <div class="card-sleek rounded-xl p-4 border border-white/5 flex flex-col h-64">
+            <h4 class="font-display font-semibold text-xs text-vantare-textMuted uppercase mb-3 border-b border-white/5 pb-2">Acciones Asignadas</h4>
+            <div class="flex-1 bg-black/40 rounded border border-white/5 p-2 overflow-y-auto mb-3 text-xs text-vantare-textDim font-mono">
+              <div class="hover:text-white hover:bg-white/5 px-1 py-0.5 rounded cursor-pointer transition-colors">Talk to Crew Chief (no asignado)</div>
+              <div class="hover:text-white hover:bg-white/5 px-1 py-0.5 rounded cursor-pointer transition-colors">Add Start/end track landmark (no asignado)</div>
+              <div class="hover:text-white hover:bg-white/5 px-1 py-0.5 rounded cursor-pointer transition-colors">Decrease messages volume (no asignado)</div>
+              <div class="hover:text-white hover:bg-white/5 px-1 py-0.5 rounded cursor-pointer transition-colors">Increase messages volume (no asignado)</div>
+              <div class="hover:text-white hover:bg-white/5 px-1 py-0.5 rounded cursor-pointer transition-colors">Pit stop prediction (no asignado)</div>
+              <div class="hover:text-white hover:bg-white/5 px-1 py-0.5 rounded cursor-pointer transition-colors">Press to replay last message (no asignado)</div>
+            </div>
+            <div class="flex gap-2">
+              <button class="btn-secondary w-full py-2 rounded text-[10px] font-semibold uppercase">Asignar</button>
+              <button class="btn-secondary w-full py-2 rounded text-[10px] font-semibold uppercase">Eliminar</button>
+            </div>
+          </div>
+
+          <!-- Updates -->
+          <div class="card-sleek rounded-xl p-4 border border-white/5 flex flex-col justify-between h-64 relative overflow-hidden group">
+            <div class="absolute -right-10 -bottom-10 w-32 h-32 bg-emerald-500/10 blur-3xl rounded-full"></div>
+            <div>
+              <h4 class="font-display font-semibold text-xs text-vantare-textMuted uppercase mb-3 border-b border-white/5 pb-2">Estado del Sistema</h4>
+              <div class="text-center mt-6">
+                <p class="text-xs text-vantare-textMuted mb-1">Versión Actual</p>
+                <p class="font-mono text-lg text-white font-bold tracking-wider">4.19.3.4</p>
+              </div>
+            </div>
+            
+            <div class="space-y-3 relative z-10">
+              <div class="flex items-center justify-center gap-2 text-xs font-semibold text-emerald-400 bg-emerald-950/30 border border-emerald-900/50 py-2 rounded">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                Paquetes de sonido al día
+              </div>
+              <button class="btn-primary w-full py-2.5 rounded text-xs font-semibold uppercase shadow-lg">Comprobar Actualizaciones</button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+</body>
+</html>

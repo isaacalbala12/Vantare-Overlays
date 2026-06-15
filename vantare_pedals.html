@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Vantare - Ultimate Pedals</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Rajdhani:wght@500;600;700;800;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'], display: ['Rajdhani', 'sans-serif'] },
+          colors: { 
+            vantare: { bg: '#080808', panel: '#1a1a1a', red: { 400: '#E63946', 500: '#C1121F', 600: '#9B2226', 900: '#3a050a' } },
+            pedal: { throttle: '#2ecc71', brake: '#e74c3c', clutch: '#3498db' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background-color: #00ff00; /* Puedes cambiar esto a oscuro si no vas a capturarlo en OBS todavía */ color: white; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; }
+
+    /* WEC Sharp Hybrid Panel */
+    .ultimate-panel { 
+      background: linear-gradient(180deg, #1a0104 0%, #0d0102 100%); 
+      border: 1px solid #9b2226; 
+      display: flex; 
+      align-items: stretch; /* Asegura que todos los bloques ocupen la altura total */
+      height: 80px; 
+      overflow: hidden; 
+      box-shadow: 0 10px 25px rgba(0,0,0,0.9);
+      border-radius: 2px;
+    }
+
+    .gear-block {
+      width: 90px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: #9b2226;
+      clip-path: polygon(0 0, 100% 0, 85% 100%, 0 100%);
+      margin-right: -12px; /* Superposición para ocultar el corte feo */
+      position: relative;
+      z-index: 30;
+      padding-top: 4px; /* Pequeño ajuste óptico para compensar la itálica */
+    }
+
+    .pedals-block {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-left: 28px; /* Espacio para librar el corte diagonal */
+      padding-right: 12px;
+      gap: 8px;
+      background-color: #0a0a0a;
+      border-right: 1px solid #333;
+      position: relative;
+      z-index: 20;
+    }
+
+    .pedal-bar {
+      background-color: #000;
+      width: 14px;
+      height: 46px; /* Altura centrada perfecta en los 80px (80-46 = 34 -> 17px arriba/abajo) */
+      position: relative;
+      transform: skewX(-10deg);
+      border: 1px solid rgba(255,255,255,0.2);
+      overflow: hidden;
+    }
+
+    .pedal-fill {
+      width: 100%;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      transition: height 0.05s linear;
+    }
+
+    .graph-block {
+      position: relative;
+      background-color: rgba(0,0,0,0.6);
+      width: 350px;
+      display: flex;
+      align-items: center;
+      z-index: 10;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="ultimate-panel font-display">
+    
+    <!-- Bloque 1: Marcha y Velocidad -->
+    <div class="gear-block">
+      <!-- Se añade un ligero margin-left para que visualmente parezca centrado pese al corte diagonal de la derecha -->
+      <span id="gear-text" class="text-[42px] font-black text-white italic drop-shadow-md leading-none ml-2">3</span>
+      <span id="speed-text" class="text-[11px] font-bold text-black bg-white px-2 rounded-sm tracking-widest italic leading-none py-[3px] mt-1 ml-2">178</span>
+    </div>
+
+    <!-- Bloque 2: Pedales -->
+    <div class="pedals-block">
+      <div class="pedal-bar"><div id="clu-bar" class="pedal-fill bg-pedal-clutch shadow-[0_0_10px_#3498db]"></div></div>
+      <div class="pedal-bar"><div id="brk-bar" class="pedal-fill bg-pedal-brake shadow-[0_0_10px_#e74c3c]"></div></div>
+      <div class="pedal-bar"><div id="thr-bar" class="pedal-fill bg-pedal-throttle shadow-[0_0_10px_#2ecc71]"></div></div>
+    </div>
+
+    <!-- Bloque 3: Volante + Gráfica Fusionados -->
+    <div class="graph-block">
+      
+      <!-- Volante perfectamente centrado verticalmente en el lado izquierdo -->
+      <div class="absolute left-3 top-1/2 -translate-y-1/2 z-20 flex items-center justify-center">
+        <svg id="steering" viewBox="0 0 100 100" class="w-12 h-12 opacity-80" style="transform: rotate(0deg); transition: transform 0.05s linear;">
+          <!-- Forma de volante F1 minimalista -->
+          <path d="M 15 35 Q 50 10 85 35 L 90 65 Q 50 85 10 65 Z" fill="none" stroke="#fff" stroke-width="6" />
+          <path d="M 15 35 L 40 50 M 85 35 L 60 50 M 10 65 L 40 50 M 90 65 L 60 50" fill="none" stroke="#aaa" stroke-width="5" />
+          <!-- Detalle de luz central (Revs) -->
+          <rect x="40" y="20" width="20" height="4" fill="#C1121F" />
+        </svg>
+      </div>
+
+      <!-- Cuadrícula de fondo centrada -->
+      <div class="absolute inset-0 pointer-events-none flex flex-col justify-between py-1 z-0 opacity-10">
+        <div class="w-full h-px bg-white"></div>
+        <div class="w-full h-px bg-white"></div>
+        <div class="w-full h-px bg-white"></div>
+      </div>
+
+      <!-- Gráfica ocupando el 100% del alto -->
+      <canvas id="canvas-trace" width="350" height="80" class="z-10 relative opacity-90"></canvas>
+    </div>
+
+  </div>
+
+  <script>
+    // --- SIMULADOR DE DATOS ---
+    let speed = 120;
+    let gear = 3;
+    let isBraking = false;
+    let steeringAngle = 0;
+    let targetSteering = 0;
+
+    let cluVal = 0;
+    let brkVal = 0;
+    let thrVal = 0;
+
+    const historySize = 100;
+    const thrHistory = new Array(historySize).fill(0);
+    const brkHistory = new Array(historySize).fill(0);
+
+    const canvas = document.getElementById('canvas-trace');
+    const ctx = canvas.getContext('2d');
+
+    function updateTelemetry() {
+      // Físicas
+      if (!isBraking) {
+        speed += 1.2;
+        if (speed > 250 && Math.random() > 0.98) isBraking = true;
+        thrVal = Math.min(100, thrVal + 15);
+        brkVal = Math.max(0, brkVal - 25);
+        targetSteering = Math.sin(Date.now() / 400) * 35;
+      } else {
+        speed -= 3.5;
+        if (speed < 80) isBraking = false;
+        thrVal = Math.max(0, thrVal - 25);
+        brkVal = Math.min(100, brkVal + 20 + Math.random() * 15);
+        targetSteering = Math.cos(Date.now() / 300) * 90;
+      }
+      steeringAngle += (targetSteering - steeringAngle) * 0.25;
+
+      const currentGear = speed > 220 ? 5 : (speed > 160 ? 4 : (speed > 100 ? 3 : 2));
+
+      // DOM Updates
+      document.getElementById('speed-text').innerText = Math.round(speed);
+      document.getElementById('gear-text').innerText = currentGear;
+      
+      document.getElementById('clu-bar').style.height = cluVal + '%';
+      document.getElementById('brk-bar').style.height = brkVal + '%';
+      document.getElementById('thr-bar').style.height = thrVal + '%';
+      
+      document.getElementById('steering').style.transform = `rotate(${steeringAngle}deg)`;
+
+      // Gráfica
+      thrHistory.push(thrVal); thrHistory.shift();
+      brkHistory.push(brkVal); brkHistory.shift();
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      const stepX = canvas.width / (historySize - 1);
+      
+      // Acelerador (Verde)
+      ctx.beginPath();
+      ctx.strokeStyle = '#2ecc71';
+      ctx.lineWidth = 3;
+      ctx.shadowBlur = 8;
+      ctx.shadowColor = '#2ecc71';
+      ctx.lineJoin = 'round';
+      for (let i = 0; i < historySize; i++) {
+        const x = i * stepX;
+        const y = canvas.height - (thrHistory[i] / 100) * canvas.height;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      // Freno (Rojo)
+      ctx.beginPath();
+      ctx.strokeStyle = '#e74c3c';
+      ctx.lineWidth = 3;
+      ctx.shadowBlur = 8;
+      ctx.shadowColor = '#e74c3c';
+      for (let i = 0; i < historySize; i++) {
+        const x = i * stepX;
+        const y = canvas.height - (brkHistory[i] / 100) * canvas.height;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+
+    setInterval(updateTelemetry, 33); // 30 FPS
+  </script>
+</body>
+</html>

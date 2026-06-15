@@ -7,6 +7,12 @@ import (
 	"github.com/vantare/overlays/v2/pkg/models"
 )
 
+// Vehicle-field change thresholds (tighter than core defaults for diff reduction).
+const (
+	thresholdTimeGapToPlayer  = 0.05 // seconds; avoids rebroadcast on tiny gap noise
+	thresholdTimeBehindOthers = 0.01 // seconds; TimeBehindNext / TimeBehindLeader
+)
+
 // Payload is a partial telemetry update for Wails/SSE (see V2 doc §7.9).
 type Payload struct {
 	T int64          `json:"t"`
@@ -199,16 +205,16 @@ func vehiclesChanged(prev, next *models.Telemetry) bool {
 			old.LapsBehindClassLeader != v.LapsBehindClassLeader || old.LapsBehindNext != v.LapsBehindNext {
 			return true
 		}
-		if core.ShouldEmit(old.TimeBehindNext, v.TimeBehindNext, core.ThresholdGap) ||
+		if core.ShouldEmit(old.TimeBehindNext, v.TimeBehindNext, thresholdTimeBehindOthers) ||
 			core.ShouldEmit(old.LapDistance, v.LapDistance, 1.0) ||
 			core.ShouldEmit(old.TimeIntoLap, v.TimeIntoLap, 0.1) ||
 			core.ShouldEmit(old.EstimatedLapTime, v.EstimatedLapTime, 0.1) {
 			return true
 		}
-		if core.ShouldEmit(old.TimeBehindLeader, v.TimeBehindLeader, core.ThresholdGap) {
+		if core.ShouldEmit(old.TimeBehindLeader, v.TimeBehindLeader, thresholdTimeBehindOthers) {
 			return true
 		}
-		if core.ShouldEmit(old.TimeGapToPlayer, v.TimeGapToPlayer, core.ThresholdGap) {
+		if core.ShouldEmit(old.TimeGapToPlayer, v.TimeGapToPlayer, thresholdTimeGapToPlayer) {
 			return true
 		}
 	}

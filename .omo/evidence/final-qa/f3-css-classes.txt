@@ -1,0 +1,29 @@
+F3.2 — Dashboard CSS Classes
+=============================
+File: apps/desktop/src/renderer/hub/styles/dashboard.css
+
+Count by class/selector:
+  dashboard-panel:    10 matches (base + hero/medium/small + glow + skeleton + enter + layout + area variants)
+  dashboard-layout:    3 matches (desktop, tablet, mobile)
+  particles-canvas:    1 match
+  panelEnter:          2 matches (keyframe definition + .dashboard-panel-enter)
+  shimmer:             2 matches (keyframe definition + .dashboard-panel-skeleton)
+
+Key classes verified:
+  ✅ .dashboard-panel           — glassmorphism base (backdrop-filter, border, shadow, transition)
+  ✅ .dashboard-panel-hero      — min-height: 240px
+  ✅ .dashboard-panel-medium    — min-height: 160px
+  ✅ .dashboard-panel-small     — min-height: 80px
+  ✅ .dashboard-panel-glow      — hover glow (box-shadow with primary)
+  ✅ .dashboard-panel-skeleton — shimmer animation
+  ✅ .dashboard-panel-enter     — panelEnter animation class
+  ✅ .dashboard-layout-desktop  — 2-col CSS Grid (Layout B >1024px)
+  ✅ .dashboard-layout-tablet   — 2-col <1024px
+  ✅ .dashboard-layout-mobile   — 1-col <640px
+  ✅ .particles-canvas          — fixed, full viewport, pointer-events none, z-index:0
+  ✅ @keyframes panelEnter       — scale(0.8→1.0) + opacity(0→1), 0.5s
+  ✅ @keyframes shimmer          — background-position scroll 200%→-200%
+  ✅ Grid area classes           — overlays, sim, themes, account, settings
+  ✅ @media (prefers-reduced-motion: reduce) — disables animation + glow
+
+Verdict: ✅ PASS

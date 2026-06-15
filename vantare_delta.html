@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Vantare - Delta Final</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Rajdhani:wght@500;600;700;800;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'], display: ['Rajdhani', 'sans-serif'], tech: ['Space Grotesk', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background-color: #00ff00; color: white; margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; font-family: 'Rajdhani', sans-serif; }
+
+    .ghost-text { text-shadow: 0 5px 25px rgba(0,0,0,0.9), 0 0 40px currentColor; }
+    .ghost-subtext { text-shadow: 0 2px 10px rgba(0,0,0,1); }
+    
+    .bar-bg { background: rgba(0,0,0,0.7); box-shadow: inset 0 0 5px rgba(0,0,0,1), 0 5px 15px rgba(0,0,0,0.8); }
+  </style>
+</head>
+<body>
+
+  <!-- ================= VARIANT 1B: CLASSIC THICK NEON (FINAL) ================= -->
+  <!-- Contenedor ampliado a 700px para una barra súper ancha -->
+  <div class="relative w-[700px] flex flex-col items-center">
+    
+    <!-- Info Superior -->
+    <div class="flex justify-between w-full px-4 mb-2 opacity-80">
+      <span class="font-mono text-[16px] font-bold tracking-widest uppercase ghost-subtext">Target 1:24.350</span>
+      <span class="font-mono text-[16px] font-bold tracking-widest uppercase ghost-subtext">Lap 34</span>
+    </div>
+
+    <!-- Delta Text -->
+    <div class="text-center mb-4 z-20">
+      <span id="delta-text" class="text-[75px] font-black leading-none ghost-text font-tech tracking-tighter"></span>
+    </div>
+
+    <!-- Barra Ultra Ancha -->
+    <div class="w-full h-[14px] rounded-sm bar-bg relative z-10">
+      <!-- Marca Central -->
+      <div class="absolute top-[-4px] bottom-[-4px] left-1/2 w-[4px] bg-white rounded-full -translate-x-1/2 z-30 box-shadow: 0 0 10px white;"></div>
+      <!-- Barra Rellenable -->
+      <div id="delta-bar" class="absolute top-0 bottom-0 transition-all z-20 rounded-sm" style="box-shadow: 0 0 25px currentColor;"></div>
+    </div>
+    
+  </div>
+
+  <script>
+    let currentDelta = -0.150;
+    let targetDelta = -0.150;
+    const maxDelta = 1.000;
+
+    function updateDelta() {
+      // Fluctuaciones de la simulación
+      if (Math.random() > 0.95) targetDelta += (Math.random() * 0.6) - 0.3;
+      else targetDelta += (Math.random() * 0.06) - 0.03;
+      
+      targetDelta = Math.max(-1.5, Math.min(1.5, targetDelta));
+      currentDelta += (targetDelta - currentDelta) * 0.15;
+
+      const sign = currentDelta > 0 ? '+' : '-';
+      const absVal = Math.abs(currentDelta).toFixed(3);
+      const textVal = sign + absVal;
+      
+      const isFast = currentDelta <= 0;
+      const colCur = isFast ? '#2ecc71' : '#e74c3c';
+      const widthPercent = Math.min(50, (Math.abs(currentDelta) / maxDelta) * 50);
+
+      // Actualizar Texto
+      const deltaText = document.getElementById('delta-text');
+      deltaText.innerText = textVal;
+      deltaText.style.color = colCur;
+
+      // Actualizar Barra
+      const deltaBar = document.getElementById('delta-bar');
+      deltaBar.style.width = widthPercent + '%';
+      deltaBar.style.backgroundColor = colCur;
+      deltaBar.style.color = colCur;
+      
+      if (isFast) { 
+        deltaBar.style.right = '50%'; 
+        deltaBar.style.left = 'auto'; 
+      } else { 
+        deltaBar.style.left = '50%'; 
+        deltaBar.style.right = 'auto'; 
+      }
+    }
+
+    setInterval(updateDelta, 33);
+  </script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+F3.9 — prefers-reduced-motion
+===============================
+
+CHECK 1: JavaScript Detection (DashboardPage.tsx lines 33-34)
+   ✅ useEffect runs once on mount
+   ✅ prefersReducedMotion.current = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+   ✅ useRef used (not state) — avoids re-render
+   ✅ No matchMedia polyfill needed (plan says "jsdom does not implement matchMedia")
+
+CHECK 2: Animation Conditional (DashboardPage.tsx lines 41-47)
+   ✅ panelStyle returns empty object {} when prefersReducedMotion.current is true
+   ✅ Verified: `if (!mounted || prefersReducedMotion.current) return {};`
+   Panels render at full scale immediately with no animationDelay / animationFillMode.
+
+CHECK 3: CSS Animation Class Skipped (DashboardPage.tsx line 63)
+   ✅ className={mounted && !prefersReducedMotion.current ? 'dashboard-panel-enter' : ''}
+   When reduced motion: class is empty string, no animation class applied.
+
+CHECK 4: CSS @media Override (dashboard.css lines 178-185)
+   ✅ @media (prefers-reduced-motion: reduce) {
+       .dashboard-panel-enter { animation: none; }
+       .dashboard-panel-glow { box-shadow: none; }
+     }
+   Double protection: JS skips the class, CSS disables it if applied anyway.
+
+CHECK 5: Test Coverage (DashboardPage.test.tsx lines 206-225)
+   ✅ Test: "renders all panels without error when prefers-reduced-motion is set"
+   ✅ Mocks matchMedia with matches: true for reduce query
+   ✅ All 5 panels render without animation-related errors
+
+Verdict: ✅ PASS — Fully implemented with JS + CSS double protection

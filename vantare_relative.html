@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Vantare - Relative</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Rajdhani:wght@500;600;700;800&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'], display: ['Rajdhani', 'sans-serif'] },
+          colors: { 
+            vantare: { bg: '#080808', panel: '#111111', red: { 400: '#E63946', 500: '#C1121F', 600: '#9B2226', 800: '#5a0b12', 900: '#3a050a', 950: '#1a0104' } },
+            racing: { yellow: '#f1c40f', blue: '#0055A4' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background-color: #00ff00; /* Fondo verde para Chroma Key en OBS */ color: white; }
+
+    /* WEC SHARP BASE */
+    .wec1-panel { background: linear-gradient(180deg, #3a050a 0%, #0d0102 100%); border: 1px solid #9b2226; }
+    .wec1-header { background: linear-gradient(180deg, #9b2226 0%, #3a050a 100%); border-bottom: 2px solid #1a0104; }
+    .wec1-class { background: linear-gradient(90deg, #111 0%, #222 50%, #111 100%); border-bottom: 1px solid #000; }
+    .wec1-row-even { background: rgba(255,255,255,0.06); }
+    .wec1-row-odd { background: rgba(0,0,0,0.3); }
+
+    /* Estilo Especial para el Jugador (Player) */
+    .player-row { background: linear-gradient(90deg, rgba(230,57,70,0.2) 0%, rgba(155,34,38,0.4) 100%); border-left: 3px solid #E63946; border-y: 1px solid #E63946; }
+    
+    /* Neumáticos */
+    .tire-S { border-color: #E63946; color: #E63946; }
+    .tire-M { border-color: #f1c40f; color: #f1c40f; }
+    .tire-H { border-color: #ffffff; color: #ffffff; }
+  </style>
+</head>
+<body class="p-8 flex flex-col items-center">
+  <div id="app-container"></div>
+
+  <script>
+    // Relative: 3 por delante, el jugador (centro), 3 por detrás
+    const relativeDrivers = [
+      { pos: 15, num: '3',  team: 'CADILLAC RACING', brand: '#F2A900', gap: '+1.800', classColor: '#c1121f', isPlayer: false },
+      { pos: 16, num: '99', team: 'PROTON COMP', brand: '#FFF', gap: '+1.150', classColor: '#c1121f', isPlayer: false, text: 'text-black' },
+      { pos: 1,  num: '22', team: 'UNITED AUTOSPORTS', brand: '#0055A4', gap: '+0.400', classColor: '#0055A4', isPlayer: false }, /* Doblado LMP2 (Clase Azul) */
+      
+      { pos: 17, num: '35', team: 'ALPINE (TÚ)', brand: '#0055A4', gap: '0.000', classColor: '#c1121f', isPlayer: true }, // PLAYER
+      
+      { pos: 5,  num: '92', team: 'MANTHEY PURE', brand: '#78B833', gap: '-0.350', classColor: '#2ecc71', isPlayer: false }, /* Doblado LMGT3 (Clase Verde) */
+      { pos: 18, num: '11', team: 'ISOTTA FRASCHINI', brand: '#FF0000', gap: '-1.200', classColor: '#c1121f', isPlayer: false },
+      { pos: 19, num: '19', team: 'LAMBORGHINI', brand: '#78B833', gap: '-2.850', classColor: '#c1121f', isPlayer: false, text: 'text-black' }
+    ];
+
+    function createRelative() {
+      let rows = '';
+      relativeDrivers.forEach((d, i) => {
+        const isPlayerStyle = d.isPlayer ? 'player-row' : (i % 2 === 0 ? 'wec1-row-even border-b border-black/20' : 'wec1-row-odd border-b border-black/20');
+        const gapColor = d.isPlayer ? 'text-white font-black' : (d.gap.startsWith('+') ? 'text-red-400' : 'text-green-400');
+        
+        rows += `
+          <div class="flex items-center h-[26px] ${isPlayerStyle} text-[11px] font-bold transition-all">
+            <div class="w-6 text-center text-gray-400">${d.pos}</div>
+            
+            <!-- Indicador de clase en el propio lateral -->
+            <div class="w-1.5 h-full" style="background-color: ${d.classColor}"></div>
+            
+            <div class="w-7 h-full flex items-center justify-center py-[2px] px-[2px] ml-1">
+              <div class="w-full h-full flex items-center justify-center" style="background-color: ${d.brand}">
+                <span class="font-black text-[11px]" style="color: ${d.text === 'text-black' ? '#000' : '#fff'}">${d.num}</span>
+              </div>
+            </div>
+            
+            <div class="flex-1 px-2 tracking-wide truncate ${d.isPlayer ? 'text-white font-black' : 'text-gray-200'}">${d.team}</div>
+            
+            <div class="px-2 flex items-center justify-end font-mono text-[10px]">
+              <span class="${gapColor}">${d.gap}</span>
+            </div>
+          </div>
+        `;
+      });
+      
+      return `<div class="w-[300px] font-display"><div class="wec1-panel rounded-lg overflow-hidden pb-1 shadow-[0_10px_40px_rgba(0,0,0,0.8)]"><div class="wec1-header pt-2 pb-1 flex flex-col items-center"><div class="text-xl font-black italic tracking-widest mb-0.5 text-white">VANTARE</div></div><div class="wec1-class text-center text-[10px] py-1 font-bold tracking-widest text-white relative">RELATIVE</div><div class="flex flex-col mt-1 px-1">${rows}</div></div></div>`;
+    }
+
+    document.getElementById('app-container').innerHTML = createRelative();
+  </script>
+</body>
+</html>

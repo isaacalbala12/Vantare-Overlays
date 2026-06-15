@@ -1,0 +1,23 @@
+F3.1 — CSS Tokens Updated
+===========================
+File: apps/desktop/src/renderer/styles/theme-tokens.css
+
+CHECK 1: --color-primary: #7f1d1d
+Result: ✅ MATCH FOUND — line 7
+
+CHECK 2: --color-primary-hover: #991b1b
+Result: ✅ MATCH FOUND — line 8
+
+CHECK 3: --color-primary-muted: #7f1d1d33
+Result: ✅ MATCH FOUND — line 9
+
+CHECK 4: --shadow-glow: 0 0 20px #7f1d1d40
+Result: ✅ MATCH FOUND — line 53
+
+Full token values confirmed:
+  --color-primary: #7f1d1d;
+  --color-primary-hover: #991b1b;
+  --color-primary-muted: #7f1d1d33;
+  --shadow-glow: 0 0 20px #7f1d1d40;
+
+Verdict: ✅ PASS

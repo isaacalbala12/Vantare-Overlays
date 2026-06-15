@@ -1,0 +1,50 @@
+Vantare v2 LMU data sources validation
+
+Date: 2026-06-15
+
+Commands:
+- cd C:\Users\isaac\Desktop\Vantare-Overlays\vantare-v2
+- go test ./...
+- pnpm --dir frontend test
+- pnpm --dir frontend build
+- python ../tools/generate-lmu-offsets.py
+- go test ./internal/telemetry/lmu -v
+- go test ./pkg/models -run TestVehicleScoringExtendedJSONFields -v
+- go test ./internal/telemetry/lmuapi -v
+- go test ./internal/telemetry/fusion -v
+- go test ./internal/telemetry/delta -v
+- go test ./internal/telemetry/service ./internal/app -v
+- go test ./internal/telemetry/diff ./internal/telemetry/pipeline -v
+- pnpm --dir frontend test -- src/lib/telemetry-ref.test.ts
+- pnpm --dir frontend test -- src/overlay/widgets/StandingsWidget.test.tsx
+- pnpm --dir frontend test -- src/overlay/widgets/RelativeWidget.test.tsx
+- pnpm --dir frontend test -- src/overlay/widgets/DeltaWidget.test.tsx
+- go run ./cmd/lmu-api-probe -once
+- go run ./cmd/vantare -live -profile configs/example-racing.json (manual, not run now)
+- curl.exe -N --max-time 5 http://127.0.0.1:39261/telemetry/stream (manual, not run now)
+
+Results:
+- Automated Go: PASS (all packages)
+- Automated frontend: PASS (25 files, 80 tests)
+- Frontend build: PASS (vite build success, dist/index.html + assets generated)
+- LMU REST probe: API reachable at http://localhost:6397. /rest/watch/standings and /rest/watch/sessionInfo returned empty JSON arrays/objects because LMU was in menu/GSTATE_SETUP (not on track). /navigation/state confirmed Barcelona_2025 PRACTICE1, selected car #46 LMP3.
+- Vantare SSE: Not validated live because LMU is not currently on track; needs in-session data to emit extended fields.
+- Manual Standings: Not validated live (requires on-track session).
+- Manual Relative: Not validated live (requires on-track session).
+- Manual Delta: Not validated live (requires on-track session).
+- Pedals/RPM/Gear: Shared memory path unchanged; synthetic tests pass.
+
+Notes:
+- LMU REST local API responds but only populates /rest/watch/standings when the sim is on track / in a realtime session.
+- Fusion layer caches REST results and continues with shared memory if REST fails or returns empty.
+- REST poll interval is 250 ms (4 Hz) with 750 ms HTTP timeout, satisfying "2-5 Hz" rule.
+- Alpha delta = estimatedLapTime - bestLapTime for the player row; only emitted when both values are positive.
+- No React state changes at 60 Hz; telemetry-ref remains a mutable ref.
+- apps/desktop/ was not touched.
+- No git commit or push performed.
+
+Limitations remaining:
+- Alpha delta is a coarse estimate, not a proper per-meter live delta. A lap-distance reference tracker is required for proper live delta.
+- Extended shared memory scoring fields (lapDistance, estimatedLapTime, etc.) are parsed but REST is preferred for standings/relative.
+- Empty REST standings during menu means UI shows only shared-memory-derived data until a session starts.
+- Vehicle ID matching between shared memory slot index and REST row is currently by position/row order; a robust slotID match may be needed if LMU reorders rows.

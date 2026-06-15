@@ -23,6 +23,20 @@ func readFloat64(buf []byte, off int) float64 {
 	return math.Float64frombits(binary.LittleEndian.Uint64(buf[off:]))
 }
 
+func readFloat32(buf []byte, off int) float64 {
+	if off+4 > len(buf) {
+		return 0
+	}
+	return float64(math.Float32frombits(binary.LittleEndian.Uint32(buf[off:])))
+}
+
+func readByte(buf []byte, off int) byte {
+	if off >= len(buf) {
+		return 0
+	}
+	return buf[off]
+}
+
 func readInt32(buf []byte, off int) int32 {
 	if off+4 > len(buf) {
 		return 0
@@ -52,6 +66,62 @@ func readString(buf []byte, off, max int) string {
 		}
 	}
 	return string(chunk)
+}
+
+func sectorName(v byte) string {
+	switch v {
+	case 0:
+		return "SECTOR1"
+	case 1:
+		return "SECTOR2"
+	case 2:
+		return "SECTOR3"
+	default:
+		return ""
+	}
+}
+
+func finishStatusName(v byte) string {
+	switch v {
+	case 0:
+		return ""
+	case 1:
+		return "FINISHED"
+	case 2:
+		return "DNF"
+	case 3:
+		return "DQ"
+	default:
+		return ""
+	}
+}
+
+func pitStateName(v byte) string {
+	switch v {
+	case 0:
+		return "NONE"
+	case 1:
+		return "REQUEST"
+	case 2:
+		return "ENTERING"
+	case 3:
+		return "STOPPED"
+	case 4:
+		return "EXITING"
+	default:
+		return ""
+	}
+}
+
+func flagName(v byte) string {
+	switch v {
+	case 0:
+		return "GREEN"
+	case 6:
+		return "BLUE"
+	default:
+		return ""
+	}
 }
 
 // ParseSession reads LMUScoringInfo from the mmap buffer.
@@ -84,20 +154,22 @@ func ParsePlayerTelemetry(buf []byte, playerIdx int) *models.PlayerTelemetry {
 	speed := math.Sqrt(vx*vx + vy*vy + vz*vz)
 
 	return &models.PlayerTelemetry{
-		ID:          readInt32(buf, po+vehicleTelemetryID),
-		LapNumber:   readInt32(buf, po+vehicleTelemetryLapNumber),
-		Speed:       speed,
-		Gear:        readInt32(buf, po+vehicleTelemetryGear),
-		EngineRPM:   readFloat64(buf, po+vehicleTelemetryEngineRPM),
-		Fuel:        readFloat64(buf, po+vehicleTelemetryFuel),
-		FuelCap:     readFloat64(buf, po+vehicleTelemetryFuelCapacity),
-		DeltaBest:   readFloat64(buf, po+vehicleTelemetryDeltaBest),
-		Throttle:    readFloat64(buf, po+vehicleTelemetryFilteredThrottle),
-		Brake:       readFloat64(buf, po+vehicleTelemetryFilteredBrake),
-		Clutch:      readFloat64(buf, po+vehicleTelemetryFilteredClutch),
-		Steering:    readFloat64(buf, po+vehicleTelemetryFilteredSteering),
-		VehicleName: readString(buf, po+vehicleTelemetryVehicleName, 64),
-		TrackName:   readString(buf, po+vehicleTelemetryTrackName, 64),
+		ID:                 readInt32(buf, po+vehicleTelemetryID),
+		LapNumber:          readInt32(buf, po+vehicleTelemetryLapNumber),
+		Speed:              speed,
+		Gear:               readInt32(buf, po+vehicleTelemetryGear),
+		EngineRPM:          readFloat64(buf, po+vehicleTelemetryEngineRPM),
+		Fuel:               readFloat64(buf, po+vehicleTelemetryFuel),
+		FuelCap:            readFloat64(buf, po+vehicleTelemetryFuelCapacity),
+		DeltaBest:          readFloat64(buf, po+vehicleTelemetryDeltaBest),
+		Throttle:           readFloat64(buf, po+vehicleTelemetryFilteredThrottle),
+		Brake:              readFloat64(buf, po+vehicleTelemetryFilteredBrake),
+		Clutch:             readFloat64(buf, po+vehicleTelemetryFilteredClutch),
+		Steering:           readFloat64(buf, po+vehicleTelemetryFilteredSteering),
+		VehicleName:        readString(buf, po+vehicleTelemetryVehicleName, 64),
+		TrackName:          readString(buf, po+vehicleTelemetryTrackName, 64),
+		TimeGapPlaceAhead:  readFloat32(buf, po+vehicleTelemetryTimeGapPlaceAhead),
+		TimeGapPlaceBehind: readFloat32(buf, po+vehicleTelemetryTimeGapPlaceBehind),
 	}
 }
 
@@ -122,15 +194,32 @@ func ParseVehicleScoring(buf []byte, count int) []models.VehicleScoring {
 		if id < 0 || name == "" {
 			continue
 		}
+		pitState := pitStateName(readByte(buf, off+vehicleScoringPitState))
 		out = append(out, models.VehicleScoring{
 			ID:               id,
 			DriverName:       name,
-			Place:            buf[off+vehicleScoringPlace],
+			VehicleName:      readString(buf, off+vehicleScoringVehicleName, 64),
+			Place:            readByte(buf, off+vehicleScoringPlace),
 			TotalLaps:        readInt16(buf, off+vehicleScoringTotalLaps),
 			VehicleClass:     readString(buf, off+vehicleScoringVehicleClass, 32),
-			IsPlayer:         buf[off+vehicleScoringIsPlayer] != 0,
-			InPits:           buf[off+vehicleScoringInPits] != 0,
+			IsPlayer:         readByte(buf, off+vehicleScoringIsPlayer) != 0,
+			InPits:           readByte(buf, off+vehicleScoringInPits) != 0 || pitState != "" && pitState != "NONE",
+			PitState:         pitState,
+			Sector:           sectorName(readByte(buf, off+vehicleScoringSector)),
+			FinishStatus:     finishStatusName(readByte(buf, off+vehicleScoringFinishStatus)),
 			TimeBehindLeader: readFloat64(buf, off+vehicleScoringTimeBehindLeader),
+			TimeBehindNext:   readFloat64(buf, off+vehicleScoringTimeBehindNext),
+			LapsBehindLeader: readInt32(buf, off+vehicleScoringLapsBehindLeader),
+			LapsBehindNext:   readInt32(buf, off+vehicleScoringLapsBehindNext),
+			LapDistance:      readFloat64(buf, off+vehicleScoringLapDistance),
+			BestLapTime:      readFloat64(buf, off+vehicleScoringBestLapTime),
+			LastLapTime:      readFloat64(buf, off+vehicleScoringLastLapTime),
+			EstimatedLapTime: readFloat64(buf, off+vehicleScoringEstimatedLapTime),
+			Pitstops:         int32(readInt16(buf, off+vehicleScoringPitstops)),
+			Penalties:        int32(readInt16(buf, off+vehicleScoringPenalties)),
+			Qualification:    readInt32(buf, off+vehicleScoringQualification),
+			Flag:             flagName(readByte(buf, off+vehicleScoringFlag)),
+			FuelFraction:     float64(readByte(buf, off+vehicleScoringFuelFraction)),
 		})
 	}
 	return out

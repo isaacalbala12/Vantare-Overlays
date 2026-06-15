@@ -1,0 +1,78 @@
+Vantare Overlays — Sprint 8 Final QA Report
+==============================================
+Date: 2026-06-07
+Tester: Sisyphus-Junior (Automated)
+
+---
+
+SCENARIO 1: E2E Test Files
+  Files checked:
+    - apps/desktop/e2e/sprint8-overlays.spec.ts  [EXISTS]
+    - apps/desktop/e2e/sprint8-ipc.spec.ts       [EXISTS]
+    - apps/desktop/e2e/sprint8-auth.spec.ts      [EXISTS]
+  Result: [PASS]
+
+SCENARIO 2: Landing Page HTML
+  File: docs/landing/index.html
+  - Exists: YES (458 lines)
+  - Valid HTML structure: YES
+    - DOCTYPE present
+    - <html> / </html> present
+    - <head> / </head> present with meta tags
+    - <body> / </body> present
+    - All sections (nav, hero, features, overlays, screenshots, download, discord, footer) properly closed
+    - All <article>, <figure>, <ul>, <li>, <h1-3>, <p>, <a> tags properly closed
+    - <script> tag closed
+  Result: [PASS]
+
+SCENARIO 3: LICENSE File
+  File: LICENSE  [EXISTS]
+  Result: [PASS]
+
+SCENARIO 4: CHANGELOG with v1.0.0 Entry
+  File: docs/CHANGELOG.md  [EXISTS]
+  - Contains v1.0.0 entry: YES ("## 1.0.0 (2026-06-07)")
+  - Entry has Added section with full feature list
+  Result: [PASS]
+
+SCENARIO 5: Performance Report
+  File: docs/PERFORMANCE-REPORT.md  [EXISTS]
+  Result: [PASS]
+
+SCENARIO 6: Sim Smoke Evidence Files
+  Directory: .omo/evidence/sprint8/sim-smoke/
+  Files found:
+    - conclusion.txt       [EXISTS]
+    - ipc-handler.txt      [EXISTS]
+    - adapter-check.txt    [EXISTS]
+  Total: 3 evidence files
+  Result: [PASS]
+
+SCENARIO 7: Release Executable
+  Path: release/Vantare Overlays 1.0.0.exe
+  - Searched: release/*.exe  [NOT FOUND]
+  - No .exe files present in release/ directory
+  Result: [FAIL]
+
+SCENARIO 8: Package Version Consistency
+  Root package.json:
+    - File: package.json  [EXISTS]
+    - Version: "1.0.0"   [MATCH]
+  Desktop package.json:
+    - File: apps/desktop/package.json  [EXISTS]
+    - Version: "1.0.0"                 [MATCH]
+  Result: [PASS]
+
+---
+
+SUMMARY
+=======
+  Total Scenarios:  8
+  Passed:           7  (87.5%)
+  Failed:           1  (12.5%)
+
+  FAILURE DETAILS:
+    #7 — Release executable "release/Vantare Overlays 1.0.0.exe" not found.
+         The release/ directory exists but contains no .exe installer.
+         Expected: built installer artifact from electron-builder.
+         Recommendation: Run `pnpm package` in apps/desktop/ to generate the installer.

@@ -311,6 +311,29 @@ Esperado:
 
 ---
 
+## Verificación LMU REST + SSE extendido
+
+Comandos:
+
+```powershell
+cd C:\Users\isaac\Desktop\Vantare-Overlays\vantare-v2
+go run ./cmd/lmu-api-probe
+go run ./cmd/vantare -live -profile configs/example-racing.json
+curl.exe -N --max-time 5 http://127.0.0.1:39261/telemetry/stream
+```
+
+Checklist:
+
+- [ ] `/rest/watch/standings` devuelve filas con `carNumber`, `carClass`, `lapDistance`, `timeIntoLap` y una fila `player: true`.
+- [ ] `/rest/watch/sessionInfo` devuelve pista, fase, número de vehículos y tiempo restante.
+- [ ] SSE contiene campos extendidos: `driverNumber`, `lapDistance`, `timeIntoLap`, `pitState`, `estimatedLapTime`.
+- [ ] Standings muestra números de coche, `Leader`, `+Xs`, `+NL`, `PIT`, `GARAGE`.
+- [ ] Relative ordena por proximidad en pista (`lapDistance`) centrando al jugador.
+- [ ] Delta deja de estar siempre en `—` cuando `estimatedLapTime` y `bestLapTime` son válidos.
+- [ ] Pedals/RPM/Gear siguen actualizando sin latencia añadida.
+
+---
+
 ## Verificación Preview Workbench
 
 ```powershell

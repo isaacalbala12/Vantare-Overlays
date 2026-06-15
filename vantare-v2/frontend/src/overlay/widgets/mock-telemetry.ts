@@ -4,6 +4,7 @@ export function getMockTelemetry(): TelemetryRefState {
   return {
     seq: 1,
     connected: true,
+    playerHasVehicle: true,
     sessionType: 10,
     sessionName: "PRACTICE1",
     sessionEpoch: 1,

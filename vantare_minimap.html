@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Vantare - Minimap</title>
+  <style>
+    body { background-color: #00ff00; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; }
+
+    /* Minimapa ultra compacto y circular/cuadrado */
+    .minimap-panel { 
+      background: rgba(13,1,2,0.8); 
+      border: 2px solid #9b2226; 
+      width: 150px; 
+      height: 150px; 
+      position: relative;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.8);
+      border-radius: 50%; /* Minimapa circular */
+      overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .track-svg { width: 80%; height: 80%; }
+    
+    .car-dot {
+      position: absolute;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      transition: top 0.05s linear, left 0.05s linear;
+      z-index: 10;
+    }
+
+    .player-dot { background-color: #E63946; z-index: 20; box-shadow: 0 0 5px #E63946; width: 12px; height: 12px; border: 1px solid white; }
+  </style>
+</head>
+<body>
+  
+  <div class="minimap-panel" id="map-container">
+    <svg class="track-svg" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid meet">
+      <!-- Mismo circuito, línea blanca simple -->
+      <path id="track-path" d="M 50 150 C 20 150, 20 50, 80 50 L 150 50 C 180 50, 200 20, 230 20 C 270 20, 280 80, 250 120 L 220 160 C 200 180, 150 180, 100 160 Z" 
+            fill="none" stroke="#fff" stroke-width="12" stroke-linejoin="round" stroke-linecap="round"/>
+    </svg>
+  </div>
+
+  <script>
+    const mapContainer = document.getElementById('map-container');
+    const path = document.getElementById('track-path');
+    const pathLength = path.getTotalLength();
+    
+    const cars = [
+      { id: 'm-p1', color: '#E63946', isPlayer: true, progress: 0.1, speed: 0.0015 },
+      { id: 'm-c1', color: '#f1c40f', isPlayer: false, progress: 0.15, speed: 0.0015 },
+      { id: 'm-c2', color: '#fff', isPlayer: false, progress: 0.8, speed: 0.0014 }
+    ];
+
+    function updateMap() {
+      const svgRect = path.getBoundingClientRect();
+      const containerRect = mapContainer.getBoundingClientRect();
+      
+      const scaleX = svgRect.width / 300;
+      const scaleY = svgRect.height / 200;
+      
+      const offsetX = svgRect.left - containerRect.left;
+      const offsetY = svgRect.top - containerRect.top;
+
+      cars.forEach(car => {
+        car.progress += car.speed;
+        if (car.progress > 1) car.progress -= 1;
+
+        const point = path.getPointAtLength(car.progress * pathLength);
+        
+        let el = document.getElementById(car.id);
+        if (!el) {
+          el = document.createElement('div');
+          el.id = car.id;
+          el.className = 'car-dot ' + (car.isPlayer ? 'player-dot' : '');
+          el.style.backgroundColor = car.color;
+          mapContainer.appendChild(el);
+        }
+
+        const finalX = (point.x * scaleX) + offsetX;
+        const finalY = (point.y * scaleY) + offsetY;
+
+        el.style.left = finalX + 'px';
+        el.style.top = finalY + 'px';
+      });
+    }
+
+    setInterval(updateMap, 33);
+  </script>
+</body>
+</html>

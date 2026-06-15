@@ -1,0 +1,43 @@
+F3.7 — Edge Cases
+===================
+
+EDGE CASE 1: SIM Disconnected (default state)
+   Test: DashboardPage.test.tsx lines 126-140
+   ✅ "No sim detected" text verified — Line 15, 129
+   ✅ "● OFFLINE" badge text verified — Line 26-28, 134
+   ✅ "Connect a simulator to begin" verified — Line 35, 139
+   ✅ Implementation: SimStatusPanel.tsx lines 15, 26-28
+   Source: SimStatusPanel renders 'No sim detected' when `connected` is false/null,
+           shows "● OFFLINE" badge with red styling.
+
+EDGE CASE 2: Account Logged Out (default state)
+   Test: DashboardPage.test.tsx lines 154-158
+   ✅ "Sign in to sync your setup" text verified — Line 157
+   ✅ Implementation: AccountPanel.tsx lines 12-23
+   ✅ "Sign In" button rendered with loadSession callback
+   Source: AccountPanel checks `if (!user)` and renders logged-out state.
+
+EDGE CASE 3: 0 Overlays Configured (default state)
+   Test: DashboardPage.test.tsx lines 106-113
+   ✅ "No overlays configured" text verified — Line 112
+   ✅ Implementation: OverlaysPanel.tsx lines 35-37
+   ✅ "Open All" disabled when total=0 (line 20)
+   ✅ "Close All" disabled when active=0 (line 27)
+   Source: useOverlayWindows defaults to { total: 0, active: 0 }
+
+EDGE CASE 4: Loading States
+   ✅ ThemesPanel: shows skeleton shimmer while loading (line 38-40)
+   ✅ OverlaysPanel: shows '—' for count while loading (line 11)
+   ✅ DashboardPanel: Skeleton when loading=true prop (line 51)
+
+EDGE CASE 5: Animation — Mount only via useRef + setTimeout
+   ✅ DashboardPage.tsx lines 34-37: mounted ref set after 50ms timeout
+   ✅ Animation only applies when mounted is true
+   ✅ No animation on re-render (mounted stays true)
+
+EDGE CASE 6: Reduced Motion
+   ✅ DashboardPage.tsx line 34: matchMedia check
+   ✅ Line 63: className conditional — no 'dashboard-panel-enter' when reduced motion
+   ✅ dashboard.css lines 178-185: @media (prefers-reduced-motion: reduce) disables animation + glow
+
+Verdict: ✅ PASS — All edge cases handled

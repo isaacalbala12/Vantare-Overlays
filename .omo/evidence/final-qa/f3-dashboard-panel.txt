@@ -1,0 +1,33 @@
+F3.6 — DashboardPanel.tsx
+===========================
+File: apps/desktop/src/renderer/hub/components/DashboardPanel.tsx
+
+STRUCTURAL REVIEW:
+
+CHECK 1: Link wraps ALL content
+   ✅ Lines 35-54: <Link to={to} ...> wraps entire panel content (title bar + content area)
+   ✅ Link is the outermost element
+
+CHECK 2: data-testid on Link
+   ✅ Line 37: data-testid={testId} on the <Link> element
+   This makes it easy to test both the testId and href attribute.
+
+CHECK 3: className forwarding
+   ✅ Line 41: className={`dashboard-panel dashboard-panel-${variant} ${areaClass} ${className}`.trim()}
+   ✅ className prop accepted in interface (line 11)
+   Verified: External className is merged into the panel div's class list.
+
+CHECK 4: Additional Props
+   ✅ title prop displayed in title bar (line 44-46)
+   ✅ variant prop applied to CSS class (line 41)
+   ✅ loading prop shows Skeleton instead of children (line 51)
+   ✅ area prop applied as grid-area CSS class (line 32)
+   ✅ style prop passed through to Link (line 39)
+   ✅ children rendered in content area (line 50-52)
+
+CHECK 5: Skeleton Component
+   ✅ Inner Skeleton function (lines 16-18)
+   ✅ Skeleton height varies by variant (hero=32, else 20)
+   ✅ Uses dashboard-panel-skeleton CSS class
+
+Verdict: ✅ PASS

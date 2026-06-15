@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Vantare - Radar</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Rajdhani:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <style>
+    body { background-color: #00ff00; color: white; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; font-family: 'Rajdhani', sans-serif; }
+
+    /* WEC Sharp Vantare Style */
+    .radar-panel { 
+      background: linear-gradient(180deg, rgba(26,1,4,0.8) 0%, rgba(13,1,2,0.9) 100%); 
+      border: 1px solid #9b2226; 
+      width: 200px; 
+      height: 300px; 
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.9);
+      border-radius: 4px;
+    }
+
+    /* Líneas de cuadrícula del radar */
+    .radar-grid {
+      position: absolute; inset: 0;
+      background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+      background-size: 20px 20px;
+      background-position: center;
+      z-index: 0;
+    }
+
+    /* Coches */
+    .car {
+      position: absolute;
+      width: 14px;
+      height: 32px;
+      border-radius: 2px;
+      transform: translate(-50%, -50%);
+      transition: top 0.05s linear, left 0.05s linear;
+      z-index: 10;
+      box-shadow: 0 0 10px currentColor;
+    }
+    
+    .player-car { background-color: #E63946; color: #E63946; border: 1px solid #fff; z-index: 20; box-shadow: 0 0 15px #E63946; }
+    .enemy-car { background-color: #f1c40f; color: #f1c40f; }
+
+    /* Rango de proximidad */
+    .proximity-ring {
+      position: absolute;
+      width: 80px; height: 140px;
+      border: 1px dashed rgba(255, 255, 255, 0.2);
+      border-radius: 40px;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 5;
+    }
+  </style>
+</head>
+<body>
+  
+  <div class="radar-panel">
+    <!-- Overlay Grid -->
+    <div class="radar-grid"></div>
+    <div class="proximity-ring"></div>
+    
+    <!-- Player Car (Centro Fijo) -->
+    <div class="car player-car" style="top: 50%; left: 50%;"></div>
+
+    <!-- Contenedor dinámico de coches rivales -->
+    <div id="opponents-container"></div>
+  </div>
+
+  <script>
+    // Simular rivales acercándose / alejándose
+    const container = document.getElementById('opponents-container');
+    const opponents = [
+      { id: 1, x: 50, y: 150, speed: 2, side: 'left' },  // Viene por detrás a la izquierda
+      { id: 2, x: 50, y: -50, speed: -1, side: 'right' } // Está delante a la derecha y le pillamos
+    ];
+
+    function createCarNode(id) {
+      const el = document.createElement('div');
+      el.id = 'car-' + id;
+      el.className = 'car enemy-car';
+      container.appendChild(el);
+      return el;
+    }
+
+    function updateRadar() {
+      opponents.forEach(op => {
+        let el = document.getElementById('car-' + op.id);
+        if (!el) el = createCarNode(op.id);
+        
+        // Simular movimiento relativo
+        op.y -= op.speed;
+        
+        // Lógica de carril
+        const targetX = op.side === 'left' ? 30 : 70; 
+        
+        // Aplicar posiciones (Porcentajes)
+        el.style.left = targetX + '%';
+        el.style.top = op.y + '%';
+
+        // Avisos de proximidad (cambia a rojo si está muy cerca en paralelo)
+        if (op.y > 40 && op.y < 60) {
+          el.style.backgroundColor = '#e74c3c';
+          el.style.color = '#e74c3c';
+        } else {
+          el.style.backgroundColor = '#f1c40f';
+          el.style.color = '#f1c40f';
+        }
+
+        // Loop infinito para la demo
+        if (op.y < -20) op.y = 120;
+        if (op.y > 120) op.y = -20;
+      });
+    }
+
+    setInterval(updateRadar, 33);
+  </script>
+</body>
+</html>

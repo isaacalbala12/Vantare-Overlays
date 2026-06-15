@@ -1,0 +1,45 @@
+F3.10 — Changed Files vs Plan Deliverables
+============================================
+
+Changed Files (git diff HEAD~2 --name-only):
+1.  .omo/boulder.json                                                ← infra/ops (non-code)
+2.  .omo/plans/sprint8-testing-release.md                             ← plan file (non-code)
+3.  apps/desktop/src/main/auth/setup.ts                              ← NOT in plan deliverables
+4.  apps/desktop/src/main/sim/sim-manager.ts                        ← NOT in plan deliverables
+5.  apps/desktop/src/renderer/hub/__stories__/DashboardPage.stories.tsx  ✅ DELIVERABLE
+6.  apps/desktop/src/renderer/hub/__tests__/DashboardPage.test.tsx       ✅ DELIVERABLE
+7.  apps/desktop/src/renderer/hub/components/CanvasParticles.tsx         ✅ DELIVERABLE
+8.  apps/desktop/src/renderer/hub/components/DashboardPanel.tsx          ✅ DELIVERABLE
+9.  apps/desktop/src/renderer/hub/components/panels/AccountPanel.tsx     ✅ DELIVERABLE
+10. apps/desktop/src/renderer/hub/components/panels/OverlaysPanel.tsx    ✅ DELIVERABLE
+11. apps/desktop/src/renderer/hub/components/panels/SettingsPanel.tsx    ✅ DELIVERABLE
+12. apps/desktop/src/renderer/hub/components/panels/SimStatusPanel.tsx   ✅ DELIVERABLE
+13. apps/desktop/src/renderer/hub/components/panels/ThemesPanel.tsx      ✅ DELIVERABLE
+14. apps/desktop/src/renderer/hub/hooks/index.ts                         ✅ DELIVERABLE (Task 4)
+15. apps/desktop/src/renderer/hub/hooks/useAccountStatus.ts             ✅ DELIVERABLE (Task 4)
+16. apps/desktop/src/renderer/hub/hooks/useOverlayWindows.ts            ✅ DELIVERABLE (Task 4)
+17. apps/desktop/src/renderer/hub/hooks/useThemePreview.ts              ✅ DELIVERABLE (Task 4)
+18. apps/desktop/src/renderer/hub/pages/DashboardPage.tsx               ✅ DELIVERABLE
+19. apps/desktop/src/renderer/hub/pages/OverlaySettingsPage.tsx         ← NOT in plan deliverables
+20. apps/desktop/src/renderer/hub/styles/dashboard.css                  ✅ DELIVERABLE
+21. apps/desktop/src/renderer/overlays/OverlayShell.tsx                ← NOT in plan deliverables
+22. apps/desktop/src/renderer/styles/theme-tokens.css                   ✅ DELIVERABLE
+23. pnpm-lock.yaml                                                      ← dependency lock (expected)
+
+Plan Deliverables (from .omo/plans/dashboard-redesign.md lines 57-69):
+  ✅ 12/12 core deliverables present in changed files
+  ✅ 4 hooks files present (implied by Task 4)
+
+Extra files (not in plan deliverables):
+  1. .omo/boulder.json                              ← non-code, infra
+  2. .omo/plans/sprint8-testing-release.md           ← non-code, plan
+  3. apps/desktop/src/main/auth/setup.ts             ← ⚠️ needs scope check (F4)
+  4. apps/desktop/src/main/sim/sim-manager.ts        ← ⚠️ needs scope check (F4)
+  5. apps/desktop/src/renderer/hub/pages/OverlaySettingsPage.tsx ← ⚠️ needs scope check (F4)
+  6. apps/desktop/src/renderer/overlays/OverlayShell.tsx           ← ⚠️ needs scope check (F4)
+  7. pnpm-lock.yaml                                  ← expected dependency lock
+
+NOTE: Extra files may be from broader sprint8 work, not the dashboard redesign task.
+Scope fidelity (Must NOT do) checks are covered by F4.
+
+Verdict: ✅ PASS (core deliverables present; extra files flagged for F4)

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vantare Overlay - Nuevos Estilos</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Rajdhani:wght@500;600;700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Teko:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Rajdhani', 'sans-serif'],
+            mono: ['Space Mono', 'monospace'],
+            racing: ['Teko', 'sans-serif'],
+          },
+          colors: {
+            vantare: {
+              bg: '#080808',
+              surface: '#0F0F0F',
+              panel: '#141414',
+              border: '#1E1E1E',
+              text: '#E8E8E8',
+              red: { 400: '#E63946', 500: '#C1121F', 600: '#9B2226' }
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style>
+    body { background-color: #050505; color: white; }
+    
+    /* VAR 4: IMSA / Endurance Raw */
+    .v4-container { width: 340px; font-family: 'Inter', sans-serif; }
+    
+    /* VAR 5: MotoGP / Two-Wheels Vibe */
+    .v5-container { width: 340px; font-family: 'Rajdhani', sans-serif; }
+    .v5-gradient { background: linear-gradient(90deg, rgba(20,20,20,1) 0%, rgba(10,10,10,0) 100%); }
+    
+    /* VAR 6: Formula E / Cyberpunk Neon */
+    .v6-container { width: 340px; font-family: 'Space Mono', monospace; }
+    .neon-text { text-shadow: 0 0 5px rgba(230,57,70,0.8), 0 0 10px rgba(230,57,70,0.5); }
+    .neon-border { box-shadow: 0 0 10px rgba(230,57,70,0.3); }
+    
+    /* VAR 7: Minimalist Sim (ACC / Kunos style) */
+    .v7-container { width: 340px; font-family: 'Rajdhani', sans-serif; text-transform: uppercase; }
+  </style>
+</head>
+<body class="p-8 min-h-screen flex flex-col items-center">
+
+  <h1 class="text-3xl font-display font-bold mb-10 text-vantare-red-500">Nuevas Variaciones (Inspiraciones)</h1>
+
+  <div class="flex flex-wrap justify-center gap-16 w-full max-w-7xl">
+    
+    <!-- VAR 4: IMSA / Endurance Raw -->
+    <div class="v4-container flex flex-col">
+      <div class="mb-4 text-center text-gray-500 font-bold text-sm tracking-widest">VAR 4: IMSA STYLE</div>
+      <div class="bg-[#0A0A0A] border-l-4 border-vantare-red-500">
+        <div class="flex items-center justify-between px-3 py-2 border-b-2 border-[#1a1a1a]">
+          <div class="font-bold text-lg tracking-tight">HYPERCAR</div>
+          <div class="font-mono text-sm text-vantare-red-400">00:08:48</div>
+        </div>
+        <div class="flex flex-col">
+          <div class="flex items-center h-10 border-b border-[#1a1a1a] bg-[#111]">
+            <div class="w-8 text-center font-bold text-gray-400">1</div>
+            <div class="w-10 h-full flex items-center justify-center bg-white"><span class="text-black font-black text-lg">36</span></div>
+            <div class="flex-1 px-3 font-bold text-sm tracking-wide">ALPINE</div>
+            <div class="w-16 text-right px-2 text-xs font-mono text-gray-500">LEADER</div>
+          </div>
+          <div class="flex items-center h-10 border-b border-[#1a1a1a] bg-[#0A0A0A]">
+            <div class="w-8 text-center font-bold text-gray-400">2</div>
+            <div class="w-10 h-full flex items-center justify-center bg-white"><span class="text-black font-black text-lg">5</span></div>
+            <div class="flex-1 px-3 font-bold text-sm tracking-wide">PORSCHE</div>
+            <div class="w-16 text-right px-2 text-xs font-mono text-white">+1.430</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VAR 5: MotoGP Vibe -->
+    <div class="v5-container flex flex-col">
+      <div class="mb-4 text-center text-gray-500 font-bold text-sm tracking-widest">VAR 5: MOTOGP STYLE</div>
+      <div class="flex flex-col gap-[2px]">
+        <div class="bg-gradient-to-r from-vantare-red-600 to-transparent p-2 pl-4 mb-2">
+          <div class="font-bold text-2xl uppercase italic">Hypercar</div>
+        </div>
+        <!-- Row 1 -->
+        <div class="h-12 v5-gradient flex items-center border-l-2 border-vantare-red-500">
+          <div class="w-12 text-center text-3xl font-bold italic text-white/90">1</div>
+          <div class="flex-1 flex flex-col justify-center px-2">
+            <span class="text-sm font-bold text-gray-400 leading-none">36</span>
+            <span class="text-lg font-bold uppercase leading-tight">Alpine</span>
+          </div>
+          <div class="px-4 font-mono text-sm font-bold">---</div>
+        </div>
+        <!-- Row 2 -->
+        <div class="h-12 v5-gradient flex items-center border-l-2 border-gray-600">
+          <div class="w-12 text-center text-3xl font-bold italic text-gray-500">2</div>
+          <div class="flex-1 flex flex-col justify-center px-2">
+            <span class="text-sm font-bold text-gray-400 leading-none">5</span>
+            <span class="text-lg font-bold uppercase leading-tight">Porsche</span>
+          </div>
+          <div class="px-4 font-mono text-sm font-bold text-vantare-red-400">+1.430</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VAR 6: Formula E / Cyberpunk -->
+    <div class="v6-container flex flex-col">
+      <div class="mb-4 text-center text-gray-500 font-bold text-sm tracking-widest">VAR 6: CYBERPUNK / FE</div>
+      <div class="bg-black/80 border border-vantare-red-600/50 neon-border p-3">
+        <div class="flex justify-between items-end border-b border-vantare-red-600/30 pb-2 mb-2">
+          <div class="text-xs text-vantare-red-400 neon-text">SYS.HPC</div>
+          <div class="text-sm">T-08:48</div>
+        </div>
+        <div class="flex flex-col gap-2">
+          <div class="flex items-center bg-vantare-red-600/10 border border-vantare-red-500/30 p-1">
+            <div class="w-6 text-center text-xs text-vantare-red-400">01</div>
+            <div class="w-8 text-center text-white font-bold">36</div>
+            <div class="flex-1 text-sm">ALPINE_</div>
+            <div class="text-xs text-vantare-red-400">LDR</div>
+          </div>
+          <div class="flex items-center bg-white/5 border border-white/10 p-1">
+            <div class="w-6 text-center text-xs text-gray-500">02</div>
+            <div class="w-8 text-center text-white font-bold">05</div>
+            <div class="flex-1 text-sm">PORSCHE_</div>
+            <div class="text-xs">+1.43</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VAR 7: Minimalist (ACC) -->
+    <div class="v7-container flex flex-col">
+      <div class="mb-4 text-center text-gray-500 font-bold text-sm tracking-widest">VAR 7: MINIMALIST (ACC)</div>
+      <div class="bg-black border border-[#222] p-1">
+        <div class="bg-[#111] flex justify-between px-2 py-1 mb-1">
+          <span class="text-vantare-red-500 font-bold text-sm">HYPERCAR</span>
+          <span class="text-gray-400 text-sm">00:08:48</span>
+        </div>
+        <div class="flex items-center h-8 bg-[#0a0a0a] mb-[1px]">
+          <div class="w-6 text-center text-gray-500 text-xs">1</div>
+          <div class="w-1 h-full bg-[#0055A4]"></div>
+          <div class="w-8 text-center font-bold text-sm bg-white text-black mx-1">36</div>
+          <div class="flex-1 text-sm font-bold px-1">ALPINE</div>
+        </div>
+        <div class="flex items-center h-8 bg-[#0a0a0a]">
+          <div class="w-6 text-center text-gray-500 text-xs">2</div>
+          <div class="w-1 h-full bg-white"></div>
+          <div class="w-8 text-center font-bold text-sm bg-white text-black mx-1">5</div>
+          <div class="flex-1 text-sm font-bold px-1">PORSCHE PENSKE</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

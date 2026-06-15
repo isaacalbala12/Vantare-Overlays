@@ -1,0 +1,28 @@
+F3.5 — Panel Data Hooks
+=========================
+
+Hook 1: useOverlayWindows (hooks/useOverlayWindows.ts)
+   ✅ IPC: calls window.vantare.getOverlayWindows() and window.vantare.getActiveProfile()
+   ✅ Error handling: try/catch with graceful degradation
+   ✅ Cleanup: loading flag in finally block
+   ✅ Returns: { total, active, loading, openAll, closeAll, refresh }
+   ✅ openAll/closeAll: placeholder implementations with try/catch
+   ⚠️ NOTE: openAll/closeAll are stubs (plan says "placeholder for overlay service")
+
+Hook 2: useThemePreview (hooks/useThemePreview.ts)
+   ✅ IPC: calls window.vantare.getActiveTheme() and window.vantare.getThemes()
+   ✅ Error handling: try/catch, sets empty state on failure
+   ✅ Cleanup: cancelled flag in useEffect return
+   ✅ Returns: { activeTheme, allThemes, loading }
+   ✅ Parallel fetch with Promise.all
+
+Hook 3: useAccountStatus (hooks/useAccountStatus.ts)
+   ✅ Uses existing useAuthStore (no new stores)
+   ✅ Returns: { user, license, tier, isValid, isLoading, error, loadSession, logout }
+   ✅ tier defaults to 'free' when no user/license
+   ✅ isValid falls back through multiple paths
+
+Hook 4: barrel export (hooks/index.ts)
+   ✅ Exports: useOverlayWindows, useThemePreview, useAccountStatus
+
+Verdict: ✅ PASS (minor note: openAll/closeAll are stubs)

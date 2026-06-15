@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useRef } from "react";
 import { getWidgetTelemetrySource } from "./use-widget-telemetry";
+import type { WidgetTelemetryMode } from "./use-widget-telemetry";
 import { resolveWidgetAppearance } from "./widget-appearance";
 import { setHTMLIfChanged, setTextIfChanged, setStylePropertyIfChanged } from "../../lib/dom-write";
 import { startFrameBudgetLoop } from "../../lib/frame-budget";
 
 type TelemetryProps = {
   editMode: boolean;
+  telemetryMode?: WidgetTelemetryMode;
   updateHz?: number;
   props?: Record<string, unknown>;
 };
@@ -25,7 +27,7 @@ function ledColor(i: number, rpmGreen: string, rpmYellow: string, rpmRed: string
   return rpmGreen;
 }
 
-export function TelemetryWidget({ editMode, updateHz = 30, props }: TelemetryProps) {
+export function TelemetryWidget({ editMode, telemetryMode, updateHz = 30, props }: TelemetryProps) {
   const ledsRef = useRef<HTMLDivElement>(null);
   const rpmTextRef = useRef<HTMLSpanElement>(null);
   const gearRef = useRef<HTMLSpanElement>(null);
@@ -37,7 +39,10 @@ export function TelemetryWidget({ editMode, updateHz = 30, props }: TelemetryPro
 
   const { appearance: a } = resolveWidgetAppearance("telemetry", props);
 
-  const getTelemetry = useMemo(() => getWidgetTelemetrySource(editMode), [editMode]);
+  const getTelemetry = useMemo(
+    () => getWidgetTelemetrySource(telemetryMode ?? (editMode ? "mock" : "live")),
+    [editMode, telemetryMode],
+  );
 
   useEffect(() => {
     let flashToggle = false;

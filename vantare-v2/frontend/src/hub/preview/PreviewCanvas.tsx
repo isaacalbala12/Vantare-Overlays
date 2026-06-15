@@ -39,7 +39,8 @@ export function PreviewCanvas({ profile, selectedWidgetId, onSelectWidget, onCha
     if (!node) return;
 
     const updateWidth = () => {
-      const width = Math.min(MAX_CANVAS_WIDTH, Math.max(280, node.clientWidth));
+      const measuredWidth = node.clientWidth || MAX_CANVAS_WIDTH;
+      const width = Math.min(MAX_CANVAS_WIDTH, Math.max(280, measuredWidth));
       setCanvasWidth(width);
     };
     updateWidth();
@@ -134,6 +135,7 @@ export function PreviewCanvas({ profile, selectedWidgetId, onSelectWidget, onCha
       </div>
       <div
         ref={canvasRef}
+        data-testid="preview-viewport"
         className="relative mx-auto bg-black/40 border border-white/10 overflow-hidden outline-none"
         style={{ width: canvasWidth, height: LOGICAL_HEIGHT * scale }}
         tabIndex={disabled ? -1 : 0}
@@ -143,24 +145,34 @@ export function PreviewCanvas({ profile, selectedWidgetId, onSelectWidget, onCha
         onMouseLeave={onMouseUp}
       >
         <div
-          className="absolute inset-0 opacity-30"
+          data-testid="preview-scene"
+          className="absolute left-0 top-0"
           style={{
-            backgroundImage:
-              "linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px)",
-            backgroundSize: `${40 * scale}px ${40 * scale}px`,
+            width: LOGICAL_WIDTH,
+            height: LOGICAL_HEIGHT,
+            transform: `scale(${scale})`,
+            transformOrigin: "top left",
           }}
-        />
-        {profile.widgets.map((widget) => (
-          <PreviewWidgetFrame
-            key={widget.id}
-            widget={widget}
-            scale={scale}
-            selected={widget.id === selectedWidgetId}
-            onSelect={onSelectWidget}
-            onDragStart={onMouseDown}
-            disabled={disabled}
+        >
+          <div
+            className="absolute inset-0 opacity-30"
+            style={{
+              backgroundImage:
+                "linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px)",
+              backgroundSize: "40px 40px",
+            }}
           />
-        ))}
+          {profile.widgets.map((widget) => (
+            <PreviewWidgetFrame
+              key={widget.id}
+              widget={widget}
+              selected={widget.id === selectedWidgetId}
+              onSelect={onSelectWidget}
+              onDragStart={onMouseDown}
+              disabled={disabled}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

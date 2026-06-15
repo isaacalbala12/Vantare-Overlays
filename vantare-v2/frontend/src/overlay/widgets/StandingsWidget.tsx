@@ -68,13 +68,13 @@ function brandInitial(name: string | undefined): string {
 export function StandingsWidget({ editMode, telemetryMode, props, updateHz = 15 }: StandingsProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const maxRows = (props?.maxRows as number) ?? 12;
+  const lastFingerprintRef = useRef("");
 
   const { appearance: a } = resolveWidgetAppearance("standings", props);
 
   useEffect(() => {
     return startFrameBudgetLoop(updateHz, () => {
       const t = (telemetryMode ?? (editMode ? "mock" : "live")) === "mock" ? getMockTelemetry() : getTelemetryRef();
-      const a = resolveWidgetAppearance("standings", props).appearance;
       const container = containerRef.current;
       if (!container) return;
 
@@ -83,6 +83,13 @@ export function StandingsWidget({ editMode, telemetryMode, props, updateHz = 15 
         .slice(0, maxRows);
 
       const mode = resolveSessionMode(t.sessionType, t.sessionName);
+
+      // Fingerprint check — skip HTML rebuild if no rendering state changed
+      const fingerprint = mode + "|" + sorted.map(v =>
+        `${v.id}:${v.place}:${v.inPits}:${v.pitState}:${v.pitting}:${v.inGarageStall}:${v.fastestLap}:${v.bestLapTime?.toFixed(1)}:${v.timeBehindLeader?.toFixed(3)}:${v.timeBehindNext?.toFixed(3)}:${v.lapsBehindLeader}:${v.driverNumber}:${v.driverName}:${v.teamBrandColor}:${v.tireCompound}:${v.vehicleClass}`
+      ).join("|");
+      if (fingerprint === lastFingerprintRef.current) return;
+      lastFingerprintRef.current = fingerprint;
 
       const rows = sorted.map((v, i) => {
         const bgRow = i % 2 === 0 ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.3)";

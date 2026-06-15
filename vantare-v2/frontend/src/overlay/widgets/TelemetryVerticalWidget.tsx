@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useRef } from "react";
 import { getWidgetTelemetrySource } from "./use-widget-telemetry";
+import type { WidgetTelemetryMode } from "./use-widget-telemetry";
 import { resolveWidgetAppearance } from "./widget-appearance";
 import { setStylePropertyIfChanged, setTextIfChanged } from "../../lib/dom-write";
 import { startFrameBudgetLoop } from "../../lib/frame-budget";
 
 type TelemetryVerticalProps = {
   editMode: boolean;
+  telemetryMode?: WidgetTelemetryMode;
   updateHz?: number;
   props?: Record<string, unknown>;
 };
@@ -15,7 +17,7 @@ const BAKED_HEADER_BG = "linear-gradient(180deg, #9b2226 0%, #3a050a 100%)";
 const BAKED_GEAR_BG = "linear-gradient(135deg, rgba(230,57,70,0.1) 0%, rgba(155,34,38,0.2) 100%)";
 const RPM_MAX = 9000;
 
-export function TelemetryVerticalWidget({ editMode, updateHz = 30, props }: TelemetryVerticalProps) {
+export function TelemetryVerticalWidget({ editMode, telemetryMode, updateHz = 30, props }: TelemetryVerticalProps) {
   const rpmBarRef = useRef<HTMLDivElement>(null);
   const gearRef = useRef<HTMLSpanElement>(null);
   const speedRef = useRef<HTMLSpanElement>(null);
@@ -26,7 +28,10 @@ export function TelemetryVerticalWidget({ editMode, updateHz = 30, props }: Tele
 
   const { appearance: a } = resolveWidgetAppearance("telemetry-vertical", props);
 
-  const getTelemetry = useMemo(() => getWidgetTelemetrySource(editMode), [editMode]);
+  const getTelemetry = useMemo(
+    () => getWidgetTelemetrySource(telemetryMode ?? (editMode ? "mock" : "live")),
+    [editMode, telemetryMode],
+  );
 
   useEffect(() => {
     return startFrameBudgetLoop(updateHz, () => {

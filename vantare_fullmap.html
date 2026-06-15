@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Vantare - Full Track Map</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Rajdhani:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <style>
+    body { background-color: #00ff00; color: white; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; font-family: 'Rajdhani', sans-serif; }
+
+    .map-panel { 
+      background: linear-gradient(180deg, #1a0104 0%, #0d0102 100%); 
+      border: 1px solid #9b2226; 
+      width: 400px; 
+      height: 350px; 
+      position: relative;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.9);
+      border-radius: 4px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-header { background: linear-gradient(180deg, #9b2226 0%, #3a050a 100%); border-bottom: 2px solid #1a0104; }
+
+    .track-svg { width: 100%; height: 100%; flex-grow: 1; padding: 20px; box-sizing: border-box; }
+    
+    .car-dot {
+      position: absolute;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 8px; font-weight: 900; font-family: 'Inter', sans-serif; color: black;
+      transition: top 0.05s linear, left 0.05s linear;
+      z-index: 10;
+      border: 1px solid #fff;
+    }
+
+    .player-dot { background-color: #E63946; color: white; z-index: 20; box-shadow: 0 0 10px #E63946; transform: translate(-50%, -50%) scale(1.3); }
+  </style>
+</head>
+<body>
+  
+  <div class="map-panel">
+    <div class="panel-header py-2 px-4 flex justify-between items-center">
+      <div class="text-lg font-black italic tracking-widest text-white leading-none">VANTARE TRACK</div>
+      <div class="text-[10px] font-mono font-bold text-racing-yellow tracking-widest leading-none bg-black px-2 py-1">LAP 34</div>
+    </div>
+
+    <!-- Contenedor relativo para posicionar puntos encima del SVG -->
+    <div class="relative flex-1 w-full h-full" id="map-container">
+      
+      <svg class="track-svg" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid meet">
+        <!-- Trazado del circuito (Silueta genérica inventada fluida) -->
+        <path id="track-path" d="M 50 150 C 20 150, 20 50, 80 50 L 150 50 C 180 50, 200 20, 230 20 C 270 20, 280 80, 250 120 L 220 160 C 200 180, 150 180, 100 160 Z" 
+              fill="none" stroke="#333" stroke-width="8" stroke-linejoin="round" stroke-linecap="round"/>
+        <!-- Linea blanca interior -->
+        <path d="M 50 150 C 20 150, 20 50, 80 50 L 150 50 C 180 50, 200 20, 230 20 C 270 20, 280 80, 250 120 L 220 160 C 200 180, 150 180, 100 160 Z" 
+              fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+      </svg>
+      
+      <!-- Puntos de coches se insertan aquí -->
+    </div>
+  </div>
+
+  <script>
+    const mapContainer = document.getElementById('map-container');
+    const path = document.getElementById('track-path');
+    const pathLength = path.getTotalLength();
+    
+    // Coches: progress (0 a 1), speed (velocidad de avance)
+    const cars = [
+      { id: 'p1', num: '35', color: '#E63946', isPlayer: true, progress: 0.1, speed: 0.0015 },
+      { id: 'c1', num: '51', color: '#f1c40f', isPlayer: false, progress: 0.15, speed: 0.0015 },
+      { id: 'c2', num: '8', color: '#fff', isPlayer: false, progress: 0.8, speed: 0.0014 },
+      { id: 'c3', num: '12', color: '#3498db', isPlayer: false, progress: 0.4, speed: 0.00155 }
+    ];
+
+    // Necesitamos escalar las coordenadas del SVG (ViewBox 300x200) al tamaño real del div
+    function updateMap() {
+      const svgRect = path.getBoundingClientRect();
+      const containerRect = mapContainer.getBoundingClientRect();
+      
+      // Factores de escala entre el viewBox interno del SVG y su tamaño renderizado
+      const scaleX = svgRect.width / 300;
+      const scaleY = svgRect.height / 200;
+      
+      const offsetX = svgRect.left - containerRect.left;
+      const offsetY = svgRect.top - containerRect.top;
+
+      cars.forEach(car => {
+        car.progress += car.speed;
+        if (car.progress > 1) car.progress -= 1; // Loop
+
+        const point = path.getPointAtLength(car.progress * pathLength);
+        
+        let el = document.getElementById(car.id);
+        if (!el) {
+          el = document.createElement('div');
+          el.id = car.id;
+          el.className = 'car-dot ' + (car.isPlayer ? 'player-dot' : '');
+          el.style.backgroundColor = car.color;
+          el.innerText = car.num;
+          mapContainer.appendChild(el);
+        }
+
+        // Posición final adaptada al DOM
+        const finalX = (point.x * scaleX) + offsetX;
+        const finalY = (point.y * scaleY) + offsetY;
+
+        el.style.left = finalX + 'px';
+        el.style.top = finalY + 'px';
+      });
+    }
+
+    setInterval(updateMap, 33);
+  </script>
+</body>
+</html>

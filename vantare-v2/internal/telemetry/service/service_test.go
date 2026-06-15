@@ -7,6 +7,7 @@ import (
 
 	"github.com/vantare/overlays/v2/internal/telemetry/lmu"
 	"github.com/vantare/overlays/v2/internal/telemetry/service"
+	"github.com/vantare/overlays/v2/pkg/models"
 )
 
 func TestServiceEmitsOnSubscribe(t *testing.T) {
@@ -200,15 +201,33 @@ func TestServiceUnsubscribeStopsDelivery(t *testing.T) {
 	}
 }
 
-func TestLMUSourceNilSafe(t *testing.T) {
-	var s *service.LMUSource
-	if s.Read() != nil {
-		t.Fatal("nil source should return nil bytes")
-	}
-	if err := s.Close(); err != nil {
-		t.Fatal(err)
+func TestServiceUsesDirectTelemetrySource(t *testing.T) {
+	src := directTelemetrySource{t: &models.Telemetry{
+		Connected: true,
+		Player: &models.PlayerTelemetry{Speed: 12, Gear: 3, EngineRPM: 4000},
+		Vehicles: []models.VehicleScoring{{ID: 1, DriverName: "Isaac", IsPlayer: true}},
+		PlayerHasVehicle: true,
+	}}
+	svc := service.New(service.Config{ReadHz: 60, EmitHz: 30, Source: src})
+	svc.ProcessReadForTest()
+	ch, unsub := svc.Subscribe()
+	defer unsub()
+	select {
+	case upd := <-ch:
+		if upd.Snapshot == nil || len(upd.Snapshot.Vehicles) != 1 {
+			t.Fatalf("unexpected update: %#v", upd)
+		}
+	default:
+		t.Fatal("expected replay")
 	}
 }
+
+type directTelemetrySource struct {
+	t *models.Telemetry
+}
+
+func (d directTelemetrySource) Read() []byte { return nil }
+func (d directTelemetrySource) ReadTelemetry() *models.Telemetry { return d.t }
 
 func readUpdate(t *testing.T, sub <-chan service.Update, timeout time.Duration) service.Update {
 	t.Helper()

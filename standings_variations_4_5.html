@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Vantare - WEC Final Polish</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Rajdhani:wght@500;600;700;800&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'], display: ['Rajdhani', 'sans-serif'] },
+          colors: { 
+            vantare: { bg: '#080808', panel: '#111111', red: { 400: '#E63946', 500: '#C1121F', 600: '#9B2226', 800: '#5a0b12', 900: '#3a050a', 950: '#1a0104' } },
+            racing: { yellow: '#f1c40f' }
+          },
+          animation: {
+            'pulse-fastest': 'pulseFastest 1.5s infinite',
+          },
+          keyframes: {
+            pulseFastest: {
+              '0%, 100%': { backgroundColor: 'rgba(255, 255, 255, 0.0)' },
+              '50%': { backgroundColor: 'rgba(255, 255, 255, 0.15)' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background-color: #050505; color: white; background-image: radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px); background-size: 20px 20px; }
+
+    /* WEC SHARP BASE */
+    .wec1-panel { background: linear-gradient(180deg, #3a050a 0%, #0d0102 100%); border: 1px solid #9b2226; }
+    .wec1-header { background: linear-gradient(180deg, #9b2226 0%, #3a050a 100%); border-bottom: 2px solid #1a0104; }
+    .wec1-class { background: linear-gradient(90deg, #9b2226 0%, #e63946 50%, #9b2226 100%); border-bottom: 1px solid #000; }
+    .wec1-row-even { background: rgba(255,255,255,0.06); }
+    .wec1-row-odd { background: rgba(0,0,0,0.3); }
+
+    /* Pit styles */
+    .pit-box { background-color: #000; color: #f1c40f; font-weight: 900; }
+
+    /* Tire styles */
+    .tire-S { border-color: #E63946; color: #E63946; } /* Blando = Rojo */
+    .tire-M { border-color: #f1c40f; color: #f1c40f; } /* Medio = Amarillo */
+    .tire-H { border-color: #ffffff; color: #ffffff; } /* Duro = Blanco */
+  </style>
+</head>
+<body class="p-8 flex flex-col items-center">
+  <h1 class="text-3xl font-display font-bold mb-10 text-white">WEC Sharp - Combinación Final</h1>
+
+  <div class="flex flex-wrap justify-center gap-8 w-full max-w-[1800px]" id="app-container"></div>
+
+  <script>
+    const drivers = [
+      { pos: 1,  num: '36', team: 'ALPINE', brand: '#0055A4', gap: 'INTERVAL', brandInit: 'A', text: 'text-white', tire: 'M', pit: false, fastest: false },
+      { pos: 2,  num: '5',  team: 'PORSCHE PENSKE', brand: '#FFF', gap: '+1.430', brandInit: 'P', text: 'text-black', tire: 'M', pit: false, fastest: false },
+      { pos: 3,  num: '51', team: 'FERRARI AF', brand: '#E32636', gap: '+2.152', brandInit: 'F', text: 'text-white', tire: 'S', pit: false, fastest: true },
+      { pos: 4,  num: '2',  team: 'CADILLAC RACING', brand: '#F2A900', gap: '+3.880', brandInit: 'C', text: 'text-black', tire: 'M', pit: false, fastest: false },
+      { pos: 5,  num: '8',  team: 'TOYOTA GAZOO', brand: '#FFF', gap: 'IN PIT', brandInit: 'T', text: 'text-black', tire: '', pit: true, fastest: false },
+      { pos: 6,  num: '94', team: 'PEUGEOT', brand: '#00A3E0', gap: '+5.550', brandInit: 'P', text: 'text-white', tire: 'S', pit: false, fastest: false },
+      { pos: 7,  num: '83', team: 'AF CORSE', brand: '#FFD700', gap: '+6.120', brandInit: 'F', text: 'text-black', tire: 'H', pit: false, fastest: false },
+      { pos: 8,  num: '12', team: 'HERTZ TEAM JOTA', brand: '#C9B074', gap: '+7.400', brandInit: 'P', text: 'text-black', tire: 'M', pit: false, fastest: false },
+      { pos: 9,  num: '6',  team: 'PORSCHE PENSKE', brand: '#FFF', gap: '+8.900', brandInit: 'P', text: 'text-black', tire: 'H', pit: false, fastest: false },
+      { pos: 10, num: '7',  team: 'TOYOTA GAZOO', brand: '#FFF', gap: '+9.250', brandInit: 'T', text: 'text-black', tire: 'H', pit: false, fastest: false },
+      { pos: 11, num: '20', team: 'BMW M TEAM', brand: '#000000', gap: '+11.100', brandInit: 'B', text: 'text-white', tire: 'M', pit: false, fastest: false },
+      { pos: 12, num: '15', team: 'BMW M TEAM', brand: '#000000', gap: '+12.450', brandInit: 'B', text: 'text-white', tire: 'M', pit: false, fastest: false },
+      { pos: 13, num: '63', team: 'LAMBORGHINI', brand: '#78B833', gap: 'IN PIT', brandInit: 'L', text: 'text-black', tire: '', pit: true, fastest: false },
+      { pos: 14, num: '93', team: 'PEUGEOT', brand: '#00A3E0', gap: '+15.550', brandInit: 'P', text: 'text-white', tire: 'S', pit: false, fastest: false },
+      { pos: 15, num: '3',  team: 'CADILLAC RACING', brand: '#F2A900', gap: '+16.800', brandInit: 'C', text: 'text-black', tire: 'M', pit: false, fastest: false },
+      { pos: 16, num: '99', team: 'PROTON COMP', brand: '#FFF', gap: '+18.000', brandInit: 'P', text: 'text-black', tire: 'M', pit: false, fastest: false },
+      { pos: 17, num: '35', team: 'ALPINE', brand: '#0055A4', gap: '+19.500', brandInit: 'A', text: 'text-white', tire: 'H', pit: false, fastest: false },
+      { pos: 18, num: '11', team: 'ISOTTA FRASCHINI', brand: '#FF0000', gap: '+21.200', brandInit: 'I', text: 'text-white', tire: 'H', pit: false, fastest: false },
+      { pos: 19, num: '19', team: 'LAMBORGHINI', brand: '#78B833', gap: '+24.100', brandInit: 'L', text: 'text-black', tire: 'S', pit: false, fastest: false },
+      { pos: 20, num: '38', team: 'HERTZ TEAM JOTA', brand: '#C9B074', gap: '+26.800', brandInit: 'P', text: 'text-black', tire: 'M', pit: false, fastest: false }
+    ];
+
+    function createUltimate() {
+      let rows = '';
+      drivers.forEach((d, i) => {
+        const bgRow = i % 2 === 0 ? 'wec1-row-even' : 'wec1-row-odd';
+        const leaderStyle = d.pos === 1 ? 'border-l-2 border-racing-yellow' : '';
+        const gapColor = d.pit ? 'text-racing-yellow font-black' : (d.pos === 1 ? 'text-racing-yellow font-black' : 'text-gray-300');
+        
+        // Píldora de neumáticos coloreada
+        let tireBadge = '';
+        if (d.tire) {
+          tireBadge = `<span class="tire-${d.tire} bg-black/50 font-sans font-bold text-[8px] px-[3px] py-[1px] rounded-sm mr-1.5 border leading-none">${d.tire}</span>`;
+        }
+
+        // Animación de Fastest (ahora en blanco sutil para no desentonar con el rojo)
+        const fastestAnim = d.fastest ? 'animate-pulse-fastest border-l-2 border-white' : leaderStyle;
+        const gapDisplay = d.fastest ? '<span class="text-white font-black drop-shadow-md">FASTEST</span>' : d.gap;
+        
+        // Jerarquía de posiciones (Top 3 puro blanco, resto más atenuado)
+        const teamColor = d.pos <= 3 ? 'text-white font-black' : 'text-gray-300 font-bold';
+        const posColor = d.pos <= 3 ? 'text-white' : 'text-gray-400';
+
+        rows += `
+          <div class="flex items-center h-[26px] ${bgRow} ${fastestAnim} text-[11px] font-bold border-b border-black/20 transition-all">
+            <div class="w-6 text-center ${d.pos === 1 ? 'text-racing-yellow' : posColor}">${d.pos}</div>
+            <div class="w-7 h-full flex items-center justify-center py-[2px] px-[2px]"><div class="w-full h-full bg-white flex items-center justify-center"><span class="text-black font-black text-[10px]">${d.brandInit}</span></div></div>
+            <div class="w-7 h-full flex items-center justify-center py-[2px] pr-[2px]"><div class="w-full h-full flex items-center justify-center ${d.pit ? 'pit-box border border-racing-yellow' : ''}" style="background-color: ${d.pit ? '#000' : d.brand}"><span class="font-black text-[11px]" style="color: ${d.pit ? '#f1c40f' : (d.text === 'text-black' ? '#000' : '#fff')}">${d.num}</span></div></div>
+            <div class="flex-1 px-1 tracking-wide truncate ${d.pos === 1 ? 'text-racing-yellow' : teamColor}">${d.team}</div>
+            <div class="px-2 flex items-center justify-end font-mono text-[9px]">
+              ${tireBadge}
+              <span class="${d.fastest ? '' : gapColor}">${gapDisplay}</span>
+            </div>
+          </div>
+        `;
+      });
+      
+      return `<div class="w-[320px] font-display"><div class="mb-3 text-center text-white font-bold text-xs tracking-widest font-sans">WEC SHARP - ULTIMATE VANTARE EDITION</div><div class="wec1-panel rounded-lg overflow-hidden pb-1"><div class="wec1-header pt-4 pb-2 flex flex-col items-center"><div class="text-3xl font-black italic tracking-widest mb-1 text-white">VANTARE</div><div class="text-[11px] font-mono font-bold text-white tracking-widest">00:08:48</div></div><div class="wec1-class text-center text-[11px] py-1 font-bold tracking-widest text-white relative">HYPERCAR</div><div class="flex flex-col mt-1 px-1">${rows}</div></div></div>`;
+    }
+
+    document.getElementById('app-container').innerHTML = createUltimate();
+  </script>
+</body>
+</html>

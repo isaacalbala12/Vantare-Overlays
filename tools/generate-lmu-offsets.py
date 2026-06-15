@@ -128,7 +128,10 @@ GO_VT_MAP = {
     'mFilteredThrottle': 'vehicleTelemetryFilteredThrottle',
     'mFilteredBrake': 'vehicleTelemetryFilteredBrake',
     'mFilteredSteering': 'vehicleTelemetryFilteredSteering',
+    'mFilteredClutch': 'vehicleTelemetryFilteredClutch',
     'mDeltaBest': 'vehicleTelemetryDeltaBest',
+    'mTimeGapPlaceAhead': 'vehicleTelemetryTimeGapPlaceAhead',
+    'mTimeGapPlaceBehind': 'vehicleTelemetryTimeGapPlaceBehind',
 }
 
 GO_SCORING_MAP = {
@@ -145,12 +148,31 @@ GO_SCORING_MAP = {
 GO_VS_MAP = {
     'mID': 'vehicleScoringID',
     'mDriverName': 'vehicleScoringDriverName',
+    'mVehicleName': 'vehicleScoringVehicleName',
     'mTotalLaps': 'vehicleScoringTotalLaps',
+    'mSector': 'vehicleScoringSector',
+    'mFinishStatus': 'vehicleScoringFinishStatus',
+    'mLapDist': 'vehicleScoringLapDistance',
+    'mBestLapTime': 'vehicleScoringBestLapTime',
+    'mLastLapTime': 'vehicleScoringLastLapTime',
+    'mCurSector1': 'vehicleScoringCurrentSectorTime1',
+    'mCurSector2': 'vehicleScoringCurrentSectorTime2',
+    'mNumPitstops': 'vehicleScoringPitstops',
+    'mNumPenalties': 'vehicleScoringPenalties',
     'mIsPlayer': 'vehicleScoringIsPlayer',
     'mInPits': 'vehicleScoringInPits',
     'mPlace': 'vehicleScoringPlace',
     'mVehicleClass': 'vehicleScoringVehicleClass',
+    'mTimeBehindNext': 'vehicleScoringTimeBehindNext',
+    'mLapsBehindNext': 'vehicleScoringLapsBehindNext',
     'mTimeBehindLeader': 'vehicleScoringTimeBehindLeader',
+    'mLapsBehindLeader': 'vehicleScoringLapsBehindLeader',
+    'mPitState': 'vehicleScoringPitState',
+    'mQualification': 'vehicleScoringQualification',
+    'mEstimatedLapTime': 'vehicleScoringEstimatedLapTime',
+    'mPitGroup': 'vehicleScoringPitGroup',
+    'mFlag': 'vehicleScoringFlag',
+    'mFuelFraction': 'vehicleScoringFuelFraction',
 }
 
 

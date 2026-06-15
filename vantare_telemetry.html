@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Vantare - Telemetry</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Rajdhani:wght@500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { 
+            sans: ['Inter', 'sans-serif'], 
+            display: ['Rajdhani', 'sans-serif'],
+            tech: ['Space Grotesk', 'sans-serif']
+          },
+          colors: { 
+            vantare: { bg: '#080808', panel: '#111111', red: { 400: '#E63946', 500: '#C1121F', 600: '#9B2226', 800: '#5a0b12', 900: '#3a050a', 950: '#1a0104' } },
+            pedal: { throttle: '#2ecc71', brake: '#e74c3c', clutch: '#3498db' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background-color: #00ff00; /* Fondo verde para Chroma Key en OBS */ color: white; margin: 0; display: flex; align-items: flex-end; justify-content: center; height: 100vh; padding-bottom: 50px; }
+
+    /* WEC SHARP BASE AESTHETIC */
+    .telemetry-panel { 
+      background: linear-gradient(180deg, #1a0104 0%, #0d0102 100%); 
+      border: 1px solid #9b2226; 
+      box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+      width: 400px;
+    }
+    
+    .panel-header { background: linear-gradient(180deg, #9b2226 0%, #3a050a 100%); border-bottom: 2px solid #1a0104; }
+    
+    /* RPM LEDs */
+    .rpm-led { transition: all 0.05s ease; box-shadow: inset 0 0 2px rgba(0,0,0,0.8); }
+    .rpm-green { background-color: #2ecc71; box-shadow: 0 0 8px #2ecc71, inset 0 0 2px rgba(0,0,0,0.5); }
+    .rpm-yellow { background-color: #f1c40f; box-shadow: 0 0 8px #f1c40f, inset 0 0 2px rgba(0,0,0,0.5); }
+    .rpm-red { background-color: #e74c3c; box-shadow: 0 0 8px #e74c3c, inset 0 0 2px rgba(0,0,0,0.5); }
+    .rpm-blue { background-color: #3498db; box-shadow: 0 0 8px #3498db, inset 0 0 2px rgba(0,0,0,0.5); }
+    .rpm-off { background-color: rgba(255,255,255,0.05); }
+
+    /* Pedals */
+    .pedal-bg { background-color: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); overflow: hidden; position: relative; }
+    .pedal-fill { transition: width 0.05s linear; height: 100%; position: absolute; left: 0; top: 0; }
+    
+    /* Gear & Speed */
+    .gear-box { background: linear-gradient(135deg, rgba(230,57,70,0.1) 0%, rgba(155,34,38,0.2) 100%); border: 1px solid #9b2226; }
+    .speed-box { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); }
+  </style>
+</head>
+<body>
+  
+  <div class="telemetry-panel rounded-lg overflow-hidden flex flex-col font-display">
+    
+    <!-- HEADER -->
+    <div class="panel-header py-1 px-4 flex justify-between items-center">
+      <div class="text-xs font-black italic tracking-widest text-white">VANTARE TELEMETRY</div>
+      <div class="text-[9px] font-mono font-bold text-white/70 tracking-widest">LIVE</div>
+    </div>
+
+    <div class="p-4 flex flex-col gap-4">
+      
+      <!-- RPM BAR -->
+      <div class="flex flex-col gap-1">
+        <div class="flex justify-between px-1 text-[10px] font-bold text-gray-400 tracking-wider">
+          <span>RPM</span>
+          <span id="rpm-text" class="text-white font-tech">7800</span>
+        </div>
+        <div class="flex gap-[2px] h-4 w-full" id="rpm-container">
+          <!-- LEDs generados por JS -->
+        </div>
+      </div>
+
+      <!-- MIDDLE ROW: GEAR & SPEED -->
+      <div class="flex gap-4 h-24">
+        <!-- GEAR -->
+        <div class="gear-box rounded-md flex flex-col items-center justify-center w-2/5 shadow-inner">
+          <span class="text-[10px] font-bold text-vantare-red-400 tracking-widest uppercase mb-[-10px]">Gear</span>
+          <span id="gear-text" class="text-6xl font-black italic text-white drop-shadow-md font-tech">4</span>
+        </div>
+        
+        <!-- SPEED -->
+        <div class="speed-box rounded-md flex flex-col items-center justify-center w-3/5">
+          <span id="speed-text" class="text-5xl font-black italic text-white drop-shadow-md font-tech">245</span>
+          <span class="text-[11px] font-bold text-gray-400 tracking-widest uppercase mt-[-5px]">KM / H</span>
+        </div>
+      </div>
+
+      <!-- BOTTOM ROW: PEDALS -->
+      <div class="flex flex-col gap-2">
+        <!-- Throttle -->
+        <div class="flex items-center gap-2">
+          <span class="w-12 text-[10px] font-bold text-pedal-throttle tracking-widest text-right">THR</span>
+          <div class="pedal-bg flex-1 h-3 rounded-sm">
+            <div id="throttle-bar" class="pedal-fill bg-pedal-throttle shadow-[0_0_10px_#2ecc71]" style="width: 80%;"></div>
+          </div>
+          <span id="throttle-text" class="w-8 text-[10px] font-mono text-gray-300 text-right">80%</span>
+        </div>
+        <!-- Brake -->
+        <div class="flex items-center gap-2">
+          <span class="w-12 text-[10px] font-bold text-pedal-brake tracking-widest text-right">BRK</span>
+          <div class="pedal-bg flex-1 h-3 rounded-sm">
+            <div id="brake-bar" class="pedal-fill bg-pedal-brake shadow-[0_0_10px_#e74c3c]" style="width: 0%;"></div>
+          </div>
+          <span id="brake-text" class="w-8 text-[10px] font-mono text-gray-300 text-right">0%</span>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+
+  <script>
+    // Configuración de RPM
+    const numLeds = 20;
+    const rpmContainer = document.getElementById('rpm-container');
+    const leds = [];
+
+    // Inicializar LEDs
+    for (let i = 0; i < numLeds; i++) {
+      const led = document.createElement('div');
+      led.className = 'flex-1 rounded-sm rpm-led rpm-off';
+      // 0-9 Verde, 10-14 Amarillo, 15-17 Rojo, 18-19 Azul (Shift)
+      let colorClass = 'rpm-green';
+      if (i >= 10) colorClass = 'rpm-yellow';
+      if (i >= 15) colorClass = 'rpm-red';
+      if (i >= 18) colorClass = 'rpm-blue';
+      
+      led.dataset.color = colorClass;
+      rpmContainer.appendChild(led);
+      leds.push(led);
+    }
+
+    // --- SIMULADOR DE TELEMETRÍA ---
+    // Simula una vuelta (acelerar, cambiar marcha, frenar)
+    let speed = 120;
+    let gear = 3;
+    let rpm = 4000;
+    const maxRpm = 9000;
+    let isBraking = false;
+
+    function updateTelemetry() {
+      // Lógica muy básica de simulación de físicas
+      if (!isBraking) {
+        // Acelerando
+        rpm += Math.random() * 300 + 100;
+        speed += (rpm / 8000) * 2;
+        
+        // Cambio de marcha hacia arriba
+        if (rpm > 8500 && gear < 6) {
+          gear++;
+          rpm = 5500;
+        } else if (rpm > maxRpm) {
+          rpm = maxRpm;
+        }
+
+        // Aleatorizar acelerador
+        const thr = Math.min(100, Math.max(80, 100 - Math.random() * 20));
+        document.getElementById('throttle-bar').style.width = thr + '%';
+        document.getElementById('throttle-text').innerText = Math.round(thr) + '%';
+        
+        document.getElementById('brake-bar').style.width = '0%';
+        document.getElementById('brake-text').innerText = '0%';
+
+        // Decision de frenar
+        if (speed > 260 && Math.random() > 0.9) {
+          isBraking = true;
+        }
+      } else {
+        // Frenando
+        rpm -= Math.random() * 400 + 200;
+        speed -= 4;
+        
+        // Cambio de marcha hacia abajo
+        if (rpm < 4500 && gear > 2) {
+          gear--;
+          rpm = 7500;
+        }
+
+        // Aleatorizar freno
+        const brk = Math.min(100, Math.max(40, 80 + Math.random() * 20));
+        document.getElementById('brake-bar').style.width = brk + '%';
+        document.getElementById('brake-text').innerText = Math.round(brk) + '%';
+        
+        document.getElementById('throttle-bar').style.width = '0%';
+        document.getElementById('throttle-text').innerText = '0%';
+
+        // Decision de acelerar
+        if (speed < 100 || (speed < 150 && Math.random() > 0.9)) {
+          isBraking = false;
+        }
+      }
+
+      // Actualizar UI
+      document.getElementById('speed-text').innerText = Math.round(speed);
+      document.getElementById('gear-text').innerText = gear;
+      document.getElementById('rpm-text').innerText = Math.round(rpm);
+
+      // Actualizar LEDs de RPM
+      const activeLeds = Math.round((rpm / maxRpm) * numLeds);
+      
+      // Flash de shift point (azul parpadeante si llegas al final)
+      const isShiftPoint = rpm > 8500 && (Date.now() % 200 < 100);
+
+      leds.forEach((led, i) => {
+        if (isShiftPoint && i >= 18) {
+          // Flash azul intenso al final
+          led.className = 'flex-1 rounded-sm rpm-led bg-white shadow-[0_0_15px_#fff]';
+        } else if (i < activeLeds) {
+          led.className = 'flex-1 rounded-sm rpm-led ' + led.dataset.color;
+        } else {
+          led.className = 'flex-1 rounded-sm rpm-led rpm-off';
+        }
+      });
+    }
+
+    // Ejecutar simulación a 20 FPS (50ms)
+    setInterval(updateTelemetry, 50);
+  </script>
+</body>
+</html>

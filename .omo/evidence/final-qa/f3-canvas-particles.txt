@@ -1,0 +1,47 @@
+F3.3 — CanvasParticles.tsx
+============================
+File: apps/desktop/src/renderer/hub/components/CanvasParticles.tsx
+
+STRUCTURAL REVIEW:
+
+1. RAF Cleanup on Unmount
+   ✅ Line 79: animationId = requestAnimationFrame(animate);
+   ✅ Line 81-84: return () => { cancelAnimationFrame(animationId); ... }
+   Verified: cancelAnimationFrame is called in the cleanup function.
+
+2. 30fps Throttle
+   ✅ Line 25: const FPS = 30;
+   ✅ Line 26: const interval = 1000 / FPS;
+   ✅ Lines 52-56: if (delta < interval) { animationId = requestAnimationFrame(animate); return; }
+   Verified: Frame time delta comparison, skips render when < 33ms.
+
+3. Resize Handler
+   ✅ Lines 28-31: resize function sets canvas.width/height = window.innerWidth/innerHeight
+   ✅ Line 32: resize() called on init
+   ✅ Line 33: window.addEventListener('resize', resize)
+   ✅ Line 83: window.removeEventListener('resize', resize) in cleanup
+   Verified: Resize handler properly registered and cleaned up.
+
+4. Particle Count
+   ✅ Line 36: const COUNT = 50 + Math.floor(Math.random() * 30); // 50-80
+
+5. Particle Properties
+   ✅ Lines 43-46: Random position, velocity (±0.3), size (1.5-3px), opacity (0.1-0.3)
+   ✅ Lines 64-68: Wrap-around edges
+   ✅ Lines 70-73: White circles, rgba(255, 255, 255, opacity)
+
+6. Canvas Element
+   ✅ Line 88-92: <canvas ref={canvasRef} className="particles-canvas" aria-hidden="true" />
+   ✅ CSS: position: fixed, pointer-events: none, z-index: 0
+
+7. No interactivity
+   ✅ No mouse/touch event listeners on canvas
+   ✅ pointer-events: none via CSS
+
+Key Findings:
+- RAF lifecycle handled correctly (animationId scoped to closure, cancelled on unmount)
+- Throttle logic prevents >30fps rendering
+- Resize handler bidirectional (add + remove)
+- No memory leaks identified
+
+Verdict: ✅ PASS

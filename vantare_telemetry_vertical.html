@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Vantare - Telemetry Vertical</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Rajdhani:wght@500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { 
+            sans: ['Inter', 'sans-serif'], 
+            display: ['Rajdhani', 'sans-serif'],
+            tech: ['Space Grotesk', 'sans-serif']
+          },
+          colors: { 
+            vantare: { bg: '#080808', panel: '#111111', red: { 400: '#E63946', 500: '#C1121F', 600: '#9B2226', 800: '#5a0b12', 900: '#3a050a', 950: '#1a0104' } },
+            pedal: { throttle: '#2ecc71', brake: '#e74c3c', clutch: '#3498db' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background-color: #00ff00; /* Fondo verde para Chroma Key en OBS */ color: white; margin: 0; display: flex; align-items: center; justify-content: flex-end; height: 100vh; padding-right: 50px; }
+
+    /* WEC SHARP BASE AESTHETIC */
+    .telemetry-panel { 
+      background: linear-gradient(180deg, #1a0104 0%, #0d0102 100%); 
+      border: 1px solid #9b2226; 
+      box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+      width: 140px; /* Panel estrecho y vertical */
+    }
+    
+    .panel-header { background: linear-gradient(180deg, #9b2226 0%, #3a050a 100%); border-bottom: 2px solid #1a0104; }
+    
+    /* RPM Bar Horizontal (Top) */
+    .rpm-bar-bg { background-color: rgba(0,0,0,0.6); border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .rpm-fill { transition: width 0.05s linear; height: 100%; box-shadow: 0 0 8px currentColor; }
+
+    /* Vertical Pedals */
+    .pedal-bg-v { background-color: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); position: relative; overflow: hidden; border-radius: 2px; }
+    .pedal-fill-v { transition: height 0.05s linear; width: 100%; position: absolute; bottom: 0; left: 0; }
+    
+    /* Cajas */
+    .gear-box { background: linear-gradient(135deg, rgba(230,57,70,0.1) 0%, rgba(155,34,38,0.2) 100%); border: 1px solid #9b2226; }
+    .speed-box { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); }
+  </style>
+</head>
+<body>
+  
+  <div class="telemetry-panel rounded-lg overflow-hidden flex flex-col font-display">
+    
+    <!-- HEADER -->
+    <div class="panel-header py-1 px-2 text-center">
+      <div class="text-[10px] font-black italic tracking-widest text-white">VANTARE TEL</div>
+    </div>
+
+    <!-- RPM LED BAR THIN -->
+    <div class="rpm-bar-bg h-2 w-full relative">
+      <div id="rpm-bar" class="rpm-fill bg-green-500" style="width: 0%;"></div>
+    </div>
+
+    <div class="p-3 flex flex-col gap-3">
+      
+      <!-- GEAR -->
+      <div class="gear-box rounded-md flex flex-col items-center justify-center py-2 shadow-inner">
+        <span class="text-[9px] font-bold text-vantare-red-400 tracking-widest uppercase mb-[-8px]">Gear</span>
+        <span id="gear-text" class="text-6xl font-black italic text-white drop-shadow-md font-tech">4</span>
+      </div>
+      
+      <!-- SPEED & RPM NUM -->
+      <div class="speed-box rounded-md flex flex-col items-center justify-center py-2">
+        <span id="speed-text" class="text-4xl font-black italic text-white drop-shadow-md font-tech">245</span>
+        <span class="text-[9px] font-bold text-gray-400 tracking-widest uppercase mt-[-2px]">KM / H</span>
+        
+        <div class="w-full h-px bg-white/10 my-1"></div>
+        
+        <span id="rpm-text" class="text-sm font-bold text-gray-300 font-tech">7800 <span class="text-[8px] text-gray-500">RPM</span></span>
+      </div>
+
+      <!-- VERTICAL PEDALS -->
+      <div class="flex justify-center gap-3 h-32 mt-1">
+        <!-- Clutch -->
+        <div class="flex flex-col items-center gap-1">
+          <div class="pedal-bg-v w-4 h-full">
+            <div id="clutch-bar" class="pedal-fill-v bg-pedal-clutch shadow-[0_0_10px_#3498db]" style="height: 0%;"></div>
+          </div>
+          <span class="text-[9px] font-bold text-pedal-clutch tracking-widest">CLU</span>
+        </div>
+
+        <!-- Brake -->
+        <div class="flex flex-col items-center gap-1">
+          <div class="pedal-bg-v w-5 h-full">
+            <div id="brake-bar" class="pedal-fill-v bg-pedal-brake shadow-[0_0_10px_#e74c3c]" style="height: 0%;"></div>
+          </div>
+          <span class="text-[9px] font-bold text-pedal-brake tracking-widest">BRK</span>
+        </div>
+
+        <!-- Throttle -->
+        <div class="flex flex-col items-center gap-1">
+          <div class="pedal-bg-v w-5 h-full">
+            <div id="throttle-bar" class="pedal-fill-v bg-pedal-throttle shadow-[0_0_10px_#2ecc71]" style="height: 80%;"></div>
+          </div>
+          <span class="text-[9px] font-bold text-pedal-throttle tracking-widest">THR</span>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+
+  <script>
+    // --- SIMULADOR DE TELEMETRÍA ---
+    let speed = 120;
+    let gear = 3;
+    let rpm = 4000;
+    const maxRpm = 9000;
+    let isBraking = false;
+    let shiftCooldown = 0;
+
+    function updateTelemetry() {
+      // Lógica muy básica de simulación de físicas
+      if (!isBraking) {
+        // Acelerando
+        rpm += Math.random() * 300 + 100;
+        speed += (rpm / 8000) * 2;
+        
+        // Embrague al cambiar de marcha
+        if (shiftCooldown > 0) {
+          shiftCooldown--;
+          document.getElementById('clutch-bar').style.height = '100%';
+        } else {
+          document.getElementById('clutch-bar').style.height = '0%';
+        }
+
+        // Cambio de marcha hacia arriba
+        if (rpm > 8500 && gear < 6) {
+          gear++;
+          rpm = 5500;
+          shiftCooldown = 3; // Simular pisada de embrague
+        } else if (rpm > maxRpm) {
+          rpm = maxRpm;
+        }
+
+        // Aleatorizar acelerador
+        let thr = 100;
+        if (shiftCooldown > 0) thr = 0; // Levantar pie al cambiar
+        else thr = Math.min(100, Math.max(80, 100 - Math.random() * 20));
+        
+        document.getElementById('throttle-bar').style.height = thr + '%';
+        document.getElementById('brake-bar').style.height = '0%';
+
+        // Decision de frenar
+        if (speed > 260 && Math.random() > 0.9) {
+          isBraking = true;
+        }
+      } else {
+        // Frenando
+        rpm -= Math.random() * 400 + 200;
+        speed -= 4;
+        
+        document.getElementById('clutch-bar').style.height = '0%'; // Sin embrague frenando (en GT3 no hace falta, o simulemos freno pie izquierdo)
+
+        // Cambio de marcha hacia abajo
+        if (rpm < 4500 && gear > 2) {
+          gear--;
+          rpm = 7500;
+        }
+
+        // Aleatorizar freno
+        const brk = Math.min(100, Math.max(40, 80 + Math.random() * 20));
+        document.getElementById('brake-bar').style.height = brk + '%';
+        document.getElementById('throttle-bar').style.height = '0%';
+
+        // Decision de acelerar
+        if (speed < 100 || (speed < 150 && Math.random() > 0.9)) {
+          isBraking = false;
+        }
+      }
+
+      // Actualizar UI de Textos
+      document.getElementById('speed-text').innerText = Math.round(speed);
+      document.getElementById('gear-text').innerText = gear;
+      document.getElementById('rpm-text').innerHTML = Math.round(rpm) + ' <span class="text-[8px] text-gray-500">RPM</span>';
+
+      // Actualizar Barra RPM Superior
+      const rpmPercent = Math.min(100, (rpm / maxRpm) * 100);
+      const rpmBar = document.getElementById('rpm-bar');
+      rpmBar.style.width = rpmPercent + '%';
+      
+      // Cambiar color de la barra RPM según rango
+      if (rpmPercent > 95) {
+        // Shift point
+        rpmBar.style.backgroundColor = '#ffffff';
+        rpmBar.style.boxShadow = '0 0 15px #ffffff';
+      } else if (rpmPercent > 85) {
+        rpmBar.style.backgroundColor = '#e74c3c'; // Red
+        rpmBar.style.boxShadow = '0 0 10px #e74c3c';
+      } else if (rpmPercent > 60) {
+        rpmBar.style.backgroundColor = '#f1c40f'; // Yellow
+        rpmBar.style.boxShadow = '0 0 10px #f1c40f';
+      } else {
+        rpmBar.style.backgroundColor = '#2ecc71'; // Green
+        rpmBar.style.boxShadow = '0 0 10px #2ecc71';
+      }
+    }
+
+    // Ejecutar simulación a 20 FPS (50ms)
+    setInterval(updateTelemetry, 50);
+  </script>
+</body>
+</html>
