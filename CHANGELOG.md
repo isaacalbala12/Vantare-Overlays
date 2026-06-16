@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.2.5-alpha.1 - 2026-06-16
+
+Scrollbars elegantes en el Hub.
+
+### Corregido
+
+- **Scrollbar estilo macOS/VS Code**: la barra de scroll ahora es fina (6 px), track transparente y thumb translúcido que se ilumina al pasar el cursor. Funciona en WebKit/Chromium y Firefox.
+- **Scrollbars ocultas en modo overlay**: `body:not(.hub)` no muestra scrollbar, preservando la transparencia del overlay.
+
+### Cambiado
+
+- Añadidas reglas CSS de scrollbar bajo `html.hub *` en `index.css`.
+- Versión de la app, `build/config.yml` e instalador NSIS actualizada a `0.2.5`.
+
 ## v0.2.4-alpha.1 - 2026-06-16
 
 Mejora del scroll global en todas las páginas del Hub.

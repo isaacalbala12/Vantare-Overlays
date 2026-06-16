@@ -118,6 +118,34 @@ body.hub.desktop-overlay #root {
 }
 
 
+/* Elegant scrollbar for the Hub only */
+html.hub * {
+	scrollbar-width: thin;
+	scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+html.hub ::-webkit-scrollbar {
+	width: 6px;
+	height: 6px;
+}
+
+html.hub ::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+html.hub ::-webkit-scrollbar-thumb {
+	background: rgba(255, 255, 255, 0.15);
+	border-radius: 9999px;
+}
+
+html.hub ::-webkit-scrollbar-thumb:hover {
+	background: rgba(255, 255, 255, 0.3);
+}
+
+html.hub ::-webkit-scrollbar-corner {
+	background: transparent;
+}
+
 /* Streaming hint: OBS Browser Source renders without body.hub, so force transparent everywhere */
 body:not(.hub) {
   background: transparent !important;
