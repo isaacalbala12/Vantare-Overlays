@@ -3,6 +3,7 @@ package app
 import (
 	"fmt"
 	"runtime"
+	"time"
 	"log"
 	"strings"
 	"sync"
@@ -184,7 +185,13 @@ func (m *HotkeyManager) Stop() {
 	m.stop.Store(true)
 	m.UnregisterAll()
 	procPostQuitMessage.Call(0)
-	<-m.done
+
+	// Wait for the message loop to finish, but never block shutdown.
+	select {
+	case <-m.done:
+	case <-time.After(2 * time.Second):
+		log.Printf("hotkey: message loop did not stop within 2s; continuing shutdown")
+	}
 }
 
 func (m *HotkeyManager) messageLoop() {

@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.2.3-alpha.1 - 2026-06-16
+
+Hotfix del cierre de la app.
+
+### Corregido
+
+- **Cierre bloqueado**: al pulsar la X de la ventana, la app a veces mostraba "Vantare no responde". El `HotkeyManager.Stop()` esperaba indefinidamente a que terminara el message loop de Windows. Ahora espera como máximo 2 segundos y continúa el cierre si el loop no responde.
+
+### Cambiado
+
+- Versión de la app, `build/config.yml` e instalador NSIS actualizada a `0.2.3`.
+
 ## v0.2.2-alpha.1 - 2026-06-16
 
 Hotfix de UX del editor y scroll.
