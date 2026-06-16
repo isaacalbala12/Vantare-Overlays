@@ -170,6 +170,13 @@ export function ProfilesPage(_props: ProfilesPageProps) {
               <div className="flex items-center gap-3">
                 <button
                   type="button"
+                  onClick={() => Events.Emit("overlay:edit:start", { id: p.id, file: p.file })}
+                  className="btn-secondary px-4 py-2 rounded-lg text-xs font-medium text-white whitespace-nowrap"
+                >
+                  Editar posición
+                </button>
+                <button
+                  type="button"
                   onClick={() => handleSelect(p)}
                   className="btn-secondary px-4 py-2 rounded-lg text-xs font-medium text-vantare-textMuted hover:text-white whitespace-nowrap"
                 >
