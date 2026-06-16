@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Events } from "@wailsio/runtime";
-import type { ProfileConfig, LayoutOrigin, DisplayMode } from "../../lib/profile";
+import type { ProfileConfig, LayoutOrigin, DisplayMode, WidgetConfig } from "../../lib/profile";
 import { PreviewCanvas } from "../preview/PreviewCanvas";
 import { PreviewInspector } from "../preview/PreviewInspector";
 import { WidgetList } from "../preview/WidgetList";
@@ -35,6 +35,8 @@ export function PreviewPage() {
   const [lastError, setLastError] = useState<string | null>(null);
   const [demoMode, setDemoMode] = useState(false);
   const [demoInPit, setDemoInPit] = useState(false);
+  const [history, setHistory] = useState<ProfileConfig[]>([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
   const [copiedUrl, setCopiedUrl] = useState(false);
 
   const selectedProfileRunning = selectedEntry
@@ -50,6 +52,8 @@ export function PreviewPage() {
     const unsub = Events.On("profile:loaded", (event: ProfileLoadedEvent) => {
       const loaded = event.data.profile;
       setProfile(loaded);
+      setHistory([loaded]);
+      setHistoryIndex(0);
       setSelectedWidgetId((current) => current ?? loaded.widgets[0]?.id ?? null);
       setDirty(false);
       setSaveState("idle");
@@ -126,6 +130,91 @@ export function PreviewPage() {
     return () => unsubDemo();
   }, [demoMode]);
 
+  // ---- Undo/Redo ----
+
+  function undo() {
+    if (historyIndex <= 0 || !history.length) return;
+    const nextIndex = historyIndex - 1;
+    setHistoryIndex(nextIndex);
+    setProfile(history[nextIndex]);
+    setDirty(true);
+  }
+
+  function redo() {
+    if (historyIndex >= history.length - 1) return;
+    const nextIndex = historyIndex + 1;
+    setHistoryIndex(nextIndex);
+    setProfile(history[nextIndex]);
+    setDirty(true);
+  }
+
+  // Keyboard shortcuts: Ctrl+Z / Ctrl+Y / Ctrl+S
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (!e.ctrlKey && !e.metaKey) return;
+      if (e.key === "z" && !e.shiftKey) {
+        e.preventDefault();
+        undo();
+      } else if (e.key === "y" || (e.key === "z" && e.shiftKey)) {
+        e.preventDefault();
+        redo();
+      } else if (e.key === "s") {
+        e.preventDefault();
+        saveProfile();
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [historyIndex, history, profile, dirty]);
+
+  // Auto-save after 800ms of inactivity when dirty
+  useEffect(() => {
+    if (!dirty) return;
+    const id = setTimeout(() => saveProfile(), 800);
+    return () => clearTimeout(id);
+  }, [profile, dirty]);
+
+  // ---- Widget handlers ----
+
+  function duplicateWidget(widget: WidgetConfig) {
+    if (!profile) return;
+    const copy: WidgetConfig = {
+      ...widget,
+      id: crypto.randomUUID(),
+      name: widget.name ? `${widget.name} copy` : `${widget.id} copy`,
+    };
+    updateDraft({ ...profile, widgets: [...profile.widgets, copy] });
+  }
+
+  function resetWidget(widget: WidgetConfig) {
+    if (!profile) return;
+    const reset = { ...widget, position: { ...widget.position, x: 0, y: 0 } };
+    updateDraft({
+      ...profile,
+      widgets: profile.widgets.map((w) => (w.id === reset.id ? reset : w)),
+    });
+  }
+
+  function deleteWidget(id: string) {
+    if (!profile) return;
+    updateDraft({ ...profile, widgets: profile.widgets.filter((w) => w.id !== id) });
+    if (selectedWidgetId === id) setSelectedWidgetId(null);
+  }
+
+  function addWidget(type: string) {
+    if (!profile) return;
+    const newWidget: WidgetConfig = {
+      id: crypto.randomUUID(),
+      type,
+      name: `Nuevo ${type}`,
+      enabled: true,
+      position: { x: 0, y: 0, w: 200, h: 100 },
+      updateHz: 60,
+    };
+    updateDraft({ ...profile, widgets: [...profile.widgets, newWidget] });
+    setSelectedWidgetId(newWidget.id);
+  }
+
   function activateProfile(entry: ProfileEntry) {
     if (overlayStatus?.running) return;
     setPendingProfileId(entry.id);
@@ -134,9 +223,14 @@ export function PreviewPage() {
     setDirty(false);
     Events.Emit("hub:activate", profileTarget(entry));
   }
-
   function updateDraft(nextProfile: ProfileConfig) {
     if (overlayRunning) return;
+    setHistory((prev) => {
+      const nextHistory = prev.slice(0, historyIndex + 1);
+      nextHistory.push(nextProfile);
+      return nextHistory;
+    });
+    setHistoryIndex((prev) => prev + 1);
     setProfile(nextProfile);
     setDirty(true);
     setSaveState("idle");
@@ -301,6 +395,7 @@ export function PreviewPage() {
             widgets={profile.widgets}
             selectedWidgetId={selectedWidgetId}
             onSelectWidget={setSelectedWidgetId}
+            onAddWidget={addWidget}
           />
           <PreviewCanvas
             profile={profile}
@@ -313,6 +408,9 @@ export function PreviewPage() {
             profile={profile}
             widget={selectedWidget}
             onChangeProfile={updateDraft}
+            onDuplicate={duplicateWidget}
+            onReset={resetWidget}
+            onDelete={deleteWidget}
             disabled={overlayRunning}
           />
         </div>

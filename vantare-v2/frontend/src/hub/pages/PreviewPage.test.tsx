@@ -184,3 +184,65 @@ describe("PreviewPage", () => {
     expect(screen.getByText("Error al guardar")).toBeTruthy();
   });
 });
+
+describe("undo / redo / auto-save", () => {
+  beforeEach(() => {
+    runtimeMock.handlers.clear();
+    runtimeMock.emit.mockClear();
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    cleanup();
+    vi.useRealTimers();
+  });
+
+  it("undoes last position change with Ctrl+Z", () => {
+    render(<PreviewPage />);
+    dispatch("profile:loaded", { profile });
+
+    const xInput = screen.getByLabelText("X") as HTMLInputElement;
+    expect(xInput.value).toBe("10");
+
+    fireEvent.change(xInput, { target: { value: "42" } });
+    expect(screen.getByText("Cambios sin guardar")).toBeTruthy();
+
+    // Ctrl+Z to undo
+    fireEvent.keyDown(window, { key: "z", ctrlKey: true });
+    expect(xInput.value).toBe("10");
+  });
+
+  it("redoes last undo with Ctrl+Y", () => {
+    render(<PreviewPage />);
+    dispatch("profile:loaded", { profile });
+
+    const xInput = screen.getByLabelText("X") as HTMLInputElement;
+    expect(xInput.value).toBe("10");
+
+    fireEvent.change(xInput, { target: { value: "42" } });
+    expect(xInput.value).toBe("42");
+
+    // Undo
+    fireEvent.keyDown(window, { key: "z", ctrlKey: true });
+    expect(xInput.value).toBe("10");
+
+    // Redo
+    fireEvent.keyDown(window, { key: "y", ctrlKey: true });
+    expect(xInput.value).toBe("42");
+  });
+
+  it("auto-saves after 800ms debounce", () => {
+    render(<PreviewPage />);
+    dispatch("profile:loaded", { profile });
+
+    fireEvent.change(screen.getByLabelText("X"), { target: { value: "42" } });
+
+    // Before debounce fires
+    expect(runtimeMock.emit).not.toHaveBeenCalledWith("layout:save", expect.anything());
+
+    // Advance past the 800ms debounce
+    vi.advanceTimersByTime(900);
+
+    expect(runtimeMock.emit).toHaveBeenCalledWith("layout:save", expect.anything());
+  });
+});
