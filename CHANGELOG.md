@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.2.1-alpha.1 - 2026-06-16
+
+Hotfix del updater e instalador.
+
+### Corregido
+
+- **Updater no reinstalaba correctamente**: el instalador descargado se guardaba en un directorio temporal que se eliminaba inmediatamente tras lanzar el proceso. Ahora se persiste en `{cfgDir}/update` hasta que el instalador termine.
+- **NSIS más robusto ante app en ejecución**: el instalador ahora verifica que `vantare.exe` se haya cerrado realmente (esperando hasta 5s + forzando cierre si es necesario) y comprueba que el archivo no esté bloqueado antes de reemplazarlo.
+- **Verificación de extracción del instalador**: el instalador verifica que `vantare.exe` se haya extraído y tenga un tamaño razonable antes de borrar el backup; si falla, restaura la versión anterior con un mensaje claro.
+
+### Cambiado
+
+- Versión de la app, `build/config.yml` e instalador NSIS actualizada a `0.2.1`.
+
 ## v0.2.0-alpha.1 - 2026-06-16
 
 Primera alpha completa para Le Mans Ultimate.

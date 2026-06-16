@@ -22,7 +22,7 @@ Unicode true
 !define INFO_PROJECTNAME    "vantare"
 !define INFO_COMPANYNAME    "Vantare"
 !define INFO_PRODUCTNAME    "Vantare Overlays"
-!define INFO_PRODUCTVERSION "0.2.0"
+!define INFO_PRODUCTVERSION "0.2.1"
 !define INFO_COPYRIGHT      "© 2026 Vantare"
 !define PRODUCT_EXECUTABLE  "vantare.exe"
 ###
@@ -86,68 +86,126 @@ Function .onInit
 FunctionEnd
 
 Function CloseVantareGracefully
-    DetailPrint "Cerrando Vantare..."
-    # First try a graceful WM_CLOSE (no /F). Wait 3 seconds for the app to close.
-    nsExec::Exec 'taskkill /IM vantare.exe'
-    Sleep 3000
-    # If it is still running, force kill.
-    nsExec::Exec 'taskkill /F /IM vantare.exe'
+	DetailPrint "Cerrando Vantare..."
+	# First try a graceful WM_CLOSE (no /F). Wait up to 5 seconds for the app to close.
+	nsExec::Exec 'taskkill /IM vantare.exe'
+	StrCpy $0 0
+	close_loop:
+		Sleep 1000
+		IntOp $0 $0 + 1
+		# Attempt to open the executable exclusively; if locked, the app is still running.
+		FileOpen $1 "$INSTDIR\${PRODUCT_EXECUTABLE}" a
+		IfErrors 0 close_done
+		IntCmp $0 5 close_force 0
+		Goto close_loop
+	close_force:
+		DetailPrint "Forzando cierre de Vantare..."
+		nsExec::Exec 'taskkill /F /IM vantare.exe'
+		Sleep 2000
+		Goto close_done
+	close_done:
+		# Close the test handle if we managed to open it.
+		IfErrors 0 close_close_handle
+		Goto close_return
+	close_close_handle:
+		FileClose $1
+	close_return:
+		DetailPrint "Vantare cerrado."
 FunctionEnd
 
 Function RestoreBackupIfNeeded
-    IfFileExists "$INSTDIR\${PRODUCT_EXECUTABLE}.bak" 0 restore_done
-    DetailPrint "Restaurando copia de seguridad..."
-    Delete "$INSTDIR\${PRODUCT_EXECUTABLE}"
-    Rename "$INSTDIR\${PRODUCT_EXECUTABLE}.bak" "$INSTDIR\${PRODUCT_EXECUTABLE}"
-    restore_done:
+	IfFileExists "$INSTDIR\${PRODUCT_EXECUTABLE}.bak" 0 restore_done
+	DetailPrint "Restaurando copia de seguridad..."
+	Delete "$INSTDIR\${PRODUCT_EXECUTABLE}"
+	Rename "$INSTDIR\${PRODUCT_EXECUTABLE}.bak" "$INSTDIR\${PRODUCT_EXECUTABLE}"
+	restore_done:
 FunctionEnd
 
+Function WaitWhileFileLocked
+	# Wait up to 10 seconds for vantare.exe to become writable.
+	StrCpy $0 0
+	lock_loop:
+		ClearErrors
+		FileOpen $1 "$INSTDIR\${PRODUCT_EXECUTABLE}" a
+		IfErrors 0 lock_opened
+		Sleep 1000
+		IntOp $0 $0 + 1
+		IntCmp $0 10 lock_timeout 0
+		Goto lock_loop
+	lock_timeout:
+		DetailPrint "No se pudo acceder a vantare.exe; otro proceso lo mantiene bloqueado."
+		Abort "La instalacion fallo porque vantare.exe esta en uso. Cierra la aplicacion e intentalo de nuevo."
+	lock_opened:
+		FileClose $1
+		Return
+FunctionEnd
+
+
 Section
-    !insertmacro wails.setShellContext
+	!insertmacro wails.setShellContext
 
-    Call CloseVantareGracefully
+	Call CloseVantareGracefully
 
-    !insertmacro wails.webview2runtime
+	!insertmacro wails.webview2runtime
 
-    SetOutPath $INSTDIR
+	SetOutPath $INSTDIR
 
-    # Backup existing executable for rollback if something goes wrong
-    IfFileExists "$INSTDIR\${PRODUCT_EXECUTABLE}" 0 install_files
-    DetailPrint "Creando copia de seguridad del ejecutable actual..."
-    Delete "$INSTDIR\${PRODUCT_EXECUTABLE}.bak"
-    Rename "$INSTDIR\${PRODUCT_EXECUTABLE}" "$INSTDIR\${PRODUCT_EXECUTABLE}.bak"
+	# If a previous executable exists, wait until it is not locked, then back it up.
+	IfFileExists "$INSTDIR\${PRODUCT_EXECUTABLE}" 0 install_files
+	Call WaitWhileFileLocked
+	DetailPrint "Creando copia de seguridad del ejecutable actual..."
+	Delete "$INSTDIR\${PRODUCT_EXECUTABLE}.bak"
+	Rename "$INSTDIR\${PRODUCT_EXECUTABLE}" "$INSTDIR\${PRODUCT_EXECUTABLE}.bak"
 
-    install_files:
-    !insertmacro wails.files
+	install_files:
+	!insertmacro wails.files
 
-    IfErrors 0 install_success
-    Call RestoreBackupIfNeeded
-    Abort "La instalacion fallo. Se ha restaurado la version anterior."
+	IfErrors 0 install_verify
+	DetailPrint "Error al extraer los archivos del instalador."
+	Call RestoreBackupIfNeeded
+	Abort "La instalacion fallo al extraer archivos. Se ha restaurado la version anterior."
 
-    install_success:
-    Delete "$INSTDIR\${PRODUCT_EXECUTABLE}.bak"
+	install_verify:
+	# Verify that the new executable was actually extracted and is not empty.
+	IfFileExists "$INSTDIR\${PRODUCT_EXECUTABLE}" 0 restore_and_abort
+	ClearErrors
+	FileOpen $0 "$INSTDIR\${PRODUCT_EXECUTABLE}" r
+	IfErrors 0 file_opened
+	Goto restore_and_abort
+	file_opened:
+		FileSeek $0 0 END $1
+		FileClose $0
+		IntCmp $1 1024 restore_and_abort 0
+		Goto install_success
 
-    CreateShortcut "$SMPROGRAMS\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\${PRODUCT_EXECUTABLE}"
-    CreateShortCut "$DESKTOP\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\${PRODUCT_EXECUTABLE}"
+	restore_and_abort:
+		DetailPrint "vantare.exe no se extrajo correctamente."
+		Call RestoreBackupIfNeeded
+		Abort "La instalacion fallo porque no se pudo copiar el nuevo ejecutable. Se ha restaurado la version anterior."
 
-    !insertmacro wails.associateFiles
-    !insertmacro wails.associateCustomProtocols
+	install_success:
+	Delete "$INSTDIR\${PRODUCT_EXECUTABLE}.bak"
 
-    !insertmacro wails.writeUninstaller
+	CreateShortcut "$SMPROGRAMS\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\${PRODUCT_EXECUTABLE}"
+	CreateShortCut "$DESKTOP\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\${PRODUCT_EXECUTABLE}"
+
+	!insertmacro wails.associateFiles
+	!insertmacro wails.associateCustomProtocols
+
+	!insertmacro wails.writeUninstaller
 SectionEnd
+Section "uninstall"
+	!insertmacro wails.setShellContext
 
-Section "uninstall" 
-    !insertmacro wails.setShellContext
+	RMDir /r "$AppData\${PRODUCT_EXECUTABLE}" # Remove the WebView2 DataPath
 
-    RMDir /r "$AppData\${PRODUCT_EXECUTABLE}" # Remove the WebView2 DataPath
+	RMDir /r $INSTDIR
 
-    RMDir /r $INSTDIR
+	Delete "$SMPROGRAMS\${INFO_PRODUCTNAME}.lnk"
+	Delete "$DESKTOP\${INFO_PRODUCTNAME}.lnk"
 
-    Delete "$SMPROGRAMS\${INFO_PRODUCTNAME}.lnk"
-    Delete "$DESKTOP\${INFO_PRODUCTNAME}.lnk"
+	!insertmacro wails.unassociateFiles
+	!insertmacro wails.unassociateCustomProtocols
 
-    !insertmacro wails.unassociateFiles
-    !insertmacro wails.unassociateCustomProtocols
-
-    !insertmacro wails.deleteUninstaller
+	!insertmacro wails.deleteUninstaller
 SectionEnd

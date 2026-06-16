@@ -35,6 +35,12 @@ func New(currentVersion, settingsPath string) *Updater {
 // CurrentVersion returns the running version.
 func (u *Updater) CurrentVersion() string { return u.currentVersion }
 
+// updateDir returns a persistent directory where the installer is stored.
+func (u *Updater) updateDir() (string, error) {
+	cfgDir := filepath.Dir(u.settingsPath)
+	return filepath.Join(cfgDir, "update"), nil
+}
+
 // SettingsPath returns the path where updater settings are stored.
 func (u *Updater) SettingsPath() string { return u.settingsPath }
 
@@ -108,13 +114,19 @@ func (u *Updater) Install(tag, downloadURL string, progress func(percent int)) e
 	if tag == "" || downloadURL == "" {
 		return fmt.Errorf("tag and downloadURL are required")
 	}
-	tmpDir, err := os.MkdirTemp("", "vantare-update-*")
-	if err != nil {
-		return err
-	}
-	defer os.RemoveAll(tmpDir)
 
-	installerPath := filepath.Join(tmpDir, "vantare-installer.exe")
+	updateDir, err := u.updateDir()
+	if err != nil {
+		return fmt.Errorf("update directory: %w", err)
+	}
+	if err := os.RemoveAll(updateDir); err != nil {
+		return fmt.Errorf("cleanup update dir: %w", err)
+	}
+	if err := os.MkdirAll(updateDir, 0755); err != nil {
+		return fmt.Errorf("create update dir: %w", err)
+	}
+
+	installerPath := filepath.Join(updateDir, "vantare-installer.exe")
 	if progress != nil {
 		progress(0)
 	}
@@ -136,13 +148,20 @@ func (u *Updater) InstallVerified(release Release, progress func(percent int)) e
 	if installer == nil {
 		return fmt.Errorf("release %s has no installer asset", release.TagName)
 	}
-	tmpDir, err := os.MkdirTemp("", "vantare-update-*")
-	if err != nil {
-		return err
-	}
-	defer os.RemoveAll(tmpDir)
 
-	installerPath := filepath.Join(tmpDir, "vantare-installer.exe")
+	// Persist installer in a known location so it is not deleted while running.
+	updateDir, err := u.updateDir()
+	if err != nil {
+		return fmt.Errorf("update directory: %w", err)
+	}
+	if err := os.RemoveAll(updateDir); err != nil {
+		return fmt.Errorf("cleanup update dir: %w", err)
+	}
+	if err := os.MkdirAll(updateDir, 0755); err != nil {
+		return fmt.Errorf("create update dir: %w", err)
+	}
+
+	installerPath := filepath.Join(updateDir, "vantare-installer.exe")
 	if progress != nil {
 		progress(0)
 	}
@@ -160,6 +179,8 @@ func (u *Updater) InstallVerified(release Release, progress func(percent int)) e
 	if err := cmd.Start(); err != nil {
 		return fmt.Errorf("failed to start installer: %w", err)
 	}
+	// Do NOT wait or remove the installer here. The installer is self-contained
+	// and will replace the current executable then relaunch the app.
 	return nil
 }
 
