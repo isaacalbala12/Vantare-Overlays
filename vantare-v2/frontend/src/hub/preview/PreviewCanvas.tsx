@@ -106,6 +106,10 @@ export function PreviewCanvas({ profile, selectedWidgetId, onSelectWidget, onCha
   function onMouseUp() {
     setDragState(null);
   }
+  function handleChangePosition(widgetId: string, position: Rect) {
+    onChangeProfile(updateWidgetPosition(profile, widgetId, position));
+  }
+
 
   function onKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
     if (disabled) return;
@@ -165,14 +169,16 @@ export function PreviewCanvas({ profile, selectedWidgetId, onSelectWidget, onCha
             }}
           />
           {profile.widgets.map((widget) => (
-            <PreviewWidgetFrame
-              key={widget.id}
-              widget={widget}
-              selected={widget.id === selectedWidgetId}
-              onSelect={onSelectWidget}
-              onDragStart={onMouseDown}
-              disabled={disabled}
-            />
+          <PreviewWidgetFrame
+            key={widget.id}
+            widget={widget}
+            selected={widget.id === selectedWidgetId}
+            onSelect={onSelectWidget}
+            onDragStart={onMouseDown}
+            onChangePosition={handleChangePosition}
+            scale={scale}
+            disabled={disabled}
+          />
           ))}
         </div>
       </div>
