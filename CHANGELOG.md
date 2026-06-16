@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.2.11-alpha.1 - 2026-06-16
+
+Backend save wiring: persist profiles, widget toggles, and overlay edit positions to disk.
+
+### Incluido
+
+- **ProfileService.SaveProfile**: nuevo método que persiste un perfil completo a disco y emite `profile:loaded` y `hub:profile` para mantener sincronizados Hub y overlay.
+- **HubService.SaveProfile y SetWidgetEnabled**: helpers del Hub que delegan en `ProfileService.SaveProfile`, con clonado defensivo del perfil para evitar mutaciones del puntero compartido.
+- **HubService.StartEditOverlay**: abre el overlay de escritorio en modo edición (`DisplayMode = ModeEdit`) para el perfil activo.
+- **Eventos IPC cableados**: `profile:save` (guardar perfil completo desde WidgetsPage), `profile:widget:update` (toggle individual desde ProfilesPage), `overlay:edit:start` (abrir overlay en edición) y `hub:profile:get` (solicitar perfil activo). Manejo defensivo de payloads via `eventPayload`.
+
+### Cambiado
+
+- Versión de la app, `build/config.yml` e instalador NSIS actualizada a `0.2.11`.
+
 ## v0.2.10-alpha.1 - 2026-06-16
 
 Overlay edit mode: drag/resize widgets in the desktop overlay window.
