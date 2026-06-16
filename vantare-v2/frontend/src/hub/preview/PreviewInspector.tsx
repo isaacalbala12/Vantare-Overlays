@@ -240,30 +240,36 @@ export function PreviewInspector({ profile, widget, onChangeProfile, onDuplicate
 
       {/* Action buttons */}
       <div className="mt-5 flex flex-col gap-2 border-t border-white/5 pt-4">
-        <button
-          type="button"
-          disabled={disabled}
-          onClick={() => onDuplicate?.(widget)}
-          className="rounded-lg border border-white/10 bg-black/25 px-3 py-1.5 text-xs text-white hover:border-white/20 disabled:opacity-40"
-        >
-          Duplicar
-        </button>
-        <button
-          type="button"
-          disabled={disabled}
-          onClick={() => onReset?.(widget)}
-          className="rounded-lg border border-white/10 bg-black/25 px-3 py-1.5 text-xs text-white hover:border-white/20 disabled:opacity-40"
-        >
-          Reset posicion
-        </button>
-        <button
-          type="button"
-          disabled={disabled}
-          onClick={() => { if (window.confirm("¿Eliminar este widget?")) onDelete?.(widget.id); }}
-          className="rounded-lg border border-vantare-red-500/30 bg-vantare-red-950/20 px-3 py-1.5 text-xs text-vantare-red-400 hover:bg-vantare-red-950/40 disabled:opacity-40"
-        >
-          Eliminar
-        </button>
+        {onDuplicate && (
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={() => onDuplicate(widget)}
+            className="rounded-lg border border-white/10 bg-black/25 px-3 py-1.5 text-xs text-white hover:border-white/20 disabled:opacity-40"
+          >
+            Duplicar
+          </button>
+        )}
+        {onReset && (
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={() => onReset(widget)}
+            className="rounded-lg border border-white/10 bg-black/25 px-3 py-1.5 text-xs text-white hover:border-white/20 disabled:opacity-40"
+          >
+            Reset posicion
+          </button>
+        )}
+        {onDelete && (
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={() => { if (window.confirm("¿Eliminar este widget?")) onDelete(widget.id); }}
+            className="rounded-lg border border-vantare-red-500/30 bg-vantare-red-950/20 px-3 py-1.5 text-xs text-vantare-red-400 hover:bg-vantare-red-950/40 disabled:opacity-40"
+          >
+            Eliminar
+          </button>
+        )}
       </div>
     </aside>
   );
