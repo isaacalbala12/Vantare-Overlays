@@ -2,6 +2,10 @@ package app
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
+	"sort"
+	"strings"
 
 	"github.com/vantare/overlays/v2/internal/window"
 	"github.com/vantare/overlays/v2/pkg/config"
@@ -9,10 +13,11 @@ import (
 
 // ProfileService exposes profile management to the Wails frontend.
 type ProfileService struct {
-	path    string
-	profile *config.ProfileConfig
-	mgr     *window.Manager
-	emitter EventEmitter // for profile:loaded, layout:saved events
+	path        string
+	profile     *config.ProfileConfig
+	mgr         *window.Manager
+	emitter     EventEmitter // for profile:loaded, layout:saved events
+	profilesDir string      // directory to scan for cycling; empty means cycling disabled
 }
 
 // NewProfileService creates a profile service bound to the given JSON file.
@@ -22,6 +27,11 @@ func NewProfileService(path string, mgr *window.Manager, emitter EventEmitter) *
 		mgr:     mgr,
 		emitter: emitter,
 	}
+}
+
+// SetProfilesDir sets the directory used to discover profiles for cycling.
+func (s *ProfileService) SetProfilesDir(dir string) {
+	s.profilesDir = dir
 }
 
 // Load reads the profile from disk and stores it in memory.
@@ -121,4 +131,69 @@ func (s *ProfileService) ApplyToWindow(skipRefresh bool) {
 	if s.profile != nil && s.mgr != nil {
 		s.mgr.ApplyProfile(s.profile, skipRefresh)
 	}
+}
+
+// listProfileFiles returns sorted profile JSON file paths from profilesDir.
+func (s *ProfileService) listProfileFiles() []string {
+	if s.profilesDir == "" {
+		return nil
+	}
+	entries, err := os.ReadDir(s.profilesDir)
+	if err != nil {
+		return nil
+	}
+	var files []string
+	for _, e := range entries {
+		if !e.IsDir() && strings.HasSuffix(e.Name(), ".json") && !strings.Contains(e.Name(), "app-settings") {
+			files = append(files, filepath.Join(s.profilesDir, e.Name()))
+		}
+	}
+	sort.Strings(files)
+	return files
+}
+
+// NextProfile loads the next profile (alphabetically) and emits profile:loaded.
+func (s *ProfileService) NextProfile() error {
+	return s.cycleProfile(1)
+}
+
+// PreviousProfile loads the previous profile (alphabetically) and emits profile:loaded.
+func (s *ProfileService) PreviousProfile() error {
+	return s.cycleProfile(-1)
+}
+
+func (s *ProfileService) cycleProfile(direction int) error {
+	files := s.listProfileFiles()
+	if len(files) == 0 {
+		return fmt.Errorf("no profiles available")
+	}
+
+	// Find current index based on active path
+	currentIdx := -1
+	for i, f := range files {
+		// Match by resolved path or filename
+		if f == s.path || filepath.Base(f) == filepath.Base(s.path) {
+			currentIdx = i
+			break
+		}
+	}
+
+	if currentIdx < 0 {
+		// Current profile not in list; start at beginning or end
+		if direction > 0 {
+			currentIdx = 0
+		} else {
+			currentIdx = len(files) - 1
+		}
+	} else {
+		currentIdx = (currentIdx + direction + len(files)) % len(files)
+	}
+
+	target := files[currentIdx]
+	if err := s.LoadActiveProfile(target); err != nil {
+		return fmt.Errorf("loading profile %s: %w", target, err)
+	}
+
+	s.EmitLoaded()
+	return nil
 }
