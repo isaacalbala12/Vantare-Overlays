@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import React from "react";
 import type { Rect, WidgetConfig } from "../../lib/profile";
 import { getWidgetStyle } from "../../lib/profile";
 import { DeltaWidget } from "../../overlay/widgets/DeltaWidget";
@@ -9,7 +9,6 @@ import { TelemetryVerticalWidget } from "../../overlay/widgets/TelemetryVertical
 import { PedalsWidget } from "../../overlay/widgets/PedalsWidget";
 import type { ComponentType } from "react";
 import type { WidgetTelemetryMode } from "../../overlay/widgets/use-widget-telemetry";
-import { clampSize, resizeWithRatio } from "../../lib/canvas-math";
 
 type WidgetProps = {
   editMode: boolean;
@@ -32,51 +31,30 @@ type PreviewWidgetFrameProps = {
   selected: boolean;
   onSelect: (id: string) => void;
   onDragStart?: (event: React.MouseEvent, widgetId: string) => void;
-  onChangePosition?: (widgetId: string, position: Rect) => void;
-  scale?: number;
+  onResizeStart?: (event: React.MouseEvent, widgetId: string, startRect: Rect) => void;
   disabled?: boolean;
+  previewPosition?: Rect;
 };
 
-export function PreviewWidgetFrame({ widget, selected, onSelect, onDragStart, onChangePosition, scale = 0.5, disabled = false }: PreviewWidgetFrameProps) {
+export const PreviewWidgetFrame = React.memo(function PreviewWidgetFrame({
+  widget,
+  selected,
+  onSelect,
+  onDragStart,
+  onResizeStart,
+  disabled = false,
+  previewPosition,
+}: PreviewWidgetFrameProps) {
   const style = getWidgetStyle(widget);
   const Component = WIDGETS[widget.type];
-  const onChangePositionRef = useRef(onChangePosition);
-  onChangePositionRef.current = onChangePosition;
+
+  const position = previewPosition ?? widget.position;
 
   function handleResizeMouseDown(e: React.MouseEvent) {
     if (disabled) return;
     e.stopPropagation();
     e.preventDefault();
-
-    const startMouseX = e.clientX;
-    const startMouseY = e.clientY;
-    const startW = widget.position.w;
-    const startH = widget.position.h;
-    const startX = widget.position.x;
-    const startY = widget.position.y;
-    const widgetType = widget.type;
-    const widgetId = widget.id;
-
-    function onMouseMove(ev: MouseEvent) {
-      const deltaX = (ev.clientX - startMouseX) / scale;
-      const deltaY = (ev.clientY - startMouseY) / scale;
-      const { w, h } = resizeWithRatio(widgetType, startW, startH, deltaX, deltaY);
-      const clamped = clampSize(w, h, startX, startY);
-      onChangePositionRef.current?.(widgetId, {
-        x: clamped.x,
-        y: clamped.y,
-        w: clamped.w,
-        h: clamped.h,
-      });
-    }
-
-    function onMouseUp() {
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
-    }
-
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onMouseUp);
+    onResizeStart?.(e, widget.id, widget.position);
   }
 
   return (
@@ -92,10 +70,10 @@ export function PreviewWidgetFrame({ widget, selected, onSelect, onDragStart, on
         disabled ? "pointer-events-none" : ""
       }`}
       style={{
-        left: widget.position.x,
-        top: widget.position.y,
-        width: widget.position.w,
-        height: widget.position.h,
+        left: position.x,
+        top: position.y,
+        width: position.w,
+        height: position.h,
       }}
     >
       {Component ? (
@@ -122,4 +100,4 @@ export function PreviewWidgetFrame({ widget, selected, onSelect, onDragStart, on
       )}
     </div>
   );
-}
+});

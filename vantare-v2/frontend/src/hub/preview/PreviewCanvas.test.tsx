@@ -82,6 +82,7 @@ describe("snap and clamp behavior", () => {
     // Drag to viewport position (8, 12) which maps to logical (16, 24)
     const viewport = screen.getByTestId("preview-viewport");
     fireEvent.mouseMove(viewport, { clientX: 8, clientY: 12 });
+    fireEvent.mouseUp(viewport);
 
     // The final snapped position should be 16, 24
     expect(onChangeProfile).toHaveBeenCalled();
@@ -121,11 +122,45 @@ describe("snap and clamp behavior", () => {
     // At scale 0.5: viewport threshold = 1820 * 0.5 = 910, 980 * 0.5 = 490
     const viewport = screen.getByTestId("preview-viewport");
     fireEvent.mouseMove(viewport, { clientX: 920, clientY: 500 });
+    fireEvent.mouseUp(viewport);
 
     expect(onChangeProfile).toHaveBeenCalled();
     const lastCall = onChangeProfile.mock.lastCall?.[0];
     const moved = lastCall?.widgets?.find((w: { id: string }) => w.id === "clamp");
     expect(moved?.position?.x).toBe(1820);
     expect(moved?.position?.y).toBe(980);
+  });
+
+  it("commits resize on mouseup", () => {
+    const onChangeProfile = vi.fn();
+    const resizeProfile: ProfileConfig = {
+      id: "resize-test",
+      name: "Resize Test",
+      displayMode: "racing",
+      monitorIndex: 0,
+      widgets: [
+        { id: "resize", type: "standings", enabled: true, position: { x: 0, y: 0, w: 400, h: 200 }, props: {} },
+      ],
+    };
+
+    render(
+      <PreviewCanvas
+        profile={resizeProfile}
+        selectedWidgetId="resize"
+        onSelectWidget={() => {}}
+        onChangeProfile={onChangeProfile}
+      />,
+    );
+
+    const handle = screen.getByTestId("resize-handle-resize");
+    fireEvent.mouseDown(handle, { clientX: 200, clientY: 100 });
+    fireEvent.mouseMove(window, { clientX: 240, clientY: 130 });
+    fireEvent.mouseUp(window);
+
+    expect(onChangeProfile).toHaveBeenCalled();
+    const lastCall = onChangeProfile.mock.lastCall?.[0];
+    const resized = lastCall?.widgets?.find((w: { id: string }) => w.id === "resize");
+    expect(resized?.position?.w).toBeGreaterThan(400);
+    expect(resized?.position?.h).toBeGreaterThan(200);
   });
 });

@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.2.7-alpha.1 - 2026-06-16
+
+Arreglo definitivo del drag y resize en Preview Workbench.
+
+### Corregido
+
+- **Estela al arrastrar widgets**: el drag y resize ahora usan estado local en `PreviewCanvas` y solo commitean el perfil al soltar el ratón. Esto elimina el lag visual y la estela dejada por los widgets.
+- **Resize brusco / widget se encoge de golpe**: `PreviewWidgetFrame` ya no gestiona su propio `mousemove`; ahora informa a `PreviewCanvas` del inicio del resize, que calcula el delta contra el rectángulo original. Se añadió un threshold de 1 px lógico para ignorar micro-movimientos accidentales.
+- **Re-renders innecesarios**: `PreviewWidgetFrame` ahora usa `React.memo` y recibe una `previewPosition` opcional; durante el drag/resize solo el widget afectado se repinta, no toda la escena.
+- **Tests actualizados**: `PreviewCanvas.test.tsx` ahora espera el commit en `mouseup` y tiene un nuevo test de resize.
+
+### Cambiado
+
+- Refactor completo de `PreviewCanvas` y `PreviewWidgetFrame`.
+- Versión de la app, `build/config.yml` e instalador NSIS actualizada a `0.2.7`.
+
 ## v0.2.6-alpha.1 - 2026-06-16
 
 Scrollbar auto-hide en el Hub.
