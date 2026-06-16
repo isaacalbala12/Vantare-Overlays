@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { Events } from "@wailsio/runtime";
-import type { ProfileConfig, WidgetConfig } from "../../lib/profile";
+import type { ProfileConfig } from "../../lib/profile";
 import { WidgetPreview } from "../preview/WidgetPreview";
 import { PreviewInspector } from "../preview/PreviewInspector";
 

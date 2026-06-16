@@ -11,7 +11,6 @@ type NavItem = { label: string; id: string; active?: boolean };
 const NAV_ITEMS: NavItem[] = [
   { label: 'Hub', id: 'dashboard', active: true },
   { label: 'Perfiles', id: 'profiles' },
-  { label: 'Overlays', id: 'preview' },
   { label: 'Widgets', id: 'widgets' },
   { label: 'Telemetría', id: 'telemetry' },
   { label: 'Setup', id: 'setup' },
@@ -93,14 +92,7 @@ export function Topbar({ activeSection, onNavigate, version }: TopbarProps) {
                 onClick={handleNav(item.id)}
                 className={`nav-item ${activeSection === item.id ? 'active text-vantare-text' : ''}`}
               >
-                {item.id === 'live' ? (
-                  <span className="flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-vantare-red-500 live-indicator" />
-                    En Directo
-                  </span>
-                ) : (
-                  item.label
-                )}
+                {item.label}
               </a>
             ))}
           </div>

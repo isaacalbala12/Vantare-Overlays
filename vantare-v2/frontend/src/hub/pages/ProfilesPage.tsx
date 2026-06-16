@@ -3,11 +3,9 @@ import { Events } from "@wailsio/runtime";
 import { profileLabel, type ProfileEntry } from "../state/overlay-workbench";
 import type { ProfileConfig } from "../../lib/profile";
 
-type ProfilesPageProps = {
-  onOpenPreview?: () => void;
-};
+type ProfilesPageProps = Record<string, never>;
 
-export function ProfilesPage({ onOpenPreview }: ProfilesPageProps) {
+export function ProfilesPage(_props: ProfilesPageProps) {
   const [profiles, setProfiles] = useState<ProfileEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -93,11 +91,6 @@ export function ProfilesPage({ onOpenPreview }: ProfilesPageProps) {
     Events.Emit("overlay:start", { id: profile.id, file: profile.file });
   }, []);
 
-  const handlePreview = useCallback((profile: ProfileEntry) => {
-    setError(null);
-    Events.Emit("hub:activate", { id: profile.id, file: profile.file });
-    onOpenPreview?.();
-  }, [onOpenPreview]);
   const handleToggleWidget = useCallback((widgetId: string, enabled: boolean) => {
     setActiveProfile((prev) => {
       if (!prev) return prev;
@@ -116,7 +109,7 @@ export function ProfilesPage({ onOpenPreview }: ProfilesPageProps) {
           <div>
             <h1 className="font-display font-bold text-3xl text-white mb-2">Overlays</h1>
             <p className="text-vantare-textMuted text-sm">
-              Gestiona tus perfiles. Usa <strong className="text-vantare-text">Preview</strong> para editar posiciones y colores, o <strong className="text-vantare-text">Abrir overlay</strong> para lanzarlo en escritorio.
+              Gestiona tus perfiles. Usa <strong className="text-vantare-text">Abrir overlay</strong> para lanzarlo en escritorio.
             </p>
           </div>
         </div>
@@ -175,13 +168,6 @@ export function ProfilesPage({ onOpenPreview }: ProfilesPageProps) {
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => handlePreview(p)}
-                  className="btn-primary px-5 py-2 rounded-lg text-xs font-bold text-white whitespace-nowrap"
-                >
-                  Preview
-                </button>
                 <button
                   type="button"
                   onClick={() => handleSelect(p)}
