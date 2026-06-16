@@ -118,21 +118,19 @@ body.hub.desktop-overlay #root {
 }
 
 
-/* Auto-hide scrollbar for the Hub main scroll area */
+/* Stable, thin scrollbar for the Hub main scroll area.
+   The scrollbar is always present in the layout (overlay) so the main width
+   never changes when it appears/disappears. This prevents ResizeObserver loops. */
 .scrollable-main {
 	overflow-y: auto;
-	scrollbar-width: none;
-}
-
-.scrollable-active {
 	scrollbar-width: thin;
-	scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+	scrollbar-gutter: stable;
+	scrollbar-color: rgba(255, 255, 255, 0.08) transparent;
 }
 
 .scrollable-main::-webkit-scrollbar {
 	width: 4px;
 	height: 4px;
-	background: transparent;
 }
 
 .scrollable-main::-webkit-scrollbar-track {
@@ -140,30 +138,21 @@ body.hub.desktop-overlay #root {
 }
 
 .scrollable-main::-webkit-scrollbar-thumb {
-	background: transparent;
+	background: rgba(255, 255, 255, 0.08);
 	border-radius: 9999px;
 }
 
-.scrollable-active::-webkit-scrollbar-thumb {
-	background: rgba(255, 255, 255, 0.12);
-}
-
-.scrollable-active::-webkit-scrollbar-thumb:hover {
-	background: rgba(255, 255, 255, 0.25);
+.scrollable-main::-webkit-scrollbar-thumb:hover {
+	background: rgba(255, 255, 255, 0.18);
 }
 
 .scrollable-main::-webkit-scrollbar-corner {
 	background: transparent;
 }
 
-/* Firefox: only show thin scrollbar while actively scrolling */
-@supports (scrollbar-width: none) {
-	.scrollable-main {
-		scrollbar-width: none;
-	}
-	.scrollable-active {
-		scrollbar-width: thin;
-	}
+/* Remove scrollable-main active state; no longer needed. */
+.scrollable-active {
+	/* keep class for backwards compatibility but properties are now default */
 }
 
 /* Streaming hint: OBS Browser Source renders without body.hub, so force transparent everywhere */

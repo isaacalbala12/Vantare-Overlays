@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.2.9-alpha.1 - 2026-06-16
+
+Hotfix de vibración de la app.
+
+### Corregido
+
+- **App que vibra / salta**: el auto-hide de scrollbar hacía que el ancho del `main` cambiara al aparecer/desaparecer la barra. Eso disparaba el `ResizeObserver` del canvas de preview, reescalaba toda la escena y entraba en un bucle de vibración. Se ha cambiado a una scrollbar estable (`scrollbar-gutter: stable`) siempre presente, fina y muy translúcida.
+- **`ScrollableMain` simplificado**: ya no alterna clases de estado; solo aplica la clase base que estiliza la scrollbar.
+
+### Cambiado
+
+- CSS de scrollbar en `index.css` usa `scrollbar-gutter: stable` y color fijo.
+- `ScrollableMain.tsx` elimina estado y timers.
+- Versión de la app, `build/config.yml` e instalador NSIS actualizada a `0.2.9`.
+
 ## v0.2.8-alpha.1 - 2026-06-16
 
 Reescritura del drag y resize del Preview Workbench.
