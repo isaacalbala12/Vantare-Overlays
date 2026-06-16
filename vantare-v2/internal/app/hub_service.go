@@ -175,6 +175,20 @@ func (s *HubService) StopOverlay() OverlayStatus {
 	return status
 }
 
+// StartEditOverlay opens the desktop overlay in edit mode for the active profile.
+func (s *HubService) StartEditOverlay(idOrFile string) (OverlayStatus, error) {
+	if err := s.ActivateProfile(idOrFile); err != nil {
+		return OverlayStatus{}, err
+	}
+	profile := s.profileSvc.GetProfile()
+	if profile == nil {
+		return OverlayStatus{}, fmt.Errorf("no active profile")
+	}
+	editProfile := *profile
+	editProfile.DisplayMode = config.ModeEdit
+	return s.overlay.Start(&editProfile)
+}
+
 // SaveProfile persists the provided profile to disk via the profile service.
 func (s *HubService) SaveProfile(profile *config.ProfileConfig) error {
 	return s.profileSvc.SaveProfile(profile)
