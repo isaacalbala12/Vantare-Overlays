@@ -829,9 +829,22 @@ func eventPayload(event *application.CustomEvent) (map[string]any, bool) {
 	if event == nil {
 		return nil, false
 	}
-	v, ok := event.Data.(map[string]any)
-	return v, ok
+	switch v := event.Data.(type) {
+	case map[string]any:
+		return v, true
+	default:
+		// Wails may deliver map[string]interface{} or other map-like types.
+		if m, ok := event.Data.(map[string]interface{}); ok {
+			out := make(map[string]any, len(m))
+			for k, val := range m {
+				out[k] = val
+			}
+			return out, true
+		}
+	}
+	return nil, false
 }
+
 func (f *wailsOverlayFactory) NewOverlayWindow(profile *config.ProfileConfig, origin config.Rect, bounds config.Rect) (app.OverlayWindow, error) {
 	w := f.app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title:             "Vantare Overlay",

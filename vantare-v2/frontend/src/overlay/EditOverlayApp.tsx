@@ -18,15 +18,10 @@ export function EditOverlayApp() {
       }
     });
 
-    const unsubSaved = Events.On("layout:saved", () => {
-      Events.Emit("profile:request");
-    });
-
     Events.Emit("profile:request");
 
     return () => {
       unsub?.();
-      unsubSaved?.();
     };
   }, []);
 

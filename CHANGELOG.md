@@ -1,18 +1,40 @@
 # Changelog
 
-## v0.2.11-alpha.1 - 2026-06-16
+## v0.2.12-alpha.1 - 2026-06-16
 
-Backend save wiring: persist profiles, widget toggles, and overlay edit positions to disk.
+Hotfix de corrección de bugs del editor rewrite.
 
-### Incluido
+### Corregido
 
-- **ProfileService.SaveProfile**: nuevo método que persiste un perfil completo a disco y emite `profile:loaded` y `hub:profile` para mantener sincronizados Hub y overlay.
-- **HubService.SaveProfile y SetWidgetEnabled**: helpers del Hub que delegan en `ProfileService.SaveProfile`, con clonado defensivo del perfil para evitar mutaciones del puntero compartido.
-- **HubService.StartEditOverlay**: abre el overlay de escritorio en modo edición (`DisplayMode = ModeEdit`) para el perfil activo.
-- **Eventos IPC cableados**: `profile:save` (guardar perfil completo desde WidgetsPage), `profile:widget:update` (toggle individual desde ProfilesPage), `overlay:edit:start` (abrir overlay en edición) y `hub:profile:get` (solicitar perfil activo). Manejo defensivo de payloads via `eventPayload`.
+- **eventPayload ahora soporta `map[string]interface{}`**: Wails v3 alpha en Windows entrega a veces los eventos como `map[string]interface{}` en lugar de `map[string]any`. El helper ahora normaliza ambos tipos, evitando que `profile:save`, `profile:widget:update` y `overlay:edit:start` fallen silenciosamente.
+- **EditOverlayApp simplificado**: eliminado el listener de `layout:saved` que re-emitía `profile:request`, causando posibles parpadeos en el overlay de edición.
 
 ### Cambiado
 
+- Versión de la app, `build/config.yml` e instalador NSIS actualizada a `0.2.12`.
+
+## v0.2.11-alpha.1 - 2026-06-16
+
+Hub refactor + backend save wiring: per-widget WYSIWYG preview, Profiles widget toggles, removal of the old Preview Workbench, and persistence of changes to disk.
+
+### Incluido
+
+- **WidgetsPage**: nueva página de previsualización individual de widgets con el componente real escalado, lista lateral de widgets, inspector para editar apariencia y posición, dirty state con indicador visual y botón "Deshacer" de un nivel, y botón "Guardar" que emite `profile:save`.
+- **ProfilesPage mejorada**: suscripción al perfil activo vía `hub:profile`, panel expandible por perfil con lista de checkboxes para habilitar/deshabilitar widgets individualmente. Cada toggle emite `profile:widget:update`.
+- **WidgetPreview**: componente que renderiza cada widget overlay real escalado (`scale=0.5`) dentro de un contenedor con `overflow-hidden`, usando el registry compartido de componentes.
+- **Shared widget component registry**: extraído a `shared-widget-map.ts`, reutilizado por `CompositeApp`, `ObsOverlayApp` y `WidgetPreview`.
+- **ProfileService.SaveProfile**: nuevo método que persiste un perfil completo a disco y emite `profile:loaded` y `hub:profile` para mantener sincronizados Hub y overlay.
+- **HubService.SaveProfile, SetWidgetEnabled y StartEditOverlay**: helpers del Hub que delegan en `ProfileService.SaveProfile` (con clonado defensivo del perfil) y abren el overlay de escritorio en modo edición.
+- **Eventos IPC cableados**: `profile:save`, `profile:widget:update`, `overlay:edit:start` y `hub:profile:get`. Manejo defensivo de payloads via `eventPayload`.
+
+### Eliminado
+
+- **Preview Workbench antiguo**: eliminados `PreviewPage`, `PreviewCanvas`, `PreviewCanvas.test`, `PreviewWidgetFrame`, `PreviewWidgetFrame.test` y `WidgetList`. La ruta `preview` desaparece del Hub.
+- **Topbar**: eliminada la entrada "Overlays" (preview) y la rama muerta `'live'`.
+
+### Cambiado
+
+- `Section` type finalizado a `'dashboard' | 'profiles' | 'widgets' | 'telemetry' | 'setup'`.
 - Versión de la app, `build/config.yml` e instalador NSIS actualizada a `0.2.11`.
 
 ## v0.2.10-alpha.1 - 2026-06-16
@@ -22,34 +44,13 @@ Overlay edit mode: drag/resize widgets in the desktop overlay window.
 ### Incluido
 
 - **WidgetEditFrame**: nuevo componente que envuelve cada widget en un frame con borde rojo, permitiendo arrastrarlo (drag) y redimensionarlo (resize) directamente con el ratón sobre el overlay. Usa estado local durante la interacción y commitea la posición final via `onChange`.
-- **EditOverlayApp**: nueva aplicación overlay que carga el perfil activo, escucha los eventos `profile:loaded` y `layout:saved`, y renderiza los widgets habilitados dentro de `WidgetEditFrame`. Los cambios se persisten emitiendo `layout:save` con el array completo de widgets.
+- **EditOverlayApp**: nueva aplicación overlay que carga el perfil activo y renderiza los widgets habilitados dentro de `WidgetEditFrame`. Los cambios se persisten emitiendo `layout:save` con el array completo de widgets.
 - **Ruta `/overlay/edit`**: añadida en `main.tsx` para cargar `EditOverlayApp` sin afectar la ruta OBS existente (`/overlay?profile=...`).
 - **Botón "Editar posición"**: añadido en `ProfilesPage` para cada perfil, que emite `overlay:edit:start` con `{id, file}`.
 
 ### Cambiado
 
 - Versión de la app, `build/config.yml` e instalador NSIS actualizada a `0.2.10`.
-
-## v0.3.0-alpha.1 - 2026-06-16
-
-Hub refactor: per-widget WYSIWYG preview, Profiles widget toggles, and removal of the old Preview Workbench.
-
-### Incluido
-
-- **WidgetsPage**: nueva página de previsualización individual de widgets con el componente real escalado, lista lateral de widgets, inspector para editar apariencia y posición, dirty state con indicador visual y botón "Deshacer" de un nivel, y botón "Guardar" que emite `profile:save`.
-- **ProfilesPage mejorada**: suscripción al perfil activo vía `hub:profile`, panel expandible por perfil con lista de checkboxes para habilitar/deshabilitar widgets individualmente. Cada toggle emite `profile:widget:update`.
-- **WidgetPreview**: componente que renderiza cada widget overlay real escalado (`scale=0.5`) dentro de un contenedor con `overflow-hidden`, usando el registry compartido de componentes.
-- **Shared widget component registry**: extraído a `shared-widget-map.ts`, reutilizado por `CompositeApp`, `ObsOverlayApp` y `WidgetPreview`.
-
-### Eliminado
-
-- **Preview Workbench antiguo**: eliminados `PreviewPage`, `PreviewCanvas`, `PreviewCanvas.test`, `PreviewWidgetFrame`, `PreviewWidgetFrame.test` y `WidgetList`. La ruta `preview` desaparece del Hub.
-- **Topbar**: eliminada la entrada "Overlays" (preview) y la rama muerta `'live'`.
-- **`Section` type**: finalizado a `'dashboard' | 'profiles' | 'widgets' | 'telemetry' | 'setup'`.
-
-### Cambiado
-
-- Versión de la app, `build/config.yml` e instalador NSIS actualizada a `0.3.0`.
 
 ## v0.2.9-alpha.1 - 2026-06-16
 
@@ -106,14 +107,16 @@ Scrollbar auto-hide en el Hub.
 
 ### Corregido
 
-- **Scrollbar invisible hasta que se hace scroll**: ahora la barra de scroll está oculta por defecto y solo aparece (fina y translúcida) durante el scroll. Tras 1 segundo de inactividad vuelve a desaparecer.
-- **Impacto visual mínimo**: ancho reducido a 4 px, opacidad baja (`rgba(255,255,255,0.12)`), sin track. Se funde con el fondo oscuro del Hub.
-- **Firefox compatible**: se usa `scrollbar-width: none` en reposo y `thin` durante el scroll.
+- **Scrollbar invisible por defecto**: la barra no se muestra hasta que el usuario hace scroll.
+- **Auto-hide**: tras 1 segundo de inactividad, la scrollbar vuelve a desaparecer.
+- **Mínimo impacto visual**: cuando aparece, es de 4 px de ancho, sin track, con un thumb translúcido (`rgba(255,255,255,0.12)`) que apenas se distingue del fondo oscuro.
+- **Firefox compatible**: usa `scrollbar-width: none` en reposo y `thin` durante el scroll.
 
 ### Cambiado
 
-- Nuevo componente `ScrollableMain` que gestiona la clase `scrollable-active` y el timer de auto-hide.
-- CSS de scrollbar movido a `.scrollable-main` / `.scrollable-active` en lugar de `html.hub *`.
+- Nuevo componente `ScrollableMain` en `vantare-v2/frontend/src/hub/components/ScrollableMain.tsx` que controla el estado de scroll con un listener y un timer.
+- CSS de scrollbar ahora aplica solo a `.scrollable-main` y `.scrollable-active`.
+- `HubApp` usa `ScrollableMain` como contenedor principal del contenido.
 - Versión de la app, `build/config.yml` e instalador NSIS actualizada a `0.2.6`.
 
 ## v0.2.5-alpha.1 - 2026-06-16
@@ -136,12 +139,14 @@ Mejora del scroll global en todas las páginas del Hub.
 
 ### Corregido
 
-- **Scroll elegante en todo el Hub**: el layout ahora usa una columna de altura de ventana (`h-screen`) con `Topbar` sticky y `main` scrollable (`flex-1 overflow-y-auto`). Esto elimina las barras de scroll duplicadas y permite desplazarse suavemente por Dashboard, Overlays, Preview y Ajustes sin cortes.
-- **Eliminado `overflow: hidden` global para el Hub**: las reglas CSS del root ahora permiten scroll cuando `body.hub` está activo, sin afectar el modo overlay transparente.
+- **Scroll elegante y consistente**: el Hub ahora usa un layout de altura completa con la barra de navegación fija arriba (`sticky`) y el contenido principal desplazable. Esto funciona correctamente en Dashboard, Overlays, Preview y Ajustes sin cortes.
+- **Eliminado `overflow: hidden` que bloqueaba el scroll**: las reglas base de `html/body/#root` tenían `overflow: hidden`; ahora, cuando el body tiene clase `hub`, el scroll es libre y natural.
+- **Evitadas barras de scroll duplicadas**: el `PreviewPage` tenía un `overflow-y-auto` interno con altura máxima forzada, que competía con el scroll de la ventana. Ahora cada página ocupa el flujo natural y el scroll lo maneja el `main` del Hub.
 
 ### Cambiado
 
-- `Topbar` pasa de `fixed` a `sticky`, eliminando la necesidad de `pt-14` en el contenido.
+- `Topbar` pasa de `position: fixed` a `position: sticky`.
+- Se eliminó el padding compensatorio (`pt-14`) del contenedor principal.
 - Versión de la app, `build/config.yml` e instalador NSIS actualizada a `0.2.4`.
 
 ## v0.2.3-alpha.1 - 2026-06-16
@@ -150,10 +155,11 @@ Hotfix del cierre de la app.
 
 ### Corregido
 
-- **Cierre bloqueado**: al pulsar la X de la ventana, la app a veces mostraba "Vantare no responde". El `HotkeyManager.Stop()` esperaba indefinidamente a que terminara el message loop de Windows. Ahora espera como máximo 2 segundos y continúa el cierre si el loop no responde.
+- **Cierre bloqueado / "Vantare no responde"**: al pulsar la X, el `HotkeyManager.Stop()` esperaba indefinidamente a que terminara el message loop de Windows. Si el loop no recibía correctamente el mensaje de salida, el cierre nunca terminaba y Windows ofrecía cerrar forzosamente. Ahora `HotkeyManager.Stop()` espera como máximo 2 segundos y continúa el shutdown.
 
 ### Cambiado
 
+- `HotkeyManager.Stop()` ahora usa `select` con timeout de 2s.
 - Versión de la app, `build/config.yml` e instalador NSIS actualizada a `0.2.3`.
 
 ## v0.2.2-alpha.1 - 2026-06-16
@@ -175,9 +181,8 @@ Hotfix del updater e instalador.
 
 ### Corregido
 
-- **Updater no reinstalaba correctamente**: el instalador descargado se guardaba en un directorio temporal que se eliminaba inmediatamente tras lanzar el proceso. Ahora se persiste en `{cfgDir}/update` hasta que el instalador termine.
-- **NSIS más robusto ante app en ejecución**: el instalador ahora verifica que `vantare.exe` se haya cerrado realmente (esperando hasta 5s + forzando cierre si es necesario) y comprueba que el archivo no esté bloqueado antes de reemplazarlo.
-- **Verificación de extracción del instalador**: el instalador verifica que `vantare.exe` se haya extraído y tenga un tamaño razonable antes de borrar el backup; si falla, restaura la versión anterior con un mensaje claro.
+- **Updater no instalaba la nueva versión**: el instalador descargado en un directorio temporal era eliminado inmediatamente tras `cmd.Start()`. Ahora se persiste en `{cfgDir}/update` y el instalador NSIS espera a que `vantare.exe` termine antes de reemplazar el ejecutable.
+- **NSIS robusto**: verifica extracción del nuevo ejecutable y fuerza cierre si el proceso sigue bloqueando el archivo.
 
 ### Cambiado
 
@@ -189,24 +194,26 @@ Primera alpha completa para Le Mans Ultimate.
 
 ### Incluido
 
-- **Editor visual del Preview Workbench**:
-  - Drag & drop con snap a 8px y límites estrictos del canvas (1920x1080).
-  - Resize con handle inferior-derecho; ratio fijo por tipo de widget excepto standings.
-  - Inspector mejorado: nombre, updateHz, duplicar, reset, eliminar con confirmación.
-  - Guardado manual + auto-save debounced + Ctrl+S + undo/redo básico.
-- **Demo mode** en Preview Workbench: telemetría animada para diseñar sin sim; se detiene automáticamente si llega telemetría live.
-- **Delta Best fiable**: nuevo engine por distancia en pista con modos self/session/global.
-- **Ajustes globales**: selector de modo delta, hotkeys configurables, toggle de muestreo de CPU y sección OBS.
-- **Hotkeys globales Windows**: toggle overlay y cambio de perfil siguiente/anterior.
-- **OBS setup facilitado**: URL del overlay e instrucciones, tanto en Preview como en Settings.
-- **Ops panel**: CPU del proceso real via gopsutil, con toggle de activación.
-- **Visibilidad condicional básica**: mostrar/ocultar widgets según inPit y sessionType.
+- **Editor visual de overlays**: arrastrar y redimensionar widgets sobre un canvas 1920×1080 escalado.
+- **Demo mode**: datos animados de prueba para visualizar widgets sin tener el sim corriendo.
+- **Delta best / relative / standings**: widgets de posición con datos de LMU.
+- **Hotkeys globales**: atajos de teclado para cambiar perfiles, activar widgets y togglear modos.
+- **OBS setup**: instrucciones de integración con OBS Browser Source.
+- **CPU ops**: optimización de operaciones críticas en el backend.
+- **Visibility rules**: sistema de reglas para mostrar/ocultar widgets según estado de sesión.
+
+### Corregido
+
+- Múltiples bugs de LMU compartidos y REST API local.
+- SSE reactivo para telemetry.
+- Updater base e instalador NSIS pulido.
 
 ### Cambiado
 
 - Versión de la app, `build/config.yml` e instalador NSIS actualizada a `0.2.0`.
 
 ## v0.1.6-prealpha - 2026-06-15
+
 Pre-alpha de pulido del instalador: cierre graceful de la app y rollback automático.
 
 ### Incluido
