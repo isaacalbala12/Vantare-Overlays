@@ -3,13 +3,22 @@ import { Events } from "@wailsio/runtime";
 import { profileLabel, type ProfileEntry } from "../state/overlay-workbench";
 import type { ProfileConfig } from "../../lib/profile";
 
+type ProfileTarget = {
+  id: string;
+  file: string;
+};
+
 export function ProfilesPage() {
   const [profiles, setProfiles] = useState<ProfileEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeProfile, setActiveProfile] = useState<ProfileConfig | null>(null);
-  const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
   const [newName, setNewName] = useState("");
+
+  // State for Managing widgets modal
+  const [managingTarget, setManagingTarget] = useState<ProfileTarget | null>(null);
+  const [managingConfig, setManagingConfig] = useState<ProfileConfig | null>(null);
+  const [modalNameInput, setModalNameInput] = useState("");
 
   useEffect(() => {
     const unsub = Events.On("hub:profiles", (event: { data: unknown }) => {
@@ -36,10 +45,10 @@ export function ProfilesPage() {
     const unsubActivationNotif = Events.On("hub:profile-activated", () => {
       setError(null);
     });
+
     const unsubProfile = Events.On("hub:profile", (event: { data: { profile?: ProfileConfig } }) => {
       if (event.data.profile) {
         setActiveProfile(event.data.profile);
-        setSelectedProfileId(event.data.profile.id ?? null);
       }
     });
 
@@ -49,6 +58,17 @@ export function ProfilesPage() {
         setError(data.message);
         setLoading(false);
       }
+    });
+
+    const unsubConfig = Events.On("hub:profile:config", (event: { data: { profile?: ProfileConfig } }) => {
+      if (event.data.profile) {
+        setManagingConfig(event.data.profile);
+        setModalNameInput(event.data.profile.name ?? "");
+      }
+    });
+
+    const unsubReload = Events.On("hub:profiles:reload", () => {
+      Events.Emit("hub:list");
     });
 
     Events.Emit("hub:list");
@@ -61,6 +81,8 @@ export function ProfilesPage() {
       unsubError();
       unsubProfile?.();
       unsubActivationNotif();
+      unsubConfig();
+      unsubReload();
     };
   }, []);
 
@@ -87,7 +109,6 @@ export function ProfilesPage() {
   const handleSelect = useCallback((profile: ProfileEntry) => {
     setError(null);
     Events.Emit("overlay:stop");
-    // Give the existing overlay a tick to close before starting the new one.
     window.setTimeout(() => {
       Events.Emit("overlay:start", { id: profile.id, file: profile.file });
     }, 50);
@@ -101,16 +122,41 @@ export function ProfilesPage() {
     }, 50);
   }, []);
 
-  const handleToggleWidget = useCallback((widgetId: string, enabled: boolean) => {
-    setActiveProfile((prev) => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        widgets: prev.widgets.map((w) => (w.id === widgetId ? { ...w, enabled } : w)),
-      };
-    });
-    Events.Emit("profile:widget:update", { widgetId, enabled });
+  const handleOpenManageModal = useCallback((profile: ProfileEntry) => {
+    setManagingTarget({ id: profile.id, file: profile.file });
+    setManagingConfig(null);
+    Events.Emit("hub:profile:get-config", { id: profile.id, file: profile.file });
   }, []);
+
+  const handleCloseManageModal = useCallback(() => {
+    setManagingTarget(null);
+    setManagingConfig(null);
+    Events.Emit("hub:list");
+  }, []);
+
+  const handleToggleWidgetInModal = useCallback((widgetId: string, enabled: boolean) => {
+    if (!managingConfig) return;
+    const nextConfig = {
+      ...managingConfig,
+      widgets: managingConfig.widgets.map((w) =>
+        w.id === widgetId ? { ...w, enabled } : w
+      ),
+    };
+    setManagingConfig(nextConfig);
+    Events.Emit("profile:save", { profile: nextConfig });
+  }, [managingConfig]);
+
+  const handleRenameInModal = useCallback(() => {
+    if (!managingConfig) return;
+    const trimmed = modalNameInput.trim();
+    if (!trimmed) return;
+    const nextConfig = {
+      ...managingConfig,
+      name: trimmed,
+    };
+    setManagingConfig(nextConfig);
+    Events.Emit("profile:save", { profile: nextConfig });
+  }, [managingConfig, modalNameInput]);
 
   return (
     <div className="max-w-[1200px] mx-auto px-6 py-8">
@@ -158,83 +204,186 @@ export function ProfilesPage() {
             No hay perfiles aún. Crea uno nuevo arriba.
           </div>
         )}
-        {profiles.map((p) => (
-          <div
-            key={p.id}
-            className="card-sleek rounded-xl p-5 relative overflow-hidden group hover:-translate-y-0.5 transition-all"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-lg bg-black/60 border border-white/5 flex items-center justify-center shrink-0">
-                  <svg className="w-5 h-5 text-vantare-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                  </svg>
+        {profiles.map((p) => {
+          const isActive = activeProfile?.id === p.id;
+          return (
+            <div
+              key={p.id}
+              className={`card-sleek rounded-xl p-5 relative overflow-hidden group hover:-translate-y-0.5 transition-all ${
+                isActive ? "border border-vantare-red-500/30 bg-vantare-red-950/5" : ""
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-lg bg-black/60 border border-white/5 flex items-center justify-center shrink-0">
+                    <svg className="w-5 h-5 text-vantare-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-display font-semibold text-white text-lg">{profileLabel(p)}</h3>
+                      {isActive && (
+                        <span className="text-[10px] font-bold text-vantare-red-400 bg-vantare-red-950/40 px-2 py-0.5 rounded border border-vantare-red-500/20">
+                          ACTIVO
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-vantare-textMuted font-mono mt-0.5">
+                      {p.displayMode} · {p.widgets} widgets
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-display font-semibold text-white text-lg">{profileLabel(p)}</h3>
-                  <p className="text-xs text-vantare-textMuted font-mono mt-0.5">
-                    {p.displayMode} · {p.widgets} widgets
-                  </p>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => handleEditPosition(p)}
+                    className="btn-secondary px-4 py-2 rounded-lg text-xs font-medium text-white whitespace-nowrap"
+                  >
+                    Editar posición
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSelect(p)}
+                    className="btn-secondary px-4 py-2 rounded-lg text-xs font-medium text-vantare-textMuted hover:text-white whitespace-nowrap"
+                  >
+                    Abrir overlay
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(p)}
+                    className="btn-secondary px-4 py-2 rounded-lg text-xs font-medium text-vantare-textMuted hover:text-vantare-red-400 whitespace-nowrap"
+                  >
+                    Eliminar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleOpenManageModal(p)}
+                    className="btn-primary px-4 py-2 rounded-lg text-xs font-bold text-white whitespace-nowrap"
+                  >
+                    Gestionar widgets
+                  </button>
                 </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => handleEditPosition(p)}
-                  className="btn-secondary px-4 py-2 rounded-lg text-xs font-medium text-white whitespace-nowrap"
-                >
-                  Editar posición
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleSelect(p)}
-                  className="btn-secondary px-4 py-2 rounded-lg text-xs font-medium text-vantare-textMuted hover:text-white whitespace-nowrap"
-                >
-                  Abrir overlay
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleDelete(p)}
-                  className="btn-secondary px-4 py-2 rounded-lg text-xs font-medium text-vantare-textMuted hover:text-vantare-red-400 whitespace-nowrap"
-                >
-                  Eliminar
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSelectedProfileId(selectedProfileId === p.id ? null : p.id)}
-                  className="btn-secondary px-4 py-2 rounded-lg text-xs font-medium text-vantare-textMuted hover:text-white whitespace-nowrap"
-                >
-                  {selectedProfileId === p.id ? "Ocultar" : "Widgets"}
-                </button>
               </div>
             </div>
-            {selectedProfileId === p.id && activeProfile?.id === p.id && activeProfile && (
-              <div className="mt-4 pt-4 border-t border-white/5">
-                <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-3">Widgets habilitados</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {activeProfile.widgets.map((w) => (
-                    <label key={w.id} className="flex items-center gap-2 text-sm text-vantare-textMuted cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={w.enabled}
-                        onChange={(e) => handleToggleWidget(w.id, e.target.checked)}
-                        className="accent-vantare-red-500"
-                      />
-                      <span>{w.id}</span>
-                      <span className="text-[10px] text-vantare-textDim font-mono">({w.type})</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            )}
-            {selectedProfileId === p.id && activeProfile?.id !== p.id && (
-              <div className="mt-4 pt-4 border-t border-white/5 text-xs text-vantare-textMuted">
-                Activa este perfil para ver y configurar sus widgets.
-              </div>
-            )}
-          </div>
-        ))}
+          );
+        })}
       </div>
+
+      {/* Centered Modal for Managing Widgets */}
+      {managingTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fadeIn">
+          <div className="glass-panel rounded-xl w-full max-w-lg border border-white/10 overflow-hidden shadow-2xl">
+            {/* Modal Header */}
+            <div className="p-5 border-b border-white/5 flex items-center justify-between">
+              <div>
+                <h2 className="font-display font-bold text-lg text-white">Gestionar widgets</h2>
+                <p className="text-[11px] text-vantare-textMuted mt-0.5">
+                  ID: {managingTarget.id}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleCloseManageModal}
+                className="text-vantare-textMuted hover:text-white transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 space-y-6">
+              {!managingConfig ? (
+                <div className="text-center py-6 text-sm text-vantare-textMuted">
+                  Cargando perfil...
+                </div>
+              ) : (
+                <>
+                  {/* Rename Section */}
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-white uppercase tracking-wider block">
+                      Nombre del perfil
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={modalNameInput}
+                        onChange={(e) => setModalNameInput(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && handleRenameInModal()}
+                        className="flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white placeholder-vantare-textDim focus:outline-none focus:border-vantare-red-500/50"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleRenameInModal}
+                        className="btn-secondary px-3 py-2 rounded-lg text-xs font-medium text-white"
+                      >
+                        Renombrar
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Profile Metadata */}
+                  <div className="grid grid-cols-2 gap-4 p-3 bg-white/5 rounded-lg text-xs">
+                    <div>
+                      <span className="text-vantare-textMuted block">Modo display:</span>
+                      <span className="font-semibold text-white uppercase mt-0.5 block">
+                        {managingConfig.displayMode}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-vantare-textMuted block">Widgets activos:</span>
+                      <span className="font-semibold text-white mt-0.5 block">
+                        {managingConfig.widgets.filter((w) => w.enabled).length} / {managingConfig.widgets.length}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Widgets Checkboxes List */}
+                  <div className="space-y-3">
+                    <label className="text-xs font-bold text-white uppercase tracking-wider block">
+                      Widgets habilitados
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[200px] overflow-y-auto pr-1">
+                      {managingConfig.widgets.map((w) => (
+                        <label
+                          key={w.id}
+                          className="flex items-center gap-2 p-2.5 rounded-lg bg-black/30 border border-white/5 text-xs text-vantare-textMuted cursor-pointer hover:border-white/10 hover:text-white transition-colors"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={w.enabled}
+                            onChange={(e) => handleToggleWidgetInModal(w.id, e.target.checked)}
+                            className="accent-vantare-red-500 h-4 w-4 shrink-0"
+                          />
+                          <div className="truncate">
+                            <span className="block font-semibold text-white">{w.id}</span>
+                            <span className="block font-mono text-[9px] text-vantare-textDim mt-0.5">
+                              ({w.type})
+                            </span>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 border-t border-white/5 bg-black/20 flex justify-end">
+              <button
+                type="button"
+                onClick={handleCloseManageModal}
+                className="btn-secondary px-5 py-2.5 rounded-lg text-xs font-bold text-white"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,5 +1,24 @@
 # Changelog
 
+## v0.2.14-alpha.1 - 2026-06-16
+
+Corrección de múltiples bugs urgentes de overlays, previsualizaciones y gestión de perfiles.
+
+### Incluido
+
+- **Modal de gestión de widgets centrado**: reemplazado el expandible inline por un modal centrado al hacer clic en "Gestionar widgets". Permite renombrar el perfil y activar/desactivar widgets con persistencia instantánea y retroalimentación de widgets activos.
+- **Click-through y drag corregidos en modo edición**:
+  - Arreglada la creación de la ventana de overlay de edición en Go (`OverlayController` y `NewOverlayWindow` ahora respetan el `DisplayMode == ModeEdit` y no fuerzan click-through a nivel de SO).
+  - Añadido un overlay transparente absolute `pointer-events: auto` en `WidgetEditFrame` encima de los widgets reales para que se puedan arrastrar de manera fiable desde cualquier punto de su caja, haciendo que el widget interno sea completamente inerte a eventos de ratón.
+- **Previsualización de widgets escalada y cuadriculada**:
+  - `WidgetPreview` ahora ocupa el 100% de la anchura y altura disponible del panel central en `WidgetsPage`.
+  - Se añade un fondo con patrón cuadriculado (chessboard) sutil al panel de previsualización.
+  - La escala se calcula dinámicamente mediante `ResizeObserver`, manteniendo la proporcionalidad real entre los distintos widgets para que no se deformen o amplíen individualmente, y encogiéndose sólo si desbordan el panel.
+
+### Cambiado
+
+- Versión de la app, `build/config.yml` e instalador NSIS actualizada a `0.2.14`.
+
 ## v0.2.13-alpha.1 - 2026-06-16
 
 Correcciones de UX del modo edición del overlay y del guardado de widgets.

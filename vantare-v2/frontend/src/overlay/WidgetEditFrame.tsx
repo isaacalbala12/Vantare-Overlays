@@ -124,27 +124,31 @@ export function WidgetEditFrame({ widget, onChange }: WidgetEditFrameProps) {
       ref={frameRef}
       data-testid={`edit-frame-${widget.id}`}
       onMouseDown={handleDragStart}
-      className="absolute border border-vantare-red-400/70 hover:border-vantare-red-400 cursor-move"
+      className="absolute border border-vantare-red-400/70 hover:border-vantare-red-400 cursor-move select-none"
       style={{
         left: visualRect.x,
         top: visualRect.y,
         width: visualRect.w,
         height: visualRect.h,
+        pointerEvents: "auto",
+        zIndex: 50,
       }}
     >
       {Component && (
-        <div className="w-full h-full overflow-hidden" style={{ pointerEvents: "none" }}>
+        <div className="w-full h-full overflow-hidden relative" style={{ pointerEvents: "none" }}>
           <Component
             editMode={true}
             telemetryMode="mock"
             updateHz={widget.updateHz}
             props={{ ...widget.props, style }}
           />
+          {/* Overlay invisible que cubre todo el widget para capturar el click de drag */}
+          <div className="absolute inset-0 bg-transparent z-10" style={{ pointerEvents: "auto" }} />
         </div>
       )}
       <div
         data-testid={`resize-handle-${widget.id}`}
-        className="absolute bottom-0 right-0 w-[12px] h-[12px] bg-vantare-red-500 cursor-se-resize"
+        className="absolute bottom-0 right-0 w-[12px] h-[12px] bg-vantare-red-500 cursor-se-resize z-20"
         onMouseDown={handleResizeStart}
       />
     </div>

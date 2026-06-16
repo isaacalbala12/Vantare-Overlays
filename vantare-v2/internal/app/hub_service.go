@@ -198,7 +198,40 @@ func (s *HubService) StartEditOverlay(idOrFile string) (OverlayStatus, error) {
 
 // SaveProfile persists the provided profile to disk via the profile service.
 func (s *HubService) SaveProfile(profile *config.ProfileConfig) error {
-	return s.profileSvc.SaveProfile(profile)
+	if profile.ID == "" {
+		return fmt.Errorf("missing profile ID")
+	}
+	path, err := s.findProfilePath(profile.ID)
+	if err != nil {
+		return err
+	}
+	if err := config.SaveFile(path, profile); err != nil {
+		return err
+	}
+
+	// If this is the active profile, sync the active profile service.
+	active := s.profileSvc.GetProfile()
+	if active != nil && active.ID == profile.ID {
+		s.profileSvc.SetProfile(profile)
+		s.profileSvc.EmitLoaded()
+		if s.emitter != nil {
+			s.emitter.Emit("hub:profile", map[string]any{"profile": profile})
+			s.emitter.Emit("profile:saved", map[string]any{"ok": true})
+		}
+	} else if s.emitter != nil {
+		// Even for inactive profiles, trigger a reload in Hub frontend to refresh the list
+		s.emitter.Emit("hub:profiles:reload", nil)
+	}
+	return nil
+}
+
+// GetProfileConfig loads and returns the profile configuration for the given profile ID/file.
+func (s *HubService) GetProfileConfig(idOrFile string) (*config.ProfileConfig, error) {
+	path, err := s.findProfilePath(idOrFile)
+	if err != nil {
+		return nil, err
+	}
+	return config.LoadFile(path)
 }
 
 // SetWidgetEnabled toggles a widget's enabled state in the active profile.

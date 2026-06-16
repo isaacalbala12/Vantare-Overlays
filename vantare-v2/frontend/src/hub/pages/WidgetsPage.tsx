@@ -151,11 +151,11 @@ export function WidgetsPage() {
           </div>
         </aside>
 
-        <div className="glass-panel rounded-xl p-6 flex items-center justify-center min-h-[540px]">
+        <div className="glass-panel rounded-xl overflow-hidden min-h-[540px] flex items-stretch">
           {selectedWidget ? (
-            <WidgetPreview widget={selectedWidget} scale={0.5} />
+            <WidgetPreview widget={selectedWidget} />
           ) : (
-            <div className="text-vantare-textMuted text-sm">Selecciona un widget</div>
+            <div className="text-vantare-textMuted text-sm m-auto">Selecciona un widget</div>
           )}
         </div>
 

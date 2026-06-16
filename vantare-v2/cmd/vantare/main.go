@@ -29,7 +29,7 @@ import (
 )
 
 // version is the current application version.
-var version = "v0.2.13-alpha.1"
+var version = "v0.2.14-alpha.1"
 
 // reorderArgs moves flag arguments to the front of os.Args so flag.Parse() can
 // see them even when the user types `vantare serve -live -profile foo.json`.
@@ -627,6 +627,29 @@ wailsApp.Event.On("hub:activate", func(event *application.CustomEvent) {
 		wailsApp.Event.Emit("hub:profile", map[string]any{"profile": p})
 	})
 
+	wailsApp.Event.On("hub:profile:get-config", func(event *application.CustomEvent) {
+		data, ok := eventPayload(event)
+		if !ok {
+			log.Printf("hub:profile:get-config: invalid event payload")
+			return
+		}
+		id, _ := data["id"].(string)
+		file, _ := data["file"].(string)
+		target := id
+		if target == "" {
+			target = file
+		}
+		if target == "" {
+			log.Printf("hub:profile:get-config: missing id/file")
+			return
+		}
+		p, err := hubSvc.GetProfileConfig(target)
+		if err != nil {
+			log.Printf("hub:profile:get-config failed: %v", err)
+			return
+		}
+		wailsApp.Event.Emit("hub:profile:config", map[string]any{"id": id, "profile": p})
+	})
 	wailsApp.Event.On("profile:save", func(event *application.CustomEvent) {
 		data, ok := eventPayload(event)
 		if !ok {
@@ -861,7 +884,7 @@ func (f *wailsOverlayFactory) NewOverlayWindow(profile *config.ProfileConfig, or
 		Frameless:         true,
 		BackgroundType:    application.BackgroundTypeTransparent,
 		BackgroundColour:  application.NewRGBA(0, 0, 0, 0),
-		IgnoreMouseEvents: false,
+		IgnoreMouseEvents: profile.DisplayMode != config.ModeEdit,
 		AlwaysOnTop:       true,
 		URL:               "/",
 	})
@@ -877,10 +900,16 @@ func (f *wailsOverlayFactory) NewOverlayWindow(profile *config.ProfileConfig, or
 	})
 
 	handle := &wailsWindowHandle{w: w}
-	handle.SetIgnoreMouseEvents(true)
-	handle.SetResizable(false)
-	handle.Fullscreen()
-	handle.SetIgnoreMouseEvents(true)
+	if profile.DisplayMode == config.ModeEdit {
+		handle.SetIgnoreMouseEvents(false)
+		handle.SetResizable(true)
+		handle.Fullscreen()
+	} else {
+		handle.SetIgnoreMouseEvents(true)
+		handle.SetResizable(false)
+		handle.Fullscreen()
+		handle.SetIgnoreMouseEvents(true)
+	}
 	return &wailsOverlayWindow{w: w}, nil
 }
 

@@ -22,12 +22,12 @@ vi.mock("../../overlay/shared-widget-map", () => ({
 
 describe("WidgetPreview", () => {
   it("renders the real widget component scaled", () => {
-    render(<WidgetPreview widget={makeWidget("delta")} scale={0.5} />);
+    render(<WidgetPreview widget={makeWidget("delta")} />);
     expect(screen.getByTestId("delta-mock")).toBeTruthy();
   });
 
   it("renders placeholder for unknown widget type", () => {
-    render(<WidgetPreview widget={makeWidget("unknown")} scale={0.5} />);
+    render(<WidgetPreview widget={makeWidget("unknown")} />);
     expect(screen.getByText("unknown")).toBeTruthy();
   });
 });

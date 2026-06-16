@@ -61,10 +61,9 @@ func (c *OverlayController) Start(profile *config.ProfileConfig) (OverlayStatus,
 		return c.status, nil
 	}
 
-	// Force runtime mode to racing for the desktop overlay window.
+	// Keep the mode as-is (could be config.ModeRacing or config.ModeEdit)
 	runtimeProfile := *profile
-	runtimeProfile.DisplayMode = config.ModeRacing
-	c.status = OverlayStatus{Running: false, ProfileID: profile.ID, Mode: config.ModeRacing}
+	c.status = OverlayStatus{Running: false, ProfileID: profile.ID, Mode: mode}
 	c.mu.Unlock()
 
 	// Create the window outside the lock so concurrent Status() calls are not blocked.
@@ -75,12 +74,12 @@ func (c *OverlayController) Start(profile *config.ProfileConfig) (OverlayStatus,
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	if err != nil {
-		c.status = OverlayStatus{Running: false, ProfileID: profile.ID, Mode: config.ModeRacing}
+		c.status = OverlayStatus{Running: false, ProfileID: profile.ID, Mode: mode}
 		return c.status, err
 	}
 
 	c.current = win
-	c.status = OverlayStatus{Running: true, ProfileID: profile.ID, Mode: config.ModeRacing}
+	c.status = OverlayStatus{Running: true, ProfileID: profile.ID, Mode: mode}
 	return c.status, nil
 }
 
