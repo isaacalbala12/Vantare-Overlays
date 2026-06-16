@@ -21,14 +21,8 @@ type PreviewInspectorProps = {
   disabled?: boolean;
 };
 
-function numberValue(value: number, onChange: (value: number) => void) {
-  return {
-    value,
-    onChange: (event: React.ChangeEvent<HTMLInputElement>) => onChange(Number(event.target.value)),
-  };
-}
 
-export function PreviewInspector({ profile, widget, onChangeProfile, disabled = false }: PreviewInspectorProps) {
+export function PreviewInspector({ profile, widget, onChangeProfile, onDuplicate, onReset, onDelete, disabled = false }: PreviewInspectorProps) {
   if (!widget) {
     return (
       <aside className="glass-panel rounded-xl p-5 text-sm text-vantare-textMuted">
@@ -41,6 +35,14 @@ export function PreviewInspector({ profile, widget, onChangeProfile, disabled = 
   const appearance: WidgetAppearance = selectedWidget.props?.appearance ?? {};
   const currentStyle = getWidgetStyle(widget);
   const visibleWhen: VisibleWhen | undefined = selectedWidget.visibleWhen;
+  const widgetName = selectedWidget.name || selectedWidget.id;
+
+  function updateWidget(next: Partial<WidgetConfig>) {
+    onChangeProfile({
+      ...profile,
+      widgets: profile.widgets.map((w) => (w.id === selectedWidget.id ? { ...w, ...next } : w)),
+    });
+  }
 
   function updateVisibleWhen(next: VisibleWhen) {
     onChangeProfile(setWidgetVisibleWhen(profile, selectedWidget.id, next));
@@ -58,12 +60,61 @@ export function PreviewInspector({ profile, widget, onChangeProfile, disabled = 
     onChangeProfile(updateWidgetAppearance(profile, selectedWidget.id, next));
   }
 
+  function handleNudge(key: string, currentValue: number): number {
+    const step = key === "ArrowUp" ? 8 : key === "ArrowDown" ? -8 : 0;
+    return currentValue + step;
+  }
+
+  function numericProps(
+    value: number,
+    onChange: (v: number) => void,
+  ) {
+    return {
+      value,
+      onChange: (event: React.ChangeEvent<HTMLInputElement>) => onChange(Number(event.target.value)),
+      onKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => {
+        if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+          event.preventDefault();
+          const step = event.shiftKey ? 10 : 8;
+          const dir = event.key === "ArrowUp" ? 1 : -1;
+          onChange(Math.round((value + dir * step) / 8) * 8);
+        }
+      },
+    };
+  }
+
   return (
     <aside className="glass-panel rounded-xl p-5">
+      {/* Header: id, type, name */}
       <div className="mb-5">
         <div className="text-[10px] uppercase tracking-wider text-vantare-textDim">Widget</div>
         <h2 className="font-display text-xl font-bold text-white">{widget.id}</h2>
         <p className="text-xs font-mono text-vantare-textMuted">{widget.type}</p>
+        <div className="mt-3">
+          <label className="block text-xs text-vantare-textMuted">
+            Nombre
+            <input
+              className="mt-1 w-full bg-black/40 border border-white/10 rounded px-2 py-1 text-white disabled:opacity-40 text-sm"
+              value={widgetName}
+              disabled={disabled}
+              onChange={(e) => updateWidget({ name: e.target.value })}
+            />
+          </label>
+        </div>
+        <div className="mt-2">
+          <label className="block text-xs text-vantare-textMuted">
+            Actualizacion (Hz)
+            <input
+              className="mt-1 w-full bg-black/40 border border-white/10 rounded px-2 py-1 text-white disabled:opacity-40 text-sm"
+              type="number"
+              min={1}
+              max={120}
+              value={widget.updateHz ?? 60}
+              disabled={disabled}
+              onChange={(e) => updateWidget({ updateHz: Number(e.target.value) })}
+            />
+          </label>
+        </div>
       </div>
 
       <div className="mb-4">
@@ -160,19 +211,19 @@ export function PreviewInspector({ profile, widget, onChangeProfile, disabled = 
       <div className="grid grid-cols-2 gap-3 mb-5">
         <label className="text-xs text-vantare-textMuted">
           X
-          <input className="mt-1 w-full bg-black/40 border border-white/10 rounded px-2 py-1 text-white disabled:opacity-40" type="number" disabled={disabled} {...numberValue(widget.position.x, (x) => updateRect({ x }))} />
+          <input className="mt-1 w-full bg-black/40 border border-white/10 rounded px-2 py-1 text-white disabled:opacity-40" type="number" step={8} disabled={disabled} {...numericProps(widget.position.x, (x) => updateRect({ x }))} />
         </label>
         <label className="text-xs text-vantare-textMuted">
           Y
-          <input className="mt-1 w-full bg-black/40 border border-white/10 rounded px-2 py-1 text-white disabled:opacity-40" type="number" disabled={disabled} {...numberValue(widget.position.y, (y) => updateRect({ y }))} />
+          <input className="mt-1 w-full bg-black/40 border border-white/10 rounded px-2 py-1 text-white disabled:opacity-40" type="number" step={8} disabled={disabled} {...numericProps(widget.position.y, (y) => updateRect({ y }))} />
         </label>
         <label className="text-xs text-vantare-textMuted">
           W
-          <input className="mt-1 w-full bg-black/40 border border-white/10 rounded px-2 py-1 text-white disabled:opacity-40" type="number" disabled={disabled} {...numberValue(widget.position.w, (w) => updateRect({ w }))} />
+          <input className="mt-1 w-full bg-black/40 border border-white/10 rounded px-2 py-1 text-white disabled:opacity-40" type="number" step={8} disabled={disabled} {...numericProps(widget.position.w, (w) => updateRect({ w }))} />
         </label>
         <label className="text-xs text-vantare-textMuted">
           H
-          <input className="mt-1 w-full bg-black/40 border border-white/10 rounded px-2 py-1 text-white disabled:opacity-40" type="number" disabled={disabled} {...numberValue(widget.position.h, (h) => updateRect({ h }))} />
+          <input className="mt-1 w-full bg-black/40 border border-white/10 rounded px-2 py-1 text-white disabled:opacity-40" type="number" step={8} disabled={disabled} {...numericProps(widget.position.h, (h) => updateRect({ h }))} />
         </label>
       </div>
 
@@ -190,6 +241,34 @@ export function PreviewInspector({ profile, widget, onChangeProfile, disabled = 
           Opacidad
           <input className="mt-1 w-full disabled:opacity-40" type="range" disabled={disabled} min="0.2" max="1" step="0.05" value={appearance.opacity ?? 1} onChange={(event) => updateAppearance({ opacity: Number(event.target.value) })} />
         </label>
+      </div>
+
+      {/* Action buttons */}
+      <div className="mt-5 flex flex-col gap-2 border-t border-white/5 pt-4">
+        <button
+          type="button"
+          disabled={disabled}
+          onClick={() => onDuplicate?.(widget)}
+          className="rounded-lg border border-white/10 bg-black/25 px-3 py-1.5 text-xs text-white hover:border-white/20 disabled:opacity-40"
+        >
+          Duplicar
+        </button>
+        <button
+          type="button"
+          disabled={disabled}
+          onClick={() => onReset?.(widget)}
+          className="rounded-lg border border-white/10 bg-black/25 px-3 py-1.5 text-xs text-white hover:border-white/20 disabled:opacity-40"
+        >
+          Reset posicion
+        </button>
+        <button
+          type="button"
+          disabled={disabled}
+          onClick={() => { if (window.confirm("¿Eliminar este widget?")) onDelete?.(widget.id); }}
+          className="rounded-lg border border-vantare-red-500/30 bg-vantare-red-950/20 px-3 py-1.5 text-xs text-vantare-red-400 hover:bg-vantare-red-950/40 disabled:opacity-40"
+        >
+          Eliminar
+        </button>
       </div>
     </aside>
   );
