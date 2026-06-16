@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Events } from "@wailsio/runtime";
 import { profileLabel, type ProfileEntry } from "../state/overlay-workbench";
+import type { ProfileConfig } from "../../lib/profile";
 
 type ProfilesPageProps = {
   onOpenPreview?: () => void;
@@ -10,6 +11,8 @@ export function ProfilesPage({ onOpenPreview }: ProfilesPageProps) {
   const [profiles, setProfiles] = useState<ProfileEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeProfile, setActiveProfile] = useState<ProfileConfig | null>(null);
+  const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
   const [newName, setNewName] = useState("");
 
   useEffect(() => {
@@ -34,8 +37,14 @@ export function ProfilesPage({ onOpenPreview }: ProfilesPageProps) {
       Events.Emit("hub:list");
     });
 
-    const unsubActivated = Events.On("hub:profile-activated", () => {
+    const unsubActivationNotif = Events.On("hub:profile-activated", () => {
       setError(null);
+    });
+    const unsubProfile = Events.On("hub:profile", (event: { data: { profile?: ProfileConfig } }) => {
+      if (event.data.profile) {
+        setActiveProfile(event.data.profile);
+        setSelectedProfileId(event.data.profile.id ?? null);
+      }
     });
 
     const unsubError = Events.On("hub:error", (event: { data: unknown }) => {
@@ -47,13 +56,15 @@ export function ProfilesPage({ onOpenPreview }: ProfilesPageProps) {
     });
 
     Events.Emit("hub:list");
+    Events.Emit("hub:profile:get");
 
     return () => {
       unsub();
       unsubCreated();
       unsubDeleted();
       unsubError();
-      unsubActivated();
+      unsubProfile?.();
+      unsubActivationNotif();
     };
   }, []);
 
@@ -87,6 +98,16 @@ export function ProfilesPage({ onOpenPreview }: ProfilesPageProps) {
     Events.Emit("hub:activate", { id: profile.id, file: profile.file });
     onOpenPreview?.();
   }, [onOpenPreview]);
+  const handleToggleWidget = useCallback((widgetId: string, enabled: boolean) => {
+    setActiveProfile((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        widgets: prev.widgets.map((w) => (w.id === widgetId ? { ...w, enabled } : w)),
+      };
+    });
+    Events.Emit("profile:widget:update", { widgetId, enabled });
+  }, []);
 
   return (
     <div className="max-w-[1200px] mx-auto px-6 py-8">
@@ -175,8 +196,39 @@ export function ProfilesPage({ onOpenPreview }: ProfilesPageProps) {
                 >
                   Eliminar
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedProfileId(selectedProfileId === p.id ? null : p.id)}
+                  className="btn-secondary px-4 py-2 rounded-lg text-xs font-medium text-vantare-textMuted hover:text-white whitespace-nowrap"
+                >
+                  {selectedProfileId === p.id ? "Ocultar" : "Widgets"}
+                </button>
               </div>
             </div>
+            {selectedProfileId === p.id && activeProfile?.id === p.id && activeProfile && (
+              <div className="mt-4 pt-4 border-t border-white/5">
+                <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-3">Widgets habilitados</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {activeProfile.widgets.map((w) => (
+                    <label key={w.id} className="flex items-center gap-2 text-sm text-vantare-textMuted cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={w.enabled}
+                        onChange={(e) => handleToggleWidget(w.id, e.target.checked)}
+                        className="accent-vantare-red-500"
+                      />
+                      <span>{w.id}</span>
+                      <span className="text-[10px] text-vantare-textDim font-mono">({w.type})</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+            {selectedProfileId === p.id && activeProfile?.id !== p.id && (
+              <div className="mt-4 pt-4 border-t border-white/5 text-xs text-vantare-textMuted">
+                Activa este perfil para ver y configurar sus widgets.
+              </div>
+            )}
           </div>
         ))}
       </div>
