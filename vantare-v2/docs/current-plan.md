@@ -31,28 +31,19 @@ Fase A2 de Overlays Studio completada a nivel de implementacion:
 
 ## Objetivo actual
 
-Diseñar e implementar la **Fase B: Real Widget Previews**. Se reemplazará el placeholder de texto en el editor de Widgets por un renderizado real, centrado y aislado del widget, reflejando en tiempo real los cambios de apariencia.
+Definir y empezar la siguiente fase (Fase C) del proyecto, tras haber completado con éxito la Fase A2 (Navegación de Overlays Studio) y la Fase B (Widget Previews).
 
-## Dentro de alcance ahora
-
-- Definición del miniplan `v2-fB-widget-preview.md`.
-- Implementación de la preview aislada en `WidgetPreviewPanel.tsx`.
-- Mock de datos de telemetría para la visualización del widget.
-- Reflejar cambios de controles de widget en tiempo real.
-
-## Fuera de alcance ahora
-
-- Refactors de codigo.
-- Cambios en el LayoutStudio.
-- Dependencias nuevas.
-- Community downloads/sharing.
-- Cambios en esquema JSON de perfiles.
+## Estado de la Fase B: Completada
+- Se implementó la preview aislada en `WidgetPreviewPanel.tsx`.
+- Se usa `ResizeObserver` para ajustar el tamaño relativo sin desbordar.
+- Se agregó el fondo "checkerboard" para visibilidad.
+- Se corrigieron los rastros de renderizado (dirty rects de Chromium) aplicando GPU acceleration en `PreviewWidgetFrame`.
+- Tests 100% en verde.
 
 ## Proximas tareas pequenas
 
-1. Aclarar dudas de diseño y tamaño relativo del widget en la preview.
-2. Escribir el plan de la **Fase B** en `docs/superpowers/plans/2026-06-19-overlays-studio-phase-b-widget-preview.md`.
-3. Enviar worker a ejecutar el plan y realizar QA.
+1. Definir cuál será la siguiente fase o "Miniplan" junto al usuario.
+2. Actualizar el master plan o la documentación principal si es necesario.
 
 ## Riesgos actuales
 
