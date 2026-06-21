@@ -52,7 +52,7 @@ Parte del perfil que decide donde vive cada widget:
 - orden/capa si aplica,
 - activacion dentro de un perfil concreto.
 
-Esto pertenece a `Perfiles especificos`.
+Esto pertenece a `LayoutStudio`.
 
 ## Overlays Studio
 
@@ -60,8 +60,8 @@ Nueva zona del Hub que unifica los flujos antiguos de overlays/perfiles/preview.
 
 Contiene:
 
-- `Mis perfiles > Widgets`,
-- `Mis perfiles > Perfiles especificos`,
+- `Widgets`,
+- `Mis perfiles`,
 - `Recomendados por Vantare`,
 - `Comunidad`.
 
@@ -91,4 +91,4 @@ Le Mans Ultimate. Fuente principal actual de telemetria.
 
 Si el usuario cambia color, texto, visibilidad o comportamiento: `Widgets`.
 
-Si el usuario mueve, redimensiona o coloca elementos: `Perfiles especificos`.
+Si el usuario mueve, redimensiona o coloca elementos: `LayoutStudio`.

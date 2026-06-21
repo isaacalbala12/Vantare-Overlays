@@ -43,6 +43,30 @@ func TestFrontendDistFS(t *testing.T) {
 	}
 }
 
+func TestAppEnsureLiveTelemetryRetriesAndKeepsFallbackWhenLiveUnavailable(t *testing.T) {
+	t.Cleanup(func() { app.SetOpenLMUSource(service.OpenLMUSource) })
+
+	var calls int32
+	app.SetOpenLMUSource(func() (*service.LMUSource, error) {
+		call := atomic.AddInt32(&calls, 1)
+		if call == 1 {
+			return nil, errors.New("lmu unavailable")
+		}
+		return &service.LMUSource{}, nil
+	})
+
+	a := app.New(true)
+	if err := a.EnsureLiveTelemetry(); err == nil {
+		t.Fatal("EnsureLiveTelemetry() error=nil, want unavailable live error")
+	}
+	if got := atomic.LoadInt32(&calls); got != 2 {
+		t.Fatalf("OpenLMUSource calls=%d, want 2", got)
+	}
+	if info := a.SourceInfo(); info.Kind != service.SimulatorMock {
+		t.Fatalf("SourceInfo()=%+v, want mock fallback", info)
+	}
+}
+
 func TestAppTelemetryLifecycle(t *testing.T) {
 	a := app.New(false)
 	ctx, cancel := context.WithCancel(context.Background())

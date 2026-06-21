@@ -65,7 +65,7 @@ export function WidgetStudio({
         </div>
       </div>
 
-      <div className="grid min-h-0 flex-1 gap-4 overflow-y-auto xl:grid-cols-[280px_1fr_340px] xl:overflow-hidden">
+      <div className="grid min-h-0 flex-1 gap-4 overflow-y-auto lg:grid-cols-[280px_1fr_340px] lg:overflow-hidden">
         <StudioWidgetList
           widgets={profile.widgets}
           selectedWidgetId={selectedWidget?.id ?? null}

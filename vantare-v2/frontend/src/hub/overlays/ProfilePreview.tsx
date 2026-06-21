@@ -12,10 +12,22 @@ const LOGICAL_HEIGHT = 1080;
 export function ProfilePreview({ profile }: ProfilePreviewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [previewWidth, setPreviewWidth] = useState(360);
+  const widgets = Array.isArray(profile.widgets) ? profile.widgets : [];
 
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
+
+    const updateWidth = () => {
+      setPreviewWidth(el.clientWidth || 360);
+    };
+    updateWidth();
+
+    if (typeof ResizeObserver === "undefined") {
+      window.addEventListener("resize", updateWidth);
+      return () => window.removeEventListener("resize", updateWidth);
+    }
+
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
         setPreviewWidth(entry.contentBoxSize?.[0]?.inlineSize ?? entry.contentRect.width);
@@ -51,7 +63,7 @@ export function ProfilePreview({ profile }: ProfilePreviewProps) {
             backgroundSize: "80px 80px",
           }}
         />
-        {profile.widgets.map((widget) => (
+        {widgets.map((widget) => (
           <PreviewWidgetFrame
             key={widget.id}
             widget={widget}

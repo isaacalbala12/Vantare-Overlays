@@ -152,7 +152,7 @@ func main() {
 	emitter := &wailsEmitter{wailsApp: wailsApp}
 	var cleanup sync.Once
 	var bridge *app.TelemetryBridge
-		var opsBridge *app.OpsBridge
+	var opsBridge *app.OpsBridge
 	var httpSrv *server.Server
 	var overlayController *app.OverlayController
 	var rtSampler *ops.RuntimeSampler
@@ -252,14 +252,11 @@ func main() {
 		log.Printf("warning: could not load settings: %v (using defaults)", err)
 	}
 
-	// Apply current delta mode to telemetry source if it supports it.
-	if enriched, ok := vapp.TelemetrySource().(*app.EnrichedLMUSource); ok {
-		mode := delta.ReferenceMode(settingsSvc.Settings().DeltaMode)
-		if mode == "" {
-			mode = delta.ModeSelf
-		}
-		enriched.SetDeltaMode(mode)
+	mode := delta.ReferenceMode(settingsSvc.Settings().DeltaMode)
+	if mode == "" {
+		mode = delta.ModeSelf
 	}
+	vapp.SetDeltaMode(mode)
 
 	// Set profiles directory for profile cycling
 	profileSvc.SetProfilesDir(cfgDir)
@@ -333,6 +330,10 @@ func main() {
 		emitter.Emit("app:version", map[string]any{"version": version})
 	})
 
+	wailsApp.Event.On("telemetry:source-status:get", func(event *application.CustomEvent) {
+		emitter.Emit("telemetry:source-status", vapp.SourceInfo())
+	})
+
 	emitUpdaterError := func(message string) {
 		emitter.Emit("updater:error", map[string]any{"message": message})
 	}
@@ -396,7 +397,6 @@ func main() {
 			emitter.Emit("updater:installed", map[string]any{"ok": true})
 		}()
 	})
-
 
 	wailsApp.Event.On("updater:ignore", func(event *application.CustomEvent) {
 		var data struct {
@@ -504,13 +504,11 @@ func main() {
 		if rtSampler != nil {
 			rtSampler.SetCPUEnabled(s.CpuSampling)
 		}
-		if enriched, ok := vapp.TelemetrySource().(*app.EnrichedLMUSource); ok {
-			mode := delta.ReferenceMode(s.DeltaMode)
-			if mode == "" {
-				mode = delta.ModeSelf
-			}
-			enriched.SetDeltaMode(mode)
+		mode := delta.ReferenceMode(s.DeltaMode)
+		if mode == "" {
+			mode = delta.ModeSelf
 		}
+		vapp.SetDeltaMode(mode)
 		// Rebuild hotkeys with new combos
 		rebuildHotkeys()
 		emitter.Emit("settings-saved", map[string]any{"ok": true})
@@ -585,23 +583,28 @@ func main() {
 			log.Printf("hub:delete error: %v", err)
 			emitHubError(err.Error())
 			return
-	}
-	emitter.Emit("hub:profile-deleted", map[string]any{"ok": true})
-})
+		}
+		emitter.Emit("hub:profile-deleted", map[string]any{"ok": true})
+	})
 
-wailsApp.Event.On("hub:activate", func(event *application.CustomEvent) {
-	target := readProfileTarget(event)
-	if err := hubSvc.ActivateProfile(target); err != nil {
-		log.Printf("hub:activate error: %v", err)
-		emitHubError(err.Error())
-		return
-	}
-	profileSvc.EmitLoaded()
-	emitter.Emit("hub:profile-activated", map[string]any{"ok": true})
-})
+	wailsApp.Event.On("hub:activate", func(event *application.CustomEvent) {
+		target := readProfileTarget(event)
+		if err := hubSvc.ActivateProfile(target); err != nil {
+			log.Printf("hub:activate error: %v", err)
+			emitHubError(err.Error())
+			return
+		}
+		profileSvc.EmitLoaded()
+		emitter.Emit("hub:profile-activated", map[string]any{"ok": true})
+	})
 
 	wailsApp.Event.On("overlay:start", func(event *application.CustomEvent) {
 		target := readProfileTarget(event)
+		if err := vapp.EnsureLiveTelemetry(); err != nil {
+			log.Printf("overlay:start live telemetry unavailable, using fallback: %v", err)
+		}
+		emitter.Emit("telemetry:source-status", vapp.SourceInfo())
+
 		_, err := hubSvc.StartOverlay(target)
 		if err != nil {
 			log.Printf("overlay:start error: %v", err)

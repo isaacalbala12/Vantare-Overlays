@@ -1,5 +1,5 @@
 import { render, screen, cleanup } from "@testing-library/react";
-import { describe, expect, it, afterEach } from "vitest";
+import { describe, expect, it, afterEach, vi } from "vitest";
 import { WidgetPreviewPanel } from "./WidgetPreviewPanel";
 import type { WidgetConfig } from "../../lib/profile";
 
@@ -28,5 +28,19 @@ describe("WidgetPreviewPanel", () => {
     // Check that checkerboard background class is applied
     const container = screen.getByTestId("widget-preview-container");
     expect(container.style.backgroundImage).toContain("linear-gradient");
+  });
+
+  it("renders when ResizeObserver is unavailable", () => {
+    const originalResizeObserver = window.ResizeObserver;
+    vi.stubGlobal("ResizeObserver", undefined);
+
+    try {
+      render(<WidgetPreviewPanel activeWidget={mockWidget} />);
+
+      expect(screen.getByTestId("widget-preview-container")).toBeTruthy();
+      expect(screen.getByTestId("preview-widget-frame-test-widget")).toBeTruthy();
+    } finally {
+      vi.stubGlobal("ResizeObserver", originalResizeObserver);
+    }
   });
 });

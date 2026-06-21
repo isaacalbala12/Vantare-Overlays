@@ -9,19 +9,32 @@ import { SettingsPage } from './pages/SettingsPage';
 
 type Section = 'dashboard' | 'profiles' | 'telemetry' | 'setup';
 
+type SourceStatus = {
+  kind: string;
+  name: string;
+  live: boolean;
+  available: boolean;
+};
+
 export function HubApp() {
   const [section, setSection] = useState<Section>('dashboard');
   const [version, setVersion] = useState<string | null>(null);
+  const [sourceStatus, setSourceStatus] = useState<SourceStatus | null>(null);
 
   useEffect(() => {
     document.body.classList.add('hub');
     const unsub = Events.On('app:version', (event: { data: { version?: string } }) => {
       setVersion(event.data.version ?? null);
     });
+    const unsubSource = Events.On('telemetry:source-status', (event: { data: SourceStatus }) => {
+      setSourceStatus(event.data);
+    });
     Events.Emit('app:version:get');
+    Events.Emit('telemetry:source-status:get');
     return () => {
       document.body.classList.remove('hub');
       unsub?.();
+      unsubSource?.();
     };
   }, []);
 
@@ -31,7 +44,7 @@ export function HubApp() {
 
   return (
     <div className="h-screen premium-bg relative flex flex-col">
-      <Topbar activeSection={section} onNavigate={handleNavigate} version={version} />
+      <Topbar activeSection={section} onNavigate={handleNavigate} version={version} sourceStatus={sourceStatus} />
       <UpdateBanner />
       <ScrollableMain className="flex-1 pt-0">
         {section === "dashboard" && <DashboardPage />}

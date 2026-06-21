@@ -94,6 +94,9 @@ func (s *HubService) ListProfiles() ([]ProfileEntry, error) {
 		if err != nil {
 			continue
 		}
+		if !isListableProfile(p) {
+			continue
+		}
 		id := p.ID
 		if id == "" {
 			id = strings.TrimSuffix(e.Name(), ".json")
@@ -108,6 +111,18 @@ func (s *HubService) ListProfiles() ([]ProfileEntry, error) {
 		})
 	}
 	return profiles, nil
+}
+
+func isListableProfile(p *config.ProfileConfig) bool {
+	if p == nil || p.Widgets == nil {
+		return false
+	}
+	switch p.DisplayMode {
+	case config.ModeRacing, config.ModeEdit, config.ModeStreaming:
+		return true
+	default:
+		return false
+	}
 }
 
 // CreateProfile creates a new profile with default widgets.

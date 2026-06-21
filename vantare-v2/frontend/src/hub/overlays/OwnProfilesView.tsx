@@ -1,8 +1,11 @@
-import { profileLabel, type ProfileEntry } from "../state/overlay-workbench";
+import { isRunningProfile, profileLabel, type OverlayStatus, type ProfileEntry } from "../state/overlay-workbench";
 import { ProfilePreview } from "./ProfilePreview";
 
 type OwnProfilesViewProps = {
   profiles: ProfileEntry[];
+  overlayStatus: OverlayStatus | null;
+  onStartOverlay: (profile: ProfileEntry) => void;
+  onStopOverlay: () => void;
   onOpenProfile: (profile: ProfileEntry) => void;
   onCreateProfile: () => void;
   onBack: () => void;
@@ -10,6 +13,9 @@ type OwnProfilesViewProps = {
 
 export function OwnProfilesView({
   profiles,
+  overlayStatus,
+  onStartOverlay,
+  onStopOverlay,
   onOpenProfile,
   onCreateProfile,
   onBack,
@@ -33,7 +39,7 @@ export function OwnProfilesView({
         <button
           type="button"
           onClick={onCreateProfile}
-          className="btn-primary rounded-lg px-5 py-2 text-xs font-bold text-white"
+          className="btn-primary rounded-lg px-5 py-2 text-xs font-bold text-white cursor-pointer"
         >
           Nuevo perfil
         </button>
@@ -47,10 +53,12 @@ export function OwnProfilesView({
         <div className="grid gap-5 lg:grid-cols-2 xl:grid-cols-3">
           {profiles.map((profile) => {
             const label = profileLabel(profile);
+            const running = isRunningProfile(profile, overlayStatus);
+            const previewProfile = Array.isArray(profile.profile?.widgets) ? profile.profile : null;
             return (
               <article key={profile.file} className="card-sleek rounded-xl p-5">
-                {profile.profile ? (
-                  <ProfilePreview profile={profile.profile} />
+                {previewProfile ? (
+                  <ProfilePreview profile={previewProfile} />
                 ) : (
                   <div className="flex aspect-video items-center justify-center rounded-lg border border-white/10 bg-black/25 text-xs text-vantare-textMuted">
                     Preview no disponible
@@ -62,14 +70,35 @@ export function OwnProfilesView({
                     {profile.displayMode} · {profile.widgets} widgets
                   </p>
                 </div>
-                <button
-                  type="button"
-                  aria-label={`Editar ${label}`}
-                  onClick={() => onOpenProfile(profile)}
-                  className="btn-primary mt-4 w-full rounded-lg px-4 py-2 text-xs font-bold text-white"
-                >
-                  Editar layout
-                </button>
+                <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                  <button
+                    type="button"
+                    aria-label={`Editar ${label}`}
+                    onClick={() => onOpenProfile(profile)}
+                    className="btn-secondary rounded-lg px-4 py-2 text-xs font-bold text-white cursor-pointer"
+                  >
+                    Editar layout
+                  </button>
+                  {running ? (
+                    <button
+                      type="button"
+                      aria-label={`Detener overlay de ${label}`}
+                      onClick={onStopOverlay}
+                      className="btn-secondary rounded-lg px-4 py-2 text-xs font-bold text-white cursor-pointer"
+                    >
+                      Detener overlay
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      aria-label={`Abrir overlay para ${label}`}
+                      onClick={() => onStartOverlay(profile)}
+                      className="btn-primary rounded-lg px-4 py-2 text-xs font-bold text-white cursor-pointer"
+                    >
+                      Abrir overlay
+                    </button>
+                  )}
+                </div>
               </article>
             );
           })}

@@ -1,5 +1,5 @@
 import { render, screen, cleanup } from "@testing-library/react";
-import { describe, expect, it, afterEach } from "vitest";
+import { describe, expect, it, afterEach, vi } from "vitest";
 import { ProfilePreview } from "./ProfilePreview";
 import type { ProfileConfig } from "../../lib/profile";
 
@@ -18,6 +18,18 @@ const profile: ProfileConfig = {
   ],
 };
 
+const fullRacingProfile: ProfileConfig = {
+  ...profile,
+  widgets: [
+    { id: "delta", type: "delta", enabled: true, updateHz: 30, position: { x: 610, y: 940, w: 700, h: 120 } },
+    { id: "relative", type: "relative", enabled: true, updateHz: 15, position: { x: 40, y: 40, w: 300, h: 250 } },
+    { id: "standings", type: "standings", enabled: true, updateHz: 15, position: { x: 1310, y: 156, w: 320, h: 550 } },
+    { id: "telemetry", type: "telemetry", enabled: true, updateHz: 30, position: { x: 176, y: 488, w: 400, h: 250 } },
+    { id: "telemetry-vertical", type: "telemetry-vertical", enabled: true, updateHz: 30, position: { x: 1338, y: 66, w: 140, h: 400 } },
+    { id: "pedals", type: "pedals", enabled: true, updateHz: 30, position: { x: 690, y: 980, w: 530, h: 80 } },
+  ],
+};
+
 describe("ProfilePreview", () => {
   it("renders real preview widget frames for a profile", () => {
     render(<ProfilePreview profile={profile} />);
@@ -25,5 +37,27 @@ describe("ProfilePreview", () => {
     expect(screen.getByTestId("profile-preview")).toBeTruthy();
     expect(screen.getByTestId("preview-widget-frame-delta")).toBeTruthy();
     expect(screen.getByTestId("preview-widget-frame-relative")).toBeTruthy();
+  });
+
+  it("renders when ResizeObserver is unavailable", () => {
+    const originalResizeObserver = window.ResizeObserver;
+    vi.stubGlobal("ResizeObserver", undefined);
+
+    try {
+      render(<ProfilePreview profile={profile} />);
+
+      expect(screen.getByTestId("profile-preview")).toBeTruthy();
+      expect(screen.getByTestId("preview-widget-frame-delta")).toBeTruthy();
+    } finally {
+      vi.stubGlobal("ResizeObserver", originalResizeObserver);
+    }
+  });
+
+  it("renders all implemented widgets used by the racing profile", () => {
+    render(<ProfilePreview profile={fullRacingProfile} />);
+
+    expect(screen.getByTestId("preview-widget-frame-telemetry")).toBeTruthy();
+    expect(screen.getByTestId("preview-widget-frame-telemetry-vertical")).toBeTruthy();
+    expect(screen.getByTestId("preview-widget-frame-pedals")).toBeTruthy();
   });
 });

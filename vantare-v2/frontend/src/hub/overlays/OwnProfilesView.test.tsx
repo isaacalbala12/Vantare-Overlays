@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, cleanup } from "@testing-library/react";
 import { describe, expect, it, vi, afterEach } from "vitest";
 import { OwnProfilesView } from "./OwnProfilesView";
-import type { ProfileEntry } from "../state/overlay-workbench";
+import type { OverlayStatus, ProfileEntry } from "../state/overlay-workbench";
 import type { ProfileConfig } from "../../lib/profile";
 
 afterEach(() => {
@@ -34,6 +34,9 @@ describe("OwnProfilesView", () => {
     render(
       <OwnProfilesView
         profiles={profiles}
+        overlayStatus={null}
+        onStartOverlay={vi.fn()}
+        onStopOverlay={vi.fn()}
         onOpenProfile={vi.fn()}
         onCreateProfile={vi.fn()}
         onBack={vi.fn()}
@@ -60,6 +63,9 @@ describe("OwnProfilesView", () => {
     render(
       <OwnProfilesView
         profiles={withoutProfile}
+        overlayStatus={null}
+        onStartOverlay={vi.fn()}
+        onStopOverlay={vi.fn()}
         onOpenProfile={vi.fn()}
         onCreateProfile={vi.fn()}
         onBack={vi.fn()}
@@ -67,6 +73,39 @@ describe("OwnProfilesView", () => {
     );
 
     expect(screen.getByText("Sin Preview")).toBeTruthy();
+    expect(screen.getByText("Preview no disponible")).toBeTruthy();
+    expect(screen.queryByTestId("profile-preview")).toBeNull();
+  });
+
+  it("shows preview no disponible when a profile entry has malformed widgets", () => {
+    const malformedProfile: ProfileEntry[] = [
+      {
+        id: "app-settings",
+        file: "app-settings.json",
+        name: "Settings",
+        displayMode: "racing",
+        widgets: 0,
+        profile: {
+          id: "app-settings",
+          displayMode: "racing",
+          monitorIndex: 0,
+          widgets: null,
+        } as unknown as ProfileConfig,
+      },
+    ];
+
+    render(
+      <OwnProfilesView
+        profiles={malformedProfile}
+        overlayStatus={null}
+        onStartOverlay={vi.fn()}
+        onStopOverlay={vi.fn()}
+        onOpenProfile={vi.fn()}
+        onCreateProfile={vi.fn()}
+        onBack={vi.fn()}
+      />,
+    );
+
     expect(screen.getByText("Preview no disponible")).toBeTruthy();
     expect(screen.queryByTestId("profile-preview")).toBeNull();
   });
@@ -79,6 +118,9 @@ describe("OwnProfilesView", () => {
     render(
       <OwnProfilesView
         profiles={profiles}
+        overlayStatus={null}
+        onStartOverlay={vi.fn()}
+        onStopOverlay={vi.fn()}
         onOpenProfile={onOpenProfile}
         onCreateProfile={onCreateProfile}
         onBack={onBack}
@@ -92,5 +134,50 @@ describe("OwnProfilesView", () => {
     expect(onOpenProfile).toHaveBeenCalledWith(profiles[0]);
     expect(onCreateProfile).toHaveBeenCalledTimes(1);
     expect(onBack).toHaveBeenCalledTimes(1);
+  });
+
+  it("starts the selected profile overlay from a profile card", () => {
+    const onStartOverlay = vi.fn();
+
+    render(
+      <OwnProfilesView
+        profiles={profiles}
+        overlayStatus={null}
+        onStartOverlay={onStartOverlay}
+        onStopOverlay={vi.fn()}
+        onOpenProfile={vi.fn()}
+        onCreateProfile={vi.fn()}
+        onBack={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /Abrir overlay para Default Racing/i }));
+
+    expect(onStartOverlay).toHaveBeenCalledWith(profiles[0]);
+  });
+
+  it("stops the running profile overlay from a profile card", () => {
+    const onStopOverlay = vi.fn();
+    const overlayStatus: OverlayStatus = {
+      running: true,
+      profileId: "default-racing",
+      mode: "racing",
+    };
+
+    render(
+      <OwnProfilesView
+        profiles={profiles}
+        overlayStatus={overlayStatus}
+        onStartOverlay={vi.fn()}
+        onStopOverlay={onStopOverlay}
+        onOpenProfile={vi.fn()}
+        onCreateProfile={vi.fn()}
+        onBack={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /Detener overlay de Default Racing/i }));
+
+    expect(onStopOverlay).toHaveBeenCalledTimes(1);
   });
 });

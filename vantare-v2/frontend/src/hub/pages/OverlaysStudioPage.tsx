@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Events } from "@wailsio/runtime";
 import { StudioHome } from "../overlays/StudioHome";
 import { WidgetStudio } from "../overlays/WidgetStudio";
@@ -8,7 +8,7 @@ import { RecommendedProfilesView } from "../overlays/RecommendedProfilesView";
 import { CommunityComingSoonView } from "../overlays/CommunityComingSoonView";
 import { useOverlayStudioState } from "../overlays/useOverlayStudioState";
 import { RECOMMENDED_PROFILES, cloneRecommendedProfile, type RecommendedProfile } from "../overlays/recommended-profiles";
-import type { ProfileEntry } from "../state/overlay-workbench";
+import { isRunningProfile, profileTarget, type OverlayStatus, type ProfileEntry } from "../state/overlay-workbench";
 
 type StudioMode = "home" | "widgets" | "ownProfiles" | "recommended" | "community" | "layout";
 
@@ -17,6 +17,16 @@ export function OverlaysStudioPage() {
   const [mode, setMode] = useState<StudioMode>("home");
   const [notice, setNotice] = useState<string | null>(null);
   const [layoutTarget, setLayoutTarget] = useState<string | null>(null);
+  const [overlayStatus, setOverlayStatus] = useState<OverlayStatus | null>(null);
+
+  useEffect(() => {
+    const unsubOverlayStatus = Events.On("overlay:status", (event: { data: unknown }) => {
+      setOverlayStatus(event.data as OverlayStatus);
+    });
+    return () => {
+      unsubOverlayStatus();
+    };
+  }, []);
 
   function goHome() {
     setNotice(null);
@@ -47,6 +57,14 @@ export function OverlaysStudioPage() {
     const name = window.prompt("Nombre del perfil propio", profile.name);
     if (!name?.trim()) return;
     Events.Emit("hub:save-own-copy", { profile: cloneRecommendedProfile(profile, name.trim()) });
+  }
+
+  function startOverlay(profile: ProfileEntry) {
+    Events.Emit("overlay:start", profileTarget(profile));
+  }
+
+  function stopOverlay() {
+    Events.Emit("overlay:stop");
   }
 
   if (mode === "widgets") {
@@ -99,12 +117,20 @@ export function OverlaysStudioPage() {
       );
     }
 
+    const activeEntry = studio.profiles.find((entry) => entry.id === studio.profile?.id) ?? null;
+    const activeOverlayRunning = activeEntry ? isRunningProfile(activeEntry, overlayStatus) : Boolean(overlayStatus?.running);
+
     return (
       <LayoutStudio
         profile={studio.profile}
         selectedWidgetId={studio.selectedWidgetId}
         dirty={studio.dirty}
         saveState={studio.saveState}
+        overlayRunning={activeOverlayRunning}
+        onStartOverlay={() => {
+          if (activeEntry) startOverlay(activeEntry);
+        }}
+        onStopOverlay={stopOverlay}
         onSelectWidget={studio.setSelectedWidgetId}
         onChangeProfile={studio.updateDraft}
         onSave={studio.saveProfile}
@@ -117,6 +143,9 @@ export function OverlaysStudioPage() {
     return (
       <OwnProfilesView
         profiles={studio.profiles}
+        overlayStatus={overlayStatus}
+        onStartOverlay={startOverlay}
+        onStopOverlay={stopOverlay}
         onOpenProfile={openProfile}
         onCreateProfile={createProfile}
         onBack={goHome}

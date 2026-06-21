@@ -6,6 +6,7 @@ Este indice ayuda a agentes y reviewers a saber que leer antes de tocar el repo.
 
 - `../AGENTS.md`: reglas obligatorias para cualquier agente.
 - `current-plan.md`: estado actual, alcance vivo y proximas tareas.
+- `superpowers/plans/`: planes detallados ya aprobados para Overlays Studio.
 - `architecture.md`: separacion entre Go, TypeScript, dominio, adaptadores y UI.
 - `domain-model.md`: nombres canonicos del producto.
 - `testing-strategy.md`: comandos y reglas de testing.
@@ -55,3 +56,7 @@ Plantillas en `prompts/`:
 ## Documentacion externa relacionada
 
 El proyecto historicamente tiene planes y documentacion fuera de `vantare-v2`, en la carpeta superior `C:\Users\isaac\Desktop\Vantare-Overlays\docs`. Esta capa de control trabaja dentro de `vantare-v2` y no mueve esos archivos automaticamente.
+
+## Estado de roadmap
+
+La documentacion viva actual deja constancia de que Fase A, Fase A2, Fase B y la restauracion de controles live estan implementadas. Todavia no hay un roadmap de lanzamiento alpha/beta cerrado dentro del repo: el siguiente paso recomendado es una comprobacion manual completa y, con esa evidencia, un roadmap corto de 7-10 dias.

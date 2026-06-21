@@ -62,7 +62,7 @@ export const PreviewWidgetFrame = function PreviewWidgetFrame({
 
   // Local visual position during drag/resize to avoid parent re-renders.
   const [previewRect, setPreviewRect] = useState<Rect | null>(null);
-  const visualRect = previewRect ?? widget.position;
+  const visualRect = previewRect ?? widget.position ?? { x: 0, y: 0, w: 200, h: 200 };
 
   const committedRef = useRef(onChangePosition);
   useEffect(() => {

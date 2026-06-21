@@ -75,9 +75,11 @@ Debe encargarse de:
 Separacion obligatoria:
 
 - `Widgets`: edita aspecto/comportamiento del widget.
-- `Perfiles especificos`: edita posicion, tamano, orden/layout y composicion del perfil.
+- `Mis perfiles`: entrada a perfiles propios y a `LayoutStudio`.
+- `LayoutStudio`: edita posicion, tamano, orden/layout y composicion del perfil.
 - `Recomendados por Vantare`: presets read-only hasta que se guarden como perfil propio.
 - `Comunidad`: proximamente.
+- Los controles de `Abrir overlay` / `Detener overlay` viven en `Mis perfiles` y `LayoutStudio`, no en `WidgetStudio`.
 
 Riesgo a evitar: volver a mezclar controles de layout dentro de `Widgets`.
 

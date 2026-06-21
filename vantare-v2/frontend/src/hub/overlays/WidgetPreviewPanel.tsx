@@ -12,25 +12,39 @@ export function WidgetPreviewPanel({ activeWidget }: WidgetPreviewPanelProps) {
 
   // Auto-fit calculation
   useEffect(() => {
-    if (!activeWidget || !containerRef.current) return;
+    const container = containerRef.current;
+    if (!activeWidget || !container) return;
+
+    const updateScale = (containerW: number, containerH: number) => {
+      // Leave a 60px padding safety margin
+      const safeW = Math.max(1, containerW - 60);
+      const safeH = Math.max(1, containerH - 60);
+
+      const scaleW = safeW / Math.max(1, activeWidget.position.w);
+      const scaleH = safeH / Math.max(1, activeWidget.position.h);
+
+      // Use the smallest scale to fit, but cap it at 3x to avoid gigantic widgets
+      const fitScale = Math.min(scaleW, scaleH, 3);
+      setScale(fitScale);
+    };
+
+    const updateFromElement = () => {
+      updateScale(container.clientWidth, container.clientHeight);
+    };
+    updateFromElement();
+
+    if (typeof ResizeObserver === "undefined") {
+      window.addEventListener("resize", updateFromElement);
+      return () => window.removeEventListener("resize", updateFromElement);
+    }
 
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        const { width: containerW, height: containerH } = entry.contentRect;
-        // Leave a 60px padding safety margin
-        const safeW = Math.max(1, containerW - 60);
-        const safeH = Math.max(1, containerH - 60);
-        
-        const scaleW = safeW / Math.max(1, activeWidget.position.w);
-        const scaleH = safeH / Math.max(1, activeWidget.position.h);
-        
-        // Use the smallest scale to fit, but cap it at 3x to avoid gigantic widgets
-        const fitScale = Math.min(scaleW, scaleH, 3);
-        setScale(fitScale);
+        updateScale(entry.contentRect.width, entry.contentRect.height);
       }
     });
 
-    observer.observe(containerRef.current);
+    observer.observe(container);
     return () => observer.disconnect();
   }, [activeWidget]);
 

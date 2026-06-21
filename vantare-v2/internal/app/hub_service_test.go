@@ -2,6 +2,7 @@ package app_test
 
 import (
 	"errors"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -207,6 +208,40 @@ func TestHubServiceListProfilesIncludesProfileConfig(t *testing.T) {
 	}
 	if len(got[0].Profile.Widgets) != 1 {
 		t.Fatalf("Profile.Widgets len=%d, want 1", len(got[0].Profile.Widgets))
+	}
+}
+
+func TestHubServiceListProfilesSkipsNonProfileJSONFiles(t *testing.T) {
+	dir := t.TempDir()
+	profile := &config.ProfileConfig{
+		ID:           "preview-profile",
+		Name:         "Preview Profile",
+		DisplayMode:  config.ModeRacing,
+		MonitorIndex: 0,
+		Widgets: []config.WidgetConfig{
+			{ID: "delta", Type: "delta", Enabled: true, Position: config.Rect{X: 1, Y: 2, W: 3, H: 4}},
+		},
+	}
+	if err := config.SaveFile(filepath.Join(dir, "preview-profile.json"), profile); err != nil {
+		t.Fatalf("save profile: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "app-settings.json"), []byte(`{"deltaMode":"self","cpuSampling":true}`), 0644); err != nil {
+		t.Fatalf("write settings: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "updater-settings.json"), []byte(`{"channel":"stable"}`), 0644); err != nil {
+		t.Fatalf("write updater settings: %v", err)
+	}
+
+	service := app.NewHubService(dir, nil, nil, nil)
+	got, err := service.ListProfiles()
+	if err != nil {
+		t.Fatalf("ListProfiles() error = %v", err)
+	}
+	if len(got) != 1 {
+		t.Fatalf("profiles len=%d, want 1", len(got))
+	}
+	if got[0].ID != "preview-profile" {
+		t.Fatalf("profile id=%q, want preview-profile", got[0].ID)
 	}
 }
 

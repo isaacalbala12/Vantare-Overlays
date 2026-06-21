@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vantare App - Mockup</title>
+    <style>
+        :root {
+            --bg-base: #121212;
+            --bg-surface: #1e1e1e;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --accent: #ff4757;
+            --border: #333333;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar / Menú de pestañas */
+        nav.sidebar {
+            width: 250px;
+            background-color: var(--bg-surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .brand {
+            padding: 20px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--accent);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tabs {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            flex-grow: 1;
+        }
+
+        .tab-item {
+            padding: 15px 20px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border);
+            transition: background-color 0.2s;
+        }
+
+        .tab-item:hover {
+            background-color: #2a2a2a;
+        }
+
+        .tab-item.active {
+            background-color: #2a2a2a;
+            border-left: 4px solid var(--accent);
+            padding-left: 16px;
+        }
+
+        /* Área de contenido principal */
+        main.content {
+            flex-grow: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        header {
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div class="brand">Vantare</div>
+        <ul class="tabs">
+            <li class="tab-item active">Dashboard</li>
+            <!-- Las pestañas se irán añadiendo aquí -->
+        </ul>
+    </nav>
+
+    <main class="content">
+        <header>
+            <h1>Dashboard</h1>
+            <p style="color: var(--text-secondary);">Contenido inicial...</p>
+        </header>
+        
+        <div id="tab-content">
+            <!-- El contenido de la pestaña activa irá aquí -->
+            <p>Dime qué pestañas y elementos quieres incluir y los iremos maquetando.</p>
+        </div>
+    </main>
+
+</body>
+</html>

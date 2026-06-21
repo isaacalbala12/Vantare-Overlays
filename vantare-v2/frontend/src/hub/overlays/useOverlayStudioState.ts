@@ -4,9 +4,12 @@ import type { ProfileConfig, WidgetConfig } from "../../lib/profile";
 import type { ProfileEntry } from "../state/overlay-workbench";
 
 type ProfileLoadedEvent = {
-  data: {
-    profile: ProfileConfig;
-  };
+  data: unknown;
+};
+
+// Wails v3 emits payloads as an array of arguments to the JS runtime.
+const getPayload = <T,>(event: { data: unknown }): T => {
+  return (Array.isArray(event.data) ? event.data[0] : event.data) as T;
 };
 
 export type SaveState = "idle" | "saving" | "saved" | "error";
@@ -39,8 +42,8 @@ export function useOverlayStudioState() {
 
   useEffect(() => {
     const unsubProfiles = Events.On("hub:profiles", (event: { data: unknown }) => {
-      const data = event.data as { profiles?: ProfileEntry[] };
-      setProfiles(data.profiles ?? []);
+      const data = getPayload<{ profiles?: ProfileEntry[] }>(event);
+      setProfiles(data?.profiles ?? []);
     });
 
     const unsubCreated = Events.On("hub:profile-created", () => {
@@ -48,7 +51,8 @@ export function useOverlayStudioState() {
     });
 
     const unsubLoaded = Events.On("profile:loaded", (event: ProfileLoadedEvent) => {
-      loadProfile(event.data.profile);
+      const data = getPayload<{ profile: ProfileConfig }>(event);
+      if (data?.profile) loadProfile(data.profile);
     });
 
     const unsubSaved = Events.On("layout:saved", () => {
@@ -58,7 +62,7 @@ export function useOverlayStudioState() {
     });
 
     const unsubError = Events.On("hub:error", (event: { data: unknown }) => {
-      const data = event.data as { message?: string };
+      const data = getPayload<{ message?: string }>(event);
       setSaveState("error");
       setLastError(data?.message ?? "Error del hub");
     });

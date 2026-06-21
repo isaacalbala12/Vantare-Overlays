@@ -9,6 +9,9 @@ type LayoutStudioProps = {
   selectedWidgetId: string | null;
   dirty: boolean;
   saveState: SaveState;
+  overlayRunning: boolean;
+  onStartOverlay: () => void;
+  onStopOverlay: () => void;
   onSelectWidget: (id: string) => void;
   onChangeProfile: (profile: ProfileConfig) => void;
   onSave: () => void;
@@ -20,6 +23,9 @@ export function LayoutStudio({
   selectedWidgetId,
   dirty,
   saveState,
+  overlayRunning,
+  onStartOverlay,
+  onStopOverlay,
   onSelectWidget,
   onChangeProfile,
   onSave,
@@ -59,6 +65,24 @@ export function LayoutStudio({
           >
             Guardar
           </button>
+          {overlayRunning ? (
+            <button
+              type="button"
+              onClick={onStopOverlay}
+              className="btn-secondary rounded-lg px-4 py-2 text-xs font-bold text-white cursor-pointer"
+            >
+              Detener overlay
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={onStartOverlay}
+              disabled={dirty || saveState === "saving"}
+              className="btn-primary rounded-lg px-4 py-2 text-xs font-bold text-white disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
+            >
+              Abrir overlay
+            </button>
+          )}
         </div>
       </div>
 
