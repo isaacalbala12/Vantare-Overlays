@@ -26,21 +26,93 @@ type Rect struct {
 
 // WidgetConfig describes one overlay widget.
 type WidgetConfig struct {
+	ID        string         `json:"id"`
+	Type      string         `json:"type"` // delta | relative | standings
+	VariantID string         `json:"variantId,omitempty"`
+	Enabled   bool           `json:"enabled"`
+	UpdateHz  int            `json:"updateHz,omitempty"`
+	Position  Rect           `json:"position"`
+	Props     map[string]any `json:"props,omitempty"`
+}
+
+const ProfileSchemaVersionV2 = 2
+
+// LayoutType identifies a profile layout by session/use case.
+type LayoutType string
+
+const (
+	LayoutGeneral    LayoutType = "general"
+	LayoutPractice   LayoutType = "practice"
+	LayoutQualifying LayoutType = "qualifying"
+	LayoutRace       LayoutType = "race"
+	LayoutEndurance  LayoutType = "endurance"
+)
+
+// ProfileLayout stores positioned widget instances for one layout.
+type ProfileLayout struct {
+	Type    LayoutType     `json:"type"`
+	Widgets []WidgetConfig `json:"widgets"`
+}
+
+// ProfileSourceMeta records where a profile came from when copied from a recommended preset.
+type ProfileSourceMeta struct {
+	Kind      string `json:"kind,omitempty"`
+	ProfileID string `json:"profileId,omitempty"`
+	Name      string `json:"name,omitempty"`
+}
+
+// WidgetVariantConfig stores reusable internal widget configuration.
+type WidgetVariantConfig struct {
+	ID           string              `json:"id"`
+	WidgetType   string              `json:"widgetType"`
+	TemplateID   string              `json:"templateId,omitempty"`
+	ThemeID      string              `json:"themeId,omitempty"`
+	Name         string              `json:"name,omitempty"`
+	Slots        []SlotConfig        `json:"slots,omitempty"`
+	Columns      []ColumnConfig      `json:"columns,omitempty"`
+	ColumnGroups []ColumnGroupConfig `json:"columnGroups,omitempty"`
+	Filters      map[string]any      `json:"filters,omitempty"`
+	Formats      map[string]any      `json:"formats,omitempty"`
+	Props        map[string]any      `json:"props,omitempty"`
+}
+
+// SlotConfig defines a configurable slot within a widget region.
+type SlotConfig struct {
 	ID       string         `json:"id"`
-	Type     string         `json:"type"` // delta | relative | standings
+	MetricID string         `json:"metricId"`
 	Enabled  bool           `json:"enabled"`
-	UpdateHz int            `json:"updateHz,omitempty"`
-	Position Rect           `json:"position"`
-	Props    map[string]any `json:"props,omitempty"`
+	Format   map[string]any `json:"format,omitempty"`
+	Style    map[string]any `json:"style,omitempty"`
+}
+
+// ColumnConfig defines a column in repeatable widget rows.
+type ColumnConfig struct {
+	ID       string         `json:"id"`
+	MetricID string         `json:"metricId"`
+	Enabled  bool           `json:"enabled"`
+	Width    int            `json:"width,omitempty"`
+	Format   map[string]any `json:"format,omitempty"`
+	Style    map[string]any `json:"style,omitempty"`
+}
+
+// ColumnGroupConfig groups optional columns.
+type ColumnGroupConfig struct {
+	ID      string         `json:"id"`
+	Enabled bool           `json:"enabled"`
+	Columns []ColumnConfig `json:"columns,omitempty"`
 }
 
 // ProfileConfig is the top-level JSON schema for a layout profile.
 type ProfileConfig struct {
-	ID           string        `json:"id,omitempty"`
-	Name         string        `json:"name,omitempty"`
-	DisplayMode  DisplayMode   `json:"displayMode"`
-	MonitorIndex int           `json:"monitorIndex"` // reserved: multi-monitor placement (F9); primary monitor for now
-	Widgets      []WidgetConfig `json:"widgets"`
+	SchemaVersion int                          `json:"schemaVersion,omitempty"`
+	ID            string                       `json:"id,omitempty"`
+	Name          string                       `json:"name,omitempty"`
+	DisplayMode   DisplayMode                  `json:"displayMode"`
+	MonitorIndex  int                          `json:"monitorIndex"` // reserved: multi-monitor placement (F9); primary monitor for now
+	Widgets       []WidgetConfig               `json:"widgets"`
+	Layouts       map[LayoutType]ProfileLayout `json:"layouts,omitempty"`
+	Variants      []WidgetVariantConfig        `json:"variants,omitempty"`
+	Source        *ProfileSourceMeta           `json:"source,omitempty"`
 }
 
 // LoadFile reads a profile JSON from disk.
@@ -66,6 +138,236 @@ func SaveFile(path string, p *ProfileConfig) error {
 		return fmt.Errorf("write profile %s: %w", path, err)
 	}
 	return nil
+}
+
+// ConvertProfileToV2 returns a v2 copy without mutating the input profile.
+func ConvertProfileToV2(p *ProfileConfig) *ProfileConfig {
+	if p == nil {
+		return nil
+	}
+	next := *p
+	next.SchemaVersion = ProfileSchemaVersionV2
+	next.Widgets = copyWidgetsWithDefaultVariants(next.Widgets)
+	next.Layouts = CopyProfileLayouts(next.Layouts)
+	if next.Layouts == nil {
+		next.Layouts = map[LayoutType]ProfileLayout{}
+	}
+	if _, ok := next.Layouts[LayoutGeneral]; !ok {
+		next.Layouts[LayoutGeneral] = ProfileLayout{
+			Type:    LayoutGeneral,
+			Widgets: copyWidgetConfigs(next.Widgets),
+		}
+	}
+	if len(next.Variants) > 0 {
+		next.Variants = copyWidgetVariants(next.Variants)
+	} else {
+		next.Variants = buildDefaultVariants(next.Widgets)
+	}
+	if next.Source != nil {
+		source := *next.Source
+		next.Source = &source
+	}
+	return &next
+}
+
+// SetGeneralLayoutWidgets updates the compatibility widgets mirror and the v2 general layout.
+func SetGeneralLayoutWidgets(p *ProfileConfig, widgets []WidgetConfig) {
+	if p == nil {
+		return
+	}
+	copied := copyWidgetConfigs(widgets)
+	p.Widgets = copyWidgetConfigs(copied)
+	if p.SchemaVersion != ProfileSchemaVersionV2 {
+		return
+	}
+	if p.Layouts == nil {
+		p.Layouts = map[LayoutType]ProfileLayout{}
+	}
+	p.Layouts[LayoutGeneral] = ProfileLayout{
+		Type:    LayoutGeneral,
+		Widgets: copied,
+	}
+}
+
+// CopyProfileLayouts returns a deep-enough copy for rollback around SaveFile.
+func CopyProfileLayouts(layouts map[LayoutType]ProfileLayout) map[LayoutType]ProfileLayout {
+	if layouts == nil {
+		return nil
+	}
+	copied := make(map[LayoutType]ProfileLayout, len(layouts))
+	for key, layout := range layouts {
+		copied[key] = ProfileLayout{
+			Type:    layout.Type,
+			Widgets: copyWidgetConfigs(layout.Widgets),
+		}
+	}
+	return copied
+}
+
+func copyWidgetsWithDefaultVariants(widgets []WidgetConfig) []WidgetConfig {
+	copied := copyWidgetConfigs(widgets)
+	for i := range copied {
+		if copied[i].VariantID == "" {
+			copied[i].VariantID = defaultVariantID(copied[i])
+		}
+	}
+	return copied
+}
+
+func copyWidgetConfigs(widgets []WidgetConfig) []WidgetConfig {
+	if widgets == nil {
+		return nil
+	}
+	copied := make([]WidgetConfig, len(widgets))
+	for i, widget := range widgets {
+		copied[i] = widget
+		copied[i].Props = copyMap(widget.Props)
+	}
+	return copied
+}
+
+func copyWidgetVariants(variants []WidgetVariantConfig) []WidgetVariantConfig {
+	if variants == nil {
+		return nil
+	}
+	copied := make([]WidgetVariantConfig, len(variants))
+	for i, variant := range variants {
+		copied[i] = variant
+		copied[i].Slots = copySlotConfigs(variant.Slots)
+		copied[i].Columns = copyColumnConfigs(variant.Columns)
+		copied[i].ColumnGroups = copyColumnGroupConfigs(variant.ColumnGroups)
+		copied[i].Filters = copyMap(variant.Filters)
+		copied[i].Formats = copyMap(variant.Formats)
+		copied[i].Props = copyMap(variant.Props)
+	}
+	return copied
+}
+
+func copySlotConfigs(slots []SlotConfig) []SlotConfig {
+	if slots == nil {
+		return nil
+	}
+	copied := make([]SlotConfig, len(slots))
+	for i, slot := range slots {
+		copied[i] = slot
+		copied[i].Format = copyMap(slot.Format)
+		copied[i].Style = copyMap(slot.Style)
+	}
+	return copied
+}
+
+func copyColumnConfigs(columns []ColumnConfig) []ColumnConfig {
+	if columns == nil {
+		return nil
+	}
+	copied := make([]ColumnConfig, len(columns))
+	for i, column := range columns {
+		copied[i] = column
+		copied[i].Format = copyMap(column.Format)
+		copied[i].Style = copyMap(column.Style)
+	}
+	return copied
+}
+
+func copyColumnGroupConfigs(groups []ColumnGroupConfig) []ColumnGroupConfig {
+	if groups == nil {
+		return nil
+	}
+	copied := make([]ColumnGroupConfig, len(groups))
+	for i, group := range groups {
+		copied[i] = group
+		copied[i].Columns = copyColumnConfigs(group.Columns)
+	}
+	return copied
+}
+
+func copyMap(values map[string]any) map[string]any {
+	if values == nil {
+		return nil
+	}
+	copied := make(map[string]any, len(values))
+	for key, value := range values {
+		copied[key] = copyAny(value)
+	}
+	return copied
+}
+
+func copyAny(value any) any {
+	switch typed := value.(type) {
+	case map[string]any:
+		return copyMap(typed)
+	case []any:
+		copied := make([]any, len(typed))
+		for i, item := range typed {
+			copied[i] = copyAny(item)
+		}
+		return copied
+	default:
+		return value
+	}
+}
+
+func buildDefaultVariants(widgets []WidgetConfig) []WidgetVariantConfig {
+	var variants []WidgetVariantConfig
+	seen := map[string]bool{}
+	for _, widget := range widgets {
+		variantID := widget.VariantID
+		if variantID == "" {
+			variantID = defaultVariantID(widget)
+		}
+		if variantID == "" || seen[variantID] {
+			continue
+		}
+		seen[variantID] = true
+		variants = append(variants, WidgetVariantConfig{
+			ID:         variantID,
+			WidgetType: widget.Type,
+			TemplateID: defaultTemplateID(widget.Type),
+			ThemeID:    defaultThemeID(widget),
+			Name:       defaultVariantName(widget),
+			Props:      copyMap(widget.Props),
+		})
+	}
+	return variants
+}
+
+func defaultVariantID(widget WidgetConfig) string {
+	if widget.ID == "" {
+		return ""
+	}
+	return "variant-" + widget.ID + "-default"
+}
+
+func defaultTemplateID(widgetType string) string {
+	switch widgetType {
+	case "relative":
+		return "relative-vantare-default"
+	case "standings":
+		return "standings-vantare-default"
+	case "pedals":
+		return "pedals-vantare-default"
+	default:
+		if widgetType == "" {
+			return ""
+		}
+		return widgetType + "-vantare-default"
+	}
+}
+
+func defaultThemeID(widget WidgetConfig) string {
+	if widget.Props != nil {
+		if style, ok := widget.Props["style"].(string); ok && style != "" {
+			return style
+		}
+	}
+	return "vantare-racing"
+}
+
+func defaultVariantName(widget WidgetConfig) string {
+	if widget.Type == "" {
+		return "Widget Default"
+	}
+	return widget.Type + " Default"
 }
 
 // CompositeBounds returns the bounding box that encloses all enabled widgets

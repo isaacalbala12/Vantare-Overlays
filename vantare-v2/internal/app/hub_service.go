@@ -159,6 +159,8 @@ func (s *HubService) CreateProfile(name string) error {
 		},
 	}
 
+	profile = config.ConvertProfileToV2(profile)
+
 	return config.SaveFile(path, profile)
 }
 

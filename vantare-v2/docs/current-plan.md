@@ -6,6 +6,12 @@ Ultima actualizacion: 2026-06-21.
 
 Vantare v2 es una app local de overlays para sim racing construida con Go/Wails y React/TypeScript.
 
+Base de schema v2 para perfiles preparada:
+- `schemaVersion: 2` permite layouts por sesion y variantes de widgets.
+- `layouts.general.widgets` existe como layout obligatorio en perfiles v2.
+- `widgets` se mantiene como espejo de compatibilidad durante la transicion.
+- Los perfiles legacy sin `schemaVersion` siguen cargando sin migracion silenciosa.
+
 La Fase A de `Overlays Studio` se encuentra completada:
 - La navegacion visible unifica `Overlays` y `Preview` bajo `Overlays Studio`.
 - `Overlays Studio` sustituye la antigua entrada visible a `Preview` como flujo principal de edicion.
@@ -58,6 +64,8 @@ La siguiente tarea no esta cerrada todavia a nivel de feature. El siguiente paso
 2. Verificar que el overlay desktop abre y cierra correctamente desde `Mis perfiles` y `LayoutStudio`.
 3. Confirmar que no quedan regresiones visibles del antiguo flujo `Preview`.
 4. Tras esa validacion, definir roadmap corto de alpha/beta con prioridades reales.
+5. Revisar el contrato schema v2 antes de implementar la primera UI persistente de `Relative`.
+6. Crear el miniplan de catalogo/template inicial de `Relative` usando `bestLap` y `lastLap` como primeras columnas opcionales persistentes.
 
 ## Riesgos actuales
 

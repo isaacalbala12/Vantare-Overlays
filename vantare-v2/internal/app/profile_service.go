@@ -17,7 +17,7 @@ type ProfileService struct {
 	profile     *config.ProfileConfig
 	mgr         *window.Manager
 	emitter     EventEmitter // for profile:loaded, layout:saved events
-	profilesDir string      // directory to scan for cycling; empty means cycling disabled
+	profilesDir string       // directory to scan for cycling; empty means cycling disabled
 }
 
 // NewProfileService creates a profile service bound to the given JSON file.
@@ -63,10 +63,12 @@ func (s *ProfileService) SaveLayout(widgets []config.WidgetConfig) error {
 	}
 	// Persist first; only mutate memory after success so an I/O error leaves
 	// the in-memory profile consistent with disk.
-	backup := s.profile.Widgets
-	s.profile.Widgets = widgets
+	backupWidgets := s.profile.Widgets
+	backupLayouts := config.CopyProfileLayouts(s.profile.Layouts)
+	config.SetGeneralLayoutWidgets(s.profile, widgets)
 	if err := config.SaveFile(s.path, s.profile); err != nil {
-		s.profile.Widgets = backup
+		s.profile.Widgets = backupWidgets
+		s.profile.Layouts = backupLayouts
 		return err
 	}
 	// skipWindowRefresh: bounds only, then refresh frontend layout origin

@@ -286,6 +286,37 @@ func TestHubServiceSaveProfileAsOwnCopy(t *testing.T) {
 	}
 }
 
+func TestHubServiceCreateProfileWritesSchemaV2(t *testing.T) {
+	dir := t.TempDir()
+	profileSvc := app.NewProfileService(filepath.Join(dir, "dummy.json"), nil, nil)
+	hubSvc := app.NewHubService(dir, profileSvc, nil, nil)
+
+	if err := hubSvc.CreateProfile("Schema Two"); err != nil {
+		t.Fatal(err)
+	}
+
+	loaded, err := config.LoadFile(filepath.Join(dir, "custom-schema-two.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if loaded.SchemaVersion != config.ProfileSchemaVersionV2 {
+		t.Fatalf("SchemaVersion=%d, want %d", loaded.SchemaVersion, config.ProfileSchemaVersionV2)
+	}
+	general, ok := loaded.Layouts[config.LayoutGeneral]
+	if !ok {
+		t.Fatal("general layout missing")
+	}
+	if len(general.Widgets) != len(loaded.Widgets) {
+		t.Fatalf("general widgets=%d, compat widgets=%d", len(general.Widgets), len(loaded.Widgets))
+	}
+	if len(loaded.Variants) != len(loaded.Widgets) {
+		t.Fatalf("variants=%d, widgets=%d", len(loaded.Variants), len(loaded.Widgets))
+	}
+	if loaded.Widgets[0].Position.W == 0 {
+		t.Fatal("created widget lost layout position")
+	}
+}
+
 func TestHubServiceRejectPathTraversal(t *testing.T) {
 	dir := t.TempDir()
 	fw := &fakeWindow{}

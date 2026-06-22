@@ -48,9 +48,60 @@ export type VisibleWhen = {
   sessionType?: ("practice" | "qual" | "race" | "warmup")[];
 };
 
+export type LayoutType = "general" | "practice" | "qualifying" | "race" | "endurance";
+
+export type SlotConfig = {
+  id: string;
+  metricId: string;
+  enabled: boolean;
+  format?: Record<string, unknown>;
+  style?: Record<string, unknown>;
+};
+
+export type ColumnConfig = {
+  id: string;
+  metricId: string;
+  enabled: boolean;
+  width?: number;
+  format?: Record<string, unknown>;
+  style?: Record<string, unknown>;
+};
+
+export type ColumnGroupConfig = {
+  id: string;
+  enabled: boolean;
+  columns?: ColumnConfig[];
+};
+
+export type WidgetVariantConfig = {
+  id: string;
+  widgetType: string;
+  templateId?: string;
+  themeId?: string;
+  name?: string;
+  slots?: SlotConfig[];
+  columns?: ColumnConfig[];
+  columnGroups?: ColumnGroupConfig[];
+  filters?: Record<string, unknown>;
+  formats?: Record<string, unknown>;
+  props?: WidgetPropsMap;
+};
+
+export type ProfileLayout = {
+  type: LayoutType;
+  widgets: WidgetConfig[];
+};
+
+export type ProfileSourceMeta = {
+  kind?: string;
+  profileId?: string;
+  name?: string;
+};
+
 export type WidgetConfig = {
   id: string;
   type: string;
+  variantId?: string;
   name?: string;
   style?: string;
   enabled: boolean;
@@ -61,11 +112,15 @@ export type WidgetConfig = {
 };
 
 export type ProfileConfig = {
+  schemaVersion?: number;
   id?: string;
   name?: string;
   displayMode: DisplayMode;
   monitorIndex: number;
   widgets: WidgetConfig[];
+  layouts?: Partial<Record<LayoutType, ProfileLayout>>;
+  variants?: WidgetVariantConfig[];
+  source?: ProfileSourceMeta;
 };
 
 export type LayoutOrigin = {
