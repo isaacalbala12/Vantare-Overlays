@@ -106,7 +106,7 @@ export function useOverlayStudioState() {
     if (!current || !dirty) return;
     setSaveState("saving");
     setLastError(null);
-    Events.Emit("layout:save", { widgets: current.widgets });
+    Events.Emit("layout:save", { widgets: current.widgets, variants: current.variants });
   }, [dirty]);
 
   const undo = useCallback(() => {

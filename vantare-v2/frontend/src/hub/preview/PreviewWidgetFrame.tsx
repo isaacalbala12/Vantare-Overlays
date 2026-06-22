@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import type { Rect, WidgetConfig } from "../../lib/profile";
-import { getWidgetStyle } from "../../lib/profile";
+import type { ProfileConfig, Rect, WidgetConfig } from "../../lib/profile";
+import { enrichWidgetPropsWithVariant } from "../../lib/widget-variants";
 import { DeltaWidget } from "../../overlay/widgets/DeltaWidget";
 import { RelativeWidget } from "../../overlay/widgets/RelativeWidget";
 import { StandingsWidget } from "../../overlay/widgets/StandingsWidget";
@@ -46,6 +46,7 @@ type PreviewWidgetFrameProps = {
   onDragStart?: (event: React.MouseEvent, widgetId: string) => void;
   onChangePosition?: (widgetId: string, position: Rect) => void;
   disabled?: boolean;
+  profile?: ProfileConfig | null;
 };
 
 export const PreviewWidgetFrame = function PreviewWidgetFrame({
@@ -56,8 +57,8 @@ export const PreviewWidgetFrame = function PreviewWidgetFrame({
   onDragStart,
   onChangePosition,
   disabled = false,
+  profile,
 }: PreviewWidgetFrameProps) {
-  const style = getWidgetStyle(widget);
   const Component = WIDGETS[widget.type];
 
   // Local visual position during drag/resize to avoid parent re-renders.
@@ -136,7 +137,7 @@ export const PreviewWidgetFrame = function PreviewWidgetFrame({
           className={`w-full h-full overflow-hidden ${widget.enabled ? "" : "opacity-45 grayscale"}`}
           style={{ pointerEvents: "none" }}
         >
-          <Component editMode={true} telemetryMode="mock" updateHz={widget.updateHz} props={{ ...widget.props, style }} />
+          <Component editMode={true} telemetryMode="mock" updateHz={widget.updateHz} props={enrichWidgetPropsWithVariant(profile, widget)} />
         </div>
       ) : (
         <div className="w-full h-full flex items-center justify-center text-white/30 text-xs font-mono">

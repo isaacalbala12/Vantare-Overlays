@@ -12,6 +12,7 @@ import {
 } from "../lib/telemetry-ref";
 import { isWidgetVisible, getCurrentTelemetryState } from "../lib/visibility";
 import { WidgetHost } from "./WidgetHost";
+import { enrichWidgetPropsWithVariant } from "../lib/widget-variants";
 import { DeltaWidget } from "./widgets/DeltaWidget";
 import { RelativeWidget } from "./widgets/RelativeWidget";
 import { StandingsWidget } from "./widgets/StandingsWidget";
@@ -131,7 +132,7 @@ export function ObsOverlayApp() {
         const localPos = toWindowLocal(w.position, layoutOrigin);
         return (
           <WidgetHost key={w.id} id={w.id} position={localPos}>
-            <Component editMode={false} telemetryMode="live" updateHz={w.updateHz} props={{ ...w.props, style: w.style ?? w.props?.style }} />
+            <Component editMode={false} telemetryMode="live" updateHz={w.updateHz} props={enrichWidgetPropsWithVariant(profile, w)} />
           </WidgetHost>
         );
       })}

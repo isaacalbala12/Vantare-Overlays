@@ -12,6 +12,12 @@ Base de schema v2 para perfiles preparada:
 - `widgets` se mantiene como espejo de compatibilidad durante la transicion.
 - Los perfiles legacy sin `schemaVersion` siguen cargando sin migracion silenciosa.
 
+Primer corte configurable de `Relative` preparado:
+- Existe catalogo frontend para metricas/columnas del `Relative` inicial.
+- `bestLap` y `lastLap` se modelan como columnas opcionales persistentes en variantes schema v2.
+- `WidgetStudio` puede activar/desactivar esas columnas sin tocar posicion ni tamano.
+- Preview, overlay desktop y OBS leen la variante referenciada por cada widget.
+
 La Fase A de `Overlays Studio` se encuentra completada:
 - La navegacion visible unifica `Overlays` y `Preview` bajo `Overlays Studio`.
 - `Overlays Studio` sustituye la antigua entrada visible a `Preview` como flujo principal de edicion.
@@ -61,11 +67,11 @@ La siguiente tarea no esta cerrada todavia a nivel de feature. El siguiente paso
 ## Proximas tareas pequenas
 
 1. Ejecutar la verificacion manual completa de `Overlays Studio`, incluyendo `Widgets`, `Mis perfiles`, `Recomendados por Vantare` y controles live.
-2. Verificar que el overlay desktop abre y cierra correctamente desde `Mis perfiles` y `LayoutStudio`.
-3. Confirmar que no quedan regresiones visibles del antiguo flujo `Preview`.
-4. Tras esa validacion, definir roadmap corto de alpha/beta con prioridades reales.
-5. Revisar el contrato schema v2 antes de implementar la primera UI persistente de `Relative`.
-6. Crear el miniplan de catalogo/template inicial de `Relative` usando `bestLap` y `lastLap` como primeras columnas opcionales persistentes.
+2. Verificar manualmente el primer corte configurable de `Relative`: activar `bestLap` y `lastLap`, guardar, recargar y abrir overlay desktop/OBS.
+3. Confirmar que `WidgetStudio` sigue sin exponer posicion/tamano/eliminar y que `LayoutStudio` sigue sin editar columnas/metricas internas.
+4. Confirmar que no quedan regresiones visibles del antiguo flujo `Preview`.
+5. Crear miniplan separado para formatos de columnas de `Relative` (`1:35.765`, `35.765`, decimales, ancho, color y alineacion).
+6. Tras esa validacion, definir roadmap corto de alpha/beta con prioridades reales.
 
 ## Riesgos actuales
 
@@ -75,6 +81,11 @@ La siguiente tarea no esta cerrada todavia a nivel de feature. El siguiente paso
 - Los agentes pueden confundir `Widgets` con `LayoutStudio`; mantener separacion estricta.
 - Modificar `PreviewWidgetFrame` puede impactar a los mini-previews de perfiles creados en la Fase A2 si no se maneja bien la propiedad de "aislamiento" o "escala".
 - La app ya tiene el flujo principal de edicion, pero todavia no hay roadmap de lanzamiento documentado para alpha/beta.
+- Hallazgos P3 pendientes de resolver (documentados para follow-up):
+  1. `columns: []` se normaliza a defaults, lo cual es ambiguo para futuros cortes.
+  2. `enrichWidgetPropsWithVariant` normaliza variantes en cada render/tick (impacto menor de rendimiento).
+  3. Densidad visual si se activan `bestLap` y `lastLap` en widgets muy pequeños.
+  4. Queda pendiente la verificación manual real de los Checkpoints A-D.
 
 ## Decisiones pendientes
 

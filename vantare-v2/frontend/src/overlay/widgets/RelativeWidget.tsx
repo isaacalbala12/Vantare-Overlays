@@ -7,6 +7,8 @@ import { setHTMLIfChanged } from "../../lib/dom-write";
 import { escapeHTML } from "../../lib/html-escape";
 import { brandTextColor } from "../../lib/color-utils";
 import { startFrameBudgetLoop } from "../../lib/frame-budget";
+import type { ColumnConfig } from "../../lib/profile";
+import { createDefaultRelativeColumns } from "./relative-catalog";
 
 type RelativeProps = {
   editMode: boolean;
@@ -14,6 +16,23 @@ type RelativeProps = {
   updateHz?: number;
   props?: Record<string, unknown>;
 };
+
+type RelativeRenderVariant = {
+  columns?: ColumnConfig[];
+};
+
+function getActiveRelativeColumns(props?: Record<string, unknown>): ColumnConfig[] {
+  const variant = props?.variant as RelativeRenderVariant | undefined;
+  const sourceColumns = variant?.columns?.length ? variant.columns : createDefaultRelativeColumns();
+  return sourceColumns.filter((column) => column.enabled);
+}
+
+export function formatLapTime(seconds: number | undefined): string {
+  if (seconds == null || !Number.isFinite(seconds) || seconds <= 0) return "-";
+  const minutes = Math.floor(seconds / 60);
+  const remaining = seconds - minutes * 60;
+  return `${minutes}:${remaining.toFixed(3).padStart(6, "0")}`;
+}
 
 const BAKED_PANEL_BG = "linear-gradient(180deg, #3a050a 0%, #0d0102 100%)";
 const BAKED_HEADER_BG = "linear-gradient(180deg, #9b2226 0%, #3a050a 100%)";
@@ -96,9 +115,11 @@ export function RelativeWidget({ editMode, telemetryMode, props, updateHz = 15 }
         return;
       }
 
-      const fingerprint = visible.map(v =>
-        `${v.id}:${v.place}:${v.timeGapToPlayer?.toFixed(2)}:${v.inPits}:${v.vehicleClass}:${v.driverNumber}:${v.driverName}:${v.teamBrandColor}:${v.isPlayer}`
-      ).join("|");
+      const activeColumns = getActiveRelativeColumns(props);
+      const columnFingerprint = activeColumns.map((column) => `${column.id}:${column.metricId}:${column.enabled}`).join(",");
+      const fingerprint = `${columnFingerprint}|${visible.map(v =>
+        `${v.id}:${v.place}:${v.timeGapToPlayer?.toFixed(2)}:${v.inPits}:${v.vehicleClass}:${v.driverNumber}:${v.driverName}:${v.teamBrandColor}:${v.bestLapTime}:${v.lastLapTime}:${v.isPlayer}`
+      ).join("|")}`;
       if (fingerprint === lastFingerprintRef.current) return;
       lastFingerprintRef.current = fingerprint;
 
@@ -135,14 +156,35 @@ export function RelativeWidget({ editMode, telemetryMode, props, updateHz = 15 }
             </div>`
           : "";
 
+        const cells = activeColumns.map((column) => {
+          switch (column.id) {
+          case "position":
+            return `<div class="w-6 text-center shrink-0" style="color:#9CA3AF">${v.place ?? ""}</div>`;
+          case "class":
+            return `<div class="w-1.5 h-full shrink-0" style="background:${resolveClassColor(v.vehicleClass, a)}"></div>`;
+          case "carNumber":
+            return numberCell;
+          case "driverName":
+            return `<div class="flex-1 px-2 tracking-wide truncate" style="color:${isP ? "#FFFFFF" : "#E5E7EB"}">${escapeHTML(truncate(v.driverName ?? "?", 18))}</div>`;
+          case "gap":
+            return `<div class="px-2 flex items-center justify-end font-mono text-[10px] shrink-0">
+              <span style="color:${gapColor}">${gapDisplay}</span>
+            </div>`;
+          case "bestLap":
+            return `<div class="px-2 w-[62px] flex items-center justify-end font-mono text-[10px] shrink-0" style="color:${a.textColor}">
+              ${escapeHTML(formatLapTime(v.bestLapTime))}
+            </div>`;
+          case "lastLap":
+            return `<div class="px-2 w-[62px] flex items-center justify-end font-mono text-[10px] shrink-0" style="color:${a.textColor}">
+              ${escapeHTML(formatLapTime(v.lastLapTime))}
+            </div>`;
+          default:
+            return "";
+          }
+        }).join("");
+
         return `<div class="flex items-center text-[11px] font-bold border-b border-black/20 transition-all" style="height:${rowHeight}px;background:${isP ? BAKED_PLAYER_BG : bgRow};${leftInset}">
-          <div class="w-6 text-center shrink-0" style="color:#9CA3AF">${v.place ?? ""}</div>
-          <div class="w-1.5 h-full shrink-0" style="background:${resolveClassColor(v.vehicleClass, a)}"></div>
-          ${numberCell}
-          <div class="flex-1 px-2 tracking-wide truncate" style="color:${isP ? "#FFFFFF" : "#E5E7EB"}">${escapeHTML(truncate(v.driverName ?? "?", 18))}</div>
-          <div class="px-2 flex items-center justify-end font-mono text-[10px] shrink-0">
-            <span style="color:${gapColor}">${gapDisplay}</span>
-          </div>
+          ${cells}
         </div>`;
       });
 

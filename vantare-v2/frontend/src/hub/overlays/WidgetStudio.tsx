@@ -71,7 +71,7 @@ export function WidgetStudio({
           selectedWidgetId={selectedWidget?.id ?? null}
           onSelectWidget={onSelectWidget}
         />
-        <WidgetPreviewPanel activeWidget={selectedWidget} />
+        <WidgetPreviewPanel profile={profile} activeWidget={selectedWidget} />
         <WidgetSettingsPanel
           profile={profile}
           widget={selectedWidget}

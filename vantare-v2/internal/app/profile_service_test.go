@@ -303,6 +303,170 @@ func TestProfileServiceSaveLayoutRestoresSchemaV2LayoutsOnDiskError(t *testing.T
 	}
 }
 
+func TestProfileServiceSaveProfileStatePersistsVariants(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "v2-variants.json")
+	profile := config.ConvertProfileToV2(&config.ProfileConfig{
+		ID:          "v2-variants",
+		DisplayMode: config.ModeEdit,
+		Widgets: []config.WidgetConfig{
+			{ID: "relative", Type: "relative", Enabled: true, Position: config.Rect{X: 10, Y: 20, W: 100, H: 50}},
+		},
+	})
+	profile.Variants[0].Columns = []config.ColumnConfig{
+		{ID: "position", MetricID: "position", Enabled: true},
+		{ID: "bestLap", MetricID: "bestLap", Enabled: false},
+	}
+	if err := config.SaveFile(path, profile); err != nil {
+		t.Fatal(err)
+	}
+
+	svc := app.NewProfileService(path, nil, nil)
+	if err := svc.Load(); err != nil {
+		t.Fatal(err)
+	}
+
+	updatedWidgets := []config.WidgetConfig{
+		{ID: "relative", Type: "relative", VariantID: profile.Widgets[0].VariantID, Enabled: true, Position: config.Rect{X: 70, Y: 80, W: 320, H: 280}},
+	}
+	updatedVariants := []config.WidgetVariantConfig{
+		{
+			ID:         profile.Variants[0].ID,
+			WidgetType: "relative",
+			Columns: []config.ColumnConfig{
+				{ID: "position", MetricID: "position", Enabled: true},
+				{ID: "bestLap", MetricID: "bestLap", Enabled: true},
+			},
+		},
+	}
+
+	if err := svc.SaveProfileState(updatedWidgets, updatedVariants); err != nil {
+		t.Fatal(err)
+	}
+
+	if svc.GetProfile().Widgets[0].Position.X != 70 {
+		t.Fatalf("in-memory X=%d, want 70", svc.GetProfile().Widgets[0].Position.X)
+	}
+	bestLap := svc.GetProfile().Variants[0].Columns[1]
+	if bestLap.ID != "bestLap" || !bestLap.Enabled {
+		t.Fatalf("in-memory variant bestLap=%+v, want enabled", bestLap)
+	}
+
+	reloaded, err := config.LoadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if reloaded.Widgets[0].Position.X != 70 {
+		t.Fatalf("disk X=%d, want 70", reloaded.Widgets[0].Position.X)
+	}
+	if len(reloaded.Variants) != 1 {
+		t.Fatalf("disk variants len=%d, want 1", len(reloaded.Variants))
+	}
+	diskBestLap := reloaded.Variants[0].Columns[1]
+	if diskBestLap.ID != "bestLap" || !diskBestLap.Enabled {
+		t.Fatalf("disk variant bestLap=%+v, want enabled", diskBestLap)
+	}
+}
+
+func TestProfileServiceSaveProfileStatePreservesVariantsWhenNil(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "v2-preserve.json")
+	profile := config.ConvertProfileToV2(&config.ProfileConfig{
+		ID:          "v2-preserve",
+		DisplayMode: config.ModeEdit,
+		Widgets: []config.WidgetConfig{
+			{ID: "relative", Type: "relative", Enabled: true, Position: config.Rect{X: 10, Y: 20, W: 100, H: 50}},
+		},
+	})
+	profile.Variants[0].Columns = []config.ColumnConfig{
+		{ID: "position", MetricID: "position", Enabled: true},
+		{ID: "bestLap", MetricID: "bestLap", Enabled: true},
+	}
+	if err := config.SaveFile(path, profile); err != nil {
+		t.Fatal(err)
+	}
+
+	svc := app.NewProfileService(path, nil, nil)
+	if err := svc.Load(); err != nil {
+		t.Fatal(err)
+	}
+
+	updatedWidgets := []config.WidgetConfig{
+		{ID: "relative", Type: "relative", VariantID: profile.Widgets[0].VariantID, Enabled: true, Position: config.Rect{X: 55, Y: 66, W: 320, H: 280}},
+	}
+
+	// nil variants must keep the existing variants untouched (backwards compatibility).
+	if err := svc.SaveProfileState(updatedWidgets, nil); err != nil {
+		t.Fatal(err)
+	}
+
+	if len(svc.GetProfile().Variants) != 1 {
+		t.Fatalf("variants len=%d, want 1", len(svc.GetProfile().Variants))
+	}
+	bestLap := svc.GetProfile().Variants[0].Columns[1]
+	if !bestLap.Enabled {
+		t.Fatalf("bestLap enabled=%v, want true", bestLap.Enabled)
+	}
+}
+
+func TestProfileServiceSaveProfileStateRestoresVariantsOnDiskError(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "v2-rollback.json")
+	profile := config.ConvertProfileToV2(&config.ProfileConfig{
+		ID:          "v2-rollback",
+		DisplayMode: config.ModeEdit,
+		Widgets: []config.WidgetConfig{
+			{ID: "relative", Type: "relative", Enabled: true, Position: config.Rect{X: 10, Y: 20, W: 100, H: 50}},
+		},
+	})
+	profile.Variants[0].Columns = []config.ColumnConfig{
+		{ID: "position", MetricID: "position", Enabled: true},
+		{ID: "bestLap", MetricID: "bestLap", Enabled: false},
+	}
+	if err := config.SaveFile(path, profile); err != nil {
+		t.Fatal(err)
+	}
+
+	svc := app.NewProfileService(path, nil, nil)
+	if err := svc.Load(); err != nil {
+		t.Fatal(err)
+	}
+
+	updatedWidgets := []config.WidgetConfig{
+		{ID: "relative", Type: "relative", VariantID: profile.Widgets[0].VariantID, Enabled: true, Position: config.Rect{X: 99, Y: 88, W: 320, H: 280}},
+	}
+	updatedVariants := []config.WidgetVariantConfig{
+		{
+			ID:         profile.Variants[0].ID,
+			WidgetType: "relative",
+			Columns: []config.ColumnConfig{
+				{ID: "position", MetricID: "position", Enabled: true},
+				{ID: "bestLap", MetricID: "bestLap", Enabled: true},
+			},
+		},
+	}
+
+	// Turn the file path into a directory so SaveFile fails.
+	if err := os.Remove(path); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Mkdir(path, 0755); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := svc.SaveProfileState(updatedWidgets, updatedVariants); err == nil {
+		t.Fatal("expected save error")
+	}
+
+	if svc.GetProfile().Widgets[0].Position.X != 10 {
+		t.Fatalf("compat X=%d, want 10 after failed save", svc.GetProfile().Widgets[0].Position.X)
+	}
+	bestLap := svc.GetProfile().Variants[0].Columns[1]
+	if bestLap.Enabled {
+		t.Fatalf("bestLap enabled=%v, want false after failed save", bestLap.Enabled)
+	}
+}
+
 func TestProfileServiceSaveLayoutRestoresWidgetsOnDiskError(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "test.json")

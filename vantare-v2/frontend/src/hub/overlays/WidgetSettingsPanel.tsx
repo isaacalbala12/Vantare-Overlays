@@ -1,5 +1,6 @@
 import type { ProfileConfig, WidgetConfig } from "../../lib/profile";
 import { PreviewInspector } from "../preview/PreviewInspector";
+import { RelativeSettingsSection } from "./RelativeSettingsSection";
 
 type WidgetSettingsPanelProps = {
   profile: ProfileConfig;
@@ -9,13 +10,26 @@ type WidgetSettingsPanelProps = {
 
 export function WidgetSettingsPanel({ profile, widget, onChangeProfile }: WidgetSettingsPanelProps) {
   return (
-    <PreviewInspector
-      profile={profile}
-      widget={widget}
-      onChangeProfile={onChangeProfile}
-      disabled={false}
-      showPositionControls={false}
-      showDangerActions={false}
-    />
+    <div className="flex h-full min-h-0 flex-col overflow-hidden">
+      <div className="min-h-0 flex-1">
+        <PreviewInspector
+          profile={profile}
+          widget={widget}
+          onChangeProfile={onChangeProfile}
+          disabled={false}
+          showPositionControls={false}
+          showDangerActions={false}
+        />
+      </div>
+      {widget && (
+        <div className="shrink-0">
+          <RelativeSettingsSection
+            profile={profile}
+            widget={widget}
+            onChangeProfile={onChangeProfile}
+          />
+        </div>
+      )}
+    </div>
   );
 }

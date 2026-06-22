@@ -189,6 +189,11 @@ func SetGeneralLayoutWidgets(p *ProfileConfig, widgets []WidgetConfig) {
 	}
 }
 
+// CopyProfileVariants returns a deep-enough copy for rollback around SaveFile.
+func CopyProfileVariants(variants []WidgetVariantConfig) []WidgetVariantConfig {
+	return copyWidgetVariants(variants)
+}
+
 // CopyProfileLayouts returns a deep-enough copy for rollback around SaveFile.
 func CopyProfileLayouts(layouts map[LayoutType]ProfileLayout) map[LayoutType]ProfileLayout {
 	if layouts == nil {

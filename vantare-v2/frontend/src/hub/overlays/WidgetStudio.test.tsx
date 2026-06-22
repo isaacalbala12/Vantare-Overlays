@@ -96,4 +96,89 @@ describe("WidgetStudio", () => {
     expect(screen.queryByLabelText("X (px)")).toBeNull();
     expect(screen.queryByRole("button", { name: "Eliminar" })).toBeNull();
   });
+
+  it("passes selected widget variants to the widget preview", async () => {
+    const relativeProfile: ProfileConfig = {
+      ...profile,
+      schemaVersion: 2,
+      widgets: [
+        {
+          id: "relative",
+          type: "relative",
+          variantId: "variant-relative-default",
+          enabled: true,
+          updateHz: 15,
+          position: { x: 40, y: 600, w: 420, h: 280 },
+        },
+      ],
+      variants: [
+        {
+          id: "variant-relative-default",
+          widgetType: "relative",
+          templateId: "relative-vantare-default",
+          columns: [
+            { id: "driverName", metricId: "driverName", enabled: true },
+            { id: "bestLap", metricId: "bestLap", enabled: true },
+          ],
+        },
+      ],
+    };
+
+    render(
+      <WidgetStudio
+        profile={relativeProfile}
+        selectedWidgetId="relative"
+        dirty={false}
+        saveState="idle"
+        onSelectWidget={vi.fn()}
+        onChangeProfile={vi.fn()}
+        onSave={vi.fn()}
+        onBack={vi.fn()}
+      />,
+    );
+
+    expect(await screen.findByText("1:30.876")).toBeTruthy();
+  });
+
+  it("shows Relative column controls for the Relative widget", () => {
+    const relativeProfile: ProfileConfig = {
+      ...profile,
+      schemaVersion: 2,
+      widgets: [
+        {
+          id: "relative",
+          type: "relative",
+          variantId: "variant-relative-default",
+          enabled: true,
+          updateHz: 15,
+          position: { x: 40, y: 600, w: 320, h: 280 },
+        },
+      ],
+      variants: [
+        {
+          id: "variant-relative-default",
+          widgetType: "relative",
+          templateId: "relative-vantare-default",
+        },
+      ],
+    };
+
+    render(
+      <WidgetStudio
+        profile={relativeProfile}
+        selectedWidgetId="relative"
+        dirty={false}
+        saveState="idle"
+        onSelectWidget={vi.fn()}
+        onChangeProfile={vi.fn()}
+        onSave={vi.fn()}
+        onBack={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText("COLUMNAS RELATIVE")).toBeTruthy();
+    expect(screen.getByLabelText("Mostrar mejor vuelta")).toBeTruthy();
+    expect(screen.getByLabelText("Mostrar última vuelta")).toBeTruthy();
+    expect(screen.queryByText("POSICIÓN Y TAMAÑO")).toBeNull();
+  });
 });

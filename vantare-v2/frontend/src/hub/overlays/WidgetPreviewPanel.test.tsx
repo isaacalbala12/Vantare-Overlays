@@ -15,9 +15,15 @@ const mockWidget: WidgetConfig = {
   position: { x: 0, y: 0, w: 400, h: 100 },
 };
 
+const mockProfile = {
+  displayMode: "racing" as const,
+  monitorIndex: 0,
+  widgets: [mockWidget],
+};
+
 describe("WidgetPreviewPanel", () => {
   it("renders a real widget frame with mock telemetry and checkerboard background", () => {
-    render(<WidgetPreviewPanel activeWidget={mockWidget} />);
+    render(<WidgetPreviewPanel profile={mockProfile} activeWidget={mockWidget} />);
 
     // Check that the preview frame is rendered (using the testid from PreviewWidgetFrame)
     expect(screen.getByTestId("preview-widget-frame-test-widget")).toBeTruthy();
@@ -35,7 +41,7 @@ describe("WidgetPreviewPanel", () => {
     vi.stubGlobal("ResizeObserver", undefined);
 
     try {
-      render(<WidgetPreviewPanel activeWidget={mockWidget} />);
+      render(<WidgetPreviewPanel profile={mockProfile} activeWidget={mockWidget} />);
 
       expect(screen.getByTestId("widget-preview-container")).toBeTruthy();
       expect(screen.getByTestId("preview-widget-frame-test-widget")).toBeTruthy();

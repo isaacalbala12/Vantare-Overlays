@@ -58,17 +58,33 @@ func (s *ProfileService) GetProfile() *config.ProfileConfig {
 // SaveLayout updates widget positions and persists to disk.
 // Uses skipWindowRefresh (bounds-only resize) and re-emits profile:loaded for layoutOrigin sync.
 func (s *ProfileService) SaveLayout(widgets []config.WidgetConfig) error {
+	return s.SaveProfileState(widgets, nil)
+}
+
+// SaveProfileState updates widget positions and optional variants, then persists to disk.
+// If variants is nil the existing variants are preserved (backwards compatibility).
+// Uses skipWindowRefresh (bounds-only resize) and re-emits profile:loaded for layoutOrigin sync.
+// On a disk write error the in-memory profile is rolled back to its previous state.
+func (s *ProfileService) SaveProfileState(widgets []config.WidgetConfig, variants []config.WidgetVariantConfig) error {
 	if s.profile == nil {
 		return fmt.Errorf("profile not loaded")
+	}
+	if len(widgets) == 0 {
+		return fmt.Errorf("no widgets to save")
 	}
 	// Persist first; only mutate memory after success so an I/O error leaves
 	// the in-memory profile consistent with disk.
 	backupWidgets := s.profile.Widgets
 	backupLayouts := config.CopyProfileLayouts(s.profile.Layouts)
+	backupVariants := config.CopyProfileVariants(s.profile.Variants)
 	config.SetGeneralLayoutWidgets(s.profile, widgets)
+	if variants != nil {
+		s.profile.Variants = variants
+	}
 	if err := config.SaveFile(s.path, s.profile); err != nil {
 		s.profile.Widgets = backupWidgets
 		s.profile.Layouts = backupLayouts
+		s.profile.Variants = backupVariants
 		return err
 	}
 	// skipWindowRefresh: bounds only, then refresh frontend layout origin

@@ -673,7 +673,8 @@ func main() {
 	// Listen for layout:save events from frontend (Preview editor or edit mode drag-save)
 	wailsApp.Event.On("layout:save", func(event *application.CustomEvent) {
 		type layoutSaveData struct {
-			Widgets []config.WidgetConfig `json:"widgets"`
+			Widgets  []config.WidgetConfig        `json:"widgets"`
+			Variants []config.WidgetVariantConfig `json:"variants"`
 		}
 		var data layoutSaveData
 		switch v := event.Data.(type) {
@@ -684,9 +685,15 @@ func main() {
 					json.Unmarshal(widgetsJSON, &data.Widgets)
 				}
 			}
+			// Extract variants only when present; nil means "keep existing variants".
+			if variantsRaw, ok := v["variants"]; ok {
+				if variantsJSON, err := json.Marshal(variantsRaw); err == nil {
+					json.Unmarshal(variantsJSON, &data.Variants)
+				}
+			}
 		}
 		if len(data.Widgets) > 0 {
-			if err := profileSvc.SaveLayout(data.Widgets); err != nil {
+			if err := profileSvc.SaveProfileState(data.Widgets, data.Variants); err != nil {
 				log.Printf("layout save error: %v", err)
 				emitHubError(err.Error())
 			}

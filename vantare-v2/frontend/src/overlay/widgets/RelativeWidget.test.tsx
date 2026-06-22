@@ -2,6 +2,7 @@ import { act, cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   RelativeWidget,
+  formatLapTime,
   formatSignedGap,
   resolveClassColor,
   selectRelativeRowsByGap,
@@ -88,5 +89,51 @@ describe("RelativeWidget", () => {
     tick(100);
     const redSpan = screen.getByText("+2.4");
     expect(redSpan.style.color).toBe("#ff0000");
+  });
+
+  it("formats lap times as m:ss.mmm with dash fallback", () => {
+    expect(formatLapTime(undefined)).toBe("-");
+    expect(formatLapTime(0)).toBe("-");
+    expect(formatLapTime(NaN)).toBe("-");
+    expect(formatLapTime(90.876)).toBe("1:30.876");
+    expect(formatLapTime(89.455)).toBe("1:29.455");
+  });
+
+  it("renders best lap and last lap columns when enabled by variant", () => {
+    render(
+      <RelativeWidget
+        editMode={true}
+        updateHz={15}
+        props={{
+          variant: {
+            id: "variant-relative-default",
+            templateId: "relative-vantare-default",
+            columns: [
+              { id: "position", metricId: "position", enabled: true },
+              { id: "class", metricId: "class", enabled: true },
+              { id: "carNumber", metricId: "carNumber", enabled: true },
+              { id: "driverName", metricId: "driverName", enabled: true },
+              { id: "gap", metricId: "gap", enabled: true },
+              { id: "bestLap", metricId: "bestLap", enabled: true },
+              { id: "lastLap", metricId: "lastLap", enabled: true },
+            ],
+          },
+        }}
+      />,
+    );
+
+    tick(100);
+
+    expect(screen.getByText("1:30.876")).toBeTruthy();
+    expect(screen.getByText("1:29.455")).toBeTruthy();
+  });
+
+  it("keeps optional lap columns hidden by default", () => {
+    render(<RelativeWidget editMode={true} updateHz={15} />);
+
+    tick(100);
+
+    expect(screen.queryByText("1:30.876")).toBeNull();
+    expect(screen.queryByText("1:29.455")).toBeNull();
   });
 });

@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from "react";
-import type { WidgetConfig } from "../../lib/profile";
+import type { ProfileConfig, WidgetConfig } from "../../lib/profile";
 import { PreviewWidgetFrame } from "../preview/PreviewWidgetFrame";
 
 type WidgetPreviewPanelProps = {
+  profile: ProfileConfig;
   activeWidget: WidgetConfig | null;
 };
 
-export function WidgetPreviewPanel({ activeWidget }: WidgetPreviewPanelProps) {
+export function WidgetPreviewPanel({ profile, activeWidget }: WidgetPreviewPanelProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
 
@@ -85,6 +86,7 @@ export function WidgetPreviewPanel({ activeWidget }: WidgetPreviewPanelProps) {
         {/* We reuse the PreviewWidgetFrame but suppress its absolute positioning via wrapper isolation */}
         <div className="absolute inset-0 [&>div]:!relative [&>div]:!top-0 [&>div]:!left-0 [&>div]:!border-0">
           <PreviewWidgetFrame
+            profile={profile}
             widget={activeWidget}
             selected={false}
             scale={1}

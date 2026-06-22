@@ -88,6 +88,7 @@ describe("useOverlayStudioState", () => {
         { ...profile.widgets[0], name: "Delta Edited" },
         profile.widgets[1],
       ],
+      variants: profile.variants,
     });
   });
 
@@ -113,6 +114,67 @@ describe("useOverlayStudioState", () => {
 
     expect(Events.Emit).toHaveBeenCalledWith("layout:save", {
       widgets: [{ ...profile.widgets[0], position: { x: 10, y: 0, w: 400, h: 48 } }],
+      variants: profile.variants,
+    });
+  });
+
+  it("emits variants when saving a profile that contains them", () => {
+    const profileWithVariants: ProfileConfig = {
+      ...profile,
+      variants: [
+        {
+          id: "variant-relative-default",
+          widgetType: "relative",
+          templateId: "relative-vantare-default",
+          themeId: "vantare-racing",
+          name: "Relative Default",
+          columns: [
+            { id: "position", metricId: "position", enabled: true },
+            { id: "bestLap", metricId: "bestLap", enabled: true },
+          ],
+        },
+      ],
+    };
+    const { result } = renderHook(() => useOverlayStudioState());
+
+    act(() => {
+      listeners.get("profile:loaded")?.({ data: { profile: profileWithVariants } });
+    });
+
+    act(() => {
+      result.current.updateDraft({
+        ...profileWithVariants,
+        variants: [
+          {
+            ...profileWithVariants.variants![0],
+            columns: [
+              { id: "position", metricId: "position", enabled: true },
+              { id: "bestLap", metricId: "bestLap", enabled: false },
+            ],
+          },
+        ],
+      });
+    });
+
+    act(() => {
+      result.current.saveProfile();
+    });
+
+    expect(Events.Emit).toHaveBeenCalledWith("layout:save", {
+      widgets: profileWithVariants.widgets,
+      variants: [
+        {
+          id: "variant-relative-default",
+          widgetType: "relative",
+          templateId: "relative-vantare-default",
+          themeId: "vantare-racing",
+          name: "Relative Default",
+          columns: [
+            { id: "position", metricId: "position", enabled: true },
+            { id: "bestLap", metricId: "bestLap", enabled: false },
+          ],
+        },
+      ],
     });
   });
 
