@@ -7,6 +7,18 @@ import { setHTMLIfChanged } from "../../lib/dom-write";
 import { escapeHTML } from "../../lib/html-escape";
 import { brandTextColor } from "../../lib/color-utils";
 import { startFrameBudgetLoop } from "../../lib/frame-budget";
+import type { ColumnConfig } from "../../lib/profile";
+import { createDefaultStandingsColumns, getStandingsColumn } from "./standings-catalog";
+import {
+  formatStandingsDriverName,
+  formatStandingsLapTime,
+  getStandingsColumnAlign,
+  getStandingsColumnColor,
+  getStandingsColumnWidth,
+  getStandingsIntrinsicWidth,
+  getStandingsJustifyClass,
+  type StandingsTextAlign,
+} from "./standings-format";
 
 type StandingsProps = {
   editMode: boolean;
@@ -20,6 +32,16 @@ const BAKED_HEADER_BG = "linear-gradient(180deg, #9b2226 0%, #3a050a 100%)";
 const BAKED_CLASS_BG = "linear-gradient(90deg, #9b2226 0%, #e63946 50%, #9b2226 100%)";
 const ON_TRACK_COLOR = "#FFFFFF";
 const PIT_COLOR = "#9CA3AF";
+
+type StandingsRenderVariant = {
+  columns?: ColumnConfig[];
+};
+
+function getActiveStandingsColumns(props?: Record<string, unknown>): ColumnConfig[] {
+  const variant = props?.variant as StandingsRenderVariant | undefined;
+  const sourceColumns = variant?.columns?.length ? variant.columns : createDefaultStandingsColumns();
+  return sourceColumns.filter((column) => column.enabled && getStandingsColumn(column.id));
+}
 
 // eslint-disable-next-line react-refresh/only-export-components
 export function formatStandingsGap(
@@ -96,6 +118,8 @@ export function StandingsWidget({ editMode, telemetryMode, props, updateHz = 15 
   const lastFingerprintRef = useRef("");
 
   const { appearance: a } = resolveWidgetAppearance("standings", props);
+  const activeColumns = getActiveStandingsColumns(props);
+  const intrinsicWidth = getStandingsIntrinsicWidth(activeColumns);
 
   useEffect(() => {
     return startFrameBudgetLoop(updateHz, () => {
@@ -114,8 +138,11 @@ export function StandingsWidget({ editMode, telemetryMode, props, updateHz = 15 
 
       const mode = resolveSessionMode(t.sessionType, t.sessionName);
 
-      const fingerprint = mode + "|" + activeClass + "|" + (t.timeRemaining ?? 0).toFixed(0) + "|" + sorted.map(v =>
-        `${v.id}:${v.place}:${v.inPits}:${v.pitState}:${v.pitting}:${v.inGarageStall}:${v.fastestLap}:${v.bestLapTime?.toFixed(1)}:${v.timeBehindLeader?.toFixed(3)}:${v.lapsBehindLeader}:${v.tireCompound}`
+      const columnFingerprint = activeColumns
+        .map((column) => `${column.id}:${column.metricId}:${column.enabled}:${column.width ?? ""}:${JSON.stringify(column.format ?? {})}:${JSON.stringify(column.style ?? {})}`)
+        .join(",");
+      const fingerprint = mode + "|" + activeClass + "|" + (t.timeRemaining ?? 0).toFixed(0) + "|" + columnFingerprint + "|" + sorted.map(v =>
+        `${v.id}:${v.place}:${v.inPits}:${v.pitState}:${v.pitting}:${v.inGarageStall}:${v.fastestLap}:${v.bestLapTime?.toFixed(1)}:${v.lastLapTime?.toFixed(1)}:${v.timeBehindLeader?.toFixed(3)}:${v.lapsBehindLeader}:${v.totalLaps}:${v.timeBehindNext?.toFixed(3)}:${v.tireCompound}`
       ).join("|");
       if (fingerprint === lastFingerprintRef.current) return;
       lastFingerprintRef.current = fingerprint;
@@ -153,38 +180,96 @@ export function StandingsWidget({ editMode, telemetryMode, props, updateHz = 15 
         const fastestShadow = v.fastestLap ? `box-shadow: inset 2px 0 0 0 ${a.textColor}` : "";
         const leftInset = fastestShadow || leaderShadow;
 
-        const brandCell = hasBrand
-          ? `<div class="w-7 flex items-center justify-center py-[2px] px-[2px] shrink-0" style="height:${rowHeight}px">
-            <div class="w-full h-full flex items-center justify-center" style="background:${teamBg}">
-              <span class="font-black text-[10px]" style="color:${tc}">${bi}</span>
-            </div>
-          </div>`
-          : "";
+        const cells = activeColumns.map((column) => {
+          const def = getStandingsColumn(column.id);
+          const fallbackWidth = def?.defaultWidth ?? 0;
+          const width = getStandingsColumnWidth(column, fallbackWidth);
+          const baseStyle = `width:${width}px`;
 
-        const numberCell = v.driverNumber
-          ? `<div class="w-7 flex items-center justify-center py-[2px] pr-[2px] shrink-0" style="height:${rowHeight}px">
-            <div class="w-5 h-[18px] flex items-center justify-center relative" style="background:${numBg};${pitLabel ? `border:1px solid ${a.pitColor}` : ""}">
-              <span class="font-black text-[11px]" style="color:${numColor}">${escapeHTML(v.driverNumber)}</span>
-              ${pitLabel ? `<div class="absolute -top-1.5 left-1/2 -translate-x-1/2 text-[6px] px-0.5 rounded-sm leading-none whitespace-nowrap font-black" style="background:${a.pitColor};color:#000">PIT</div>` : ""}
-            </div>
-          </div>`
-          : "";
+          switch (column.id) {
+          case "position":
+            return `<div class="text-center shrink-0" style="${baseStyle};color:${posColor}">${classPlace}</div>`;
 
-        return `<div class="flex items-center text-[11px] font-bold border-b border-black/20 transition-all" style="height:${rowHeight}px;background:${bgRow};${leftInset}">
-          <div class="w-6 text-center shrink-0" style="color:${posColor}">${classPlace}</div>
-          ${brandCell}
-          ${numberCell}
-          <div class="flex-1 px-1 tracking-wide truncate" style="color:${teamColor}">${escapeHTML(v.driverName ?? "?")}</div>
-          <div class="px-2 flex items-center justify-end font-mono text-[9px] shrink-0 gap-1" style="color:${rowTextColor}">
-            ${tireBadgeHtml(v.tireCompound, a.tireSoftColor, a.tireMediumColor, a.tireHardColor)}
-            <span style="${gapColor ? `color:${gapColor}` : ""}">${gapText}</span>
-          </div>
+          case "driverNumber": {
+            return `<div class="flex items-center justify-center py-[2px] px-[2px] shrink-0" style="${baseStyle};height:${rowHeight}px">
+              <div class="w-5 h-[18px] flex items-center justify-center relative" style="background:${numBg};${pitLabel ? `border:1px solid ${a.pitColor}` : ""}">
+                <span class="font-black text-[11px]" style="color:${numColor}">${escapeHTML(v.driverNumber ?? "")}</span>
+                ${pitLabel ? `<div class="absolute -top-1.5 left-1/2 -translate-x-1/2 text-[6px] px-0.5 rounded-sm leading-none whitespace-nowrap font-black" style="background:${a.pitColor};color:#000">PIT</div>` : ""}
+              </div>
+            </div>`;
+          }
+
+          case "driverName": {
+            const color = getStandingsColumnColor(column, teamColor);
+            const align = getStandingsColumnAlign(column, "left");
+            return `<div class="px-1 tracking-wide shrink-0 whitespace-nowrap overflow-hidden ${getStandingsJustifyClass(align)}" style="${baseStyle};color:${color}" data-standings-col="driverName">
+              ${escapeHTML(formatStandingsDriverName(v.driverName, column))}
+            </div>`;
+          }
+
+          case "vehicleClass": {
+            const color = getStandingsColumnColor(column, rowTextColor);
+            const align = getStandingsColumnAlign(column, "right");
+            return `<div class="px-2 flex items-center font-mono text-[9px] shrink-0 ${getStandingsJustifyClass(align)}" style="${baseStyle};color:${color}">
+              ${escapeHTML(v.vehicleClass ?? "")}
+            </div>`;
+          }
+
+          case "currentLap": {
+            const color = getStandingsColumnColor(column, rowTextColor);
+            const align = getStandingsColumnAlign(column, "right");
+            return `<div class="px-2 flex items-center font-mono text-[9px] shrink-0 ${getStandingsJustifyClass(align)}" style="${baseStyle};color:${color}">
+              ${v.totalLaps ?? ""}
+            </div>`;
+          }
+
+          case "gap": {
+            const color = gapColor || getStandingsColumnColor(column, rowTextColor);
+            const align = getStandingsColumnAlign(column, "right");
+            return `<div class="px-2 flex items-center justify-end font-mono text-[9px] shrink-0 gap-1 ${getStandingsJustifyClass(align)}" style="${baseStyle};color:${rowTextColor}">
+              ${tireBadgeHtml(v.tireCompound, a.tireSoftColor, a.tireMediumColor, a.tireHardColor)}
+              <span style="${color ? `color:${color}` : ""}">${escapeHTML(gapText)}</span>
+            </div>`;
+          }
+
+          case "interval": {
+            const color = getStandingsColumnColor(column, rowTextColor);
+            const align = getStandingsColumnAlign(column, "right");
+            const interval = v.timeBehindNext != null ? `+${v.timeBehindNext.toFixed(3)}s` : "—";
+            return `<div class="px-2 flex items-center font-mono text-[9px] shrink-0 ${getStandingsJustifyClass(align)}" style="${baseStyle};color:${color}">
+              ${interval}
+            </div>`;
+          }
+
+          case "bestLap": {
+            const color = getStandingsColumnColor(column, rowTextColor);
+            const align = getStandingsColumnAlign(column, "right");
+            return `<div class="px-2 flex items-center font-mono text-[9px] shrink-0 ${getStandingsJustifyClass(align)}" style="${baseStyle};color:${color}">
+              ${escapeHTML(formatStandingsLapTime(v.bestLapTime, column))}
+            </div>`;
+          }
+
+          case "lastLap": {
+            const color = getStandingsColumnColor(column, rowTextColor);
+            const align = getStandingsColumnAlign(column, "right");
+            return `<div class="px-2 flex items-center font-mono text-[9px] shrink-0 ${getStandingsJustifyClass(align)}" style="${baseStyle};color:${color}">
+              ${escapeHTML(formatStandingsLapTime(v.lastLapTime, column))}
+            </div>`;
+          }
+
+          default:
+            return "";
+          }
+        }).join("");
+
+        return `<div class="flex items-center text-[11px] font-bold border-b border-black/20 transition-all" data-standings-row style="min-width:${intrinsicWidth}px;width:max(100%, ${intrinsicWidth}px);height:${rowHeight}px;background:${bgRow};${leftInset}">
+          ${cells}
         </div>`;
       });
 
       setHTMLIfChanged(container, rows.join(""));
     });
-  }, [maxRows, updateHz, editMode, telemetryMode, props, a]);
+  }, [maxRows, updateHz, editMode, telemetryMode, props, a, activeColumns, intrinsicWidth]);
 
   const t = (telemetryMode ?? (editMode ? "mock" : "live")) === "mock" ? getMockTelemetry() : getTelemetryRef();
   const player = t.vehicles.find((v) => v.isPlayer);
