@@ -203,7 +203,17 @@ describe("StandingsWidget", () => {
   });
 
   it("does not depend on or mutate widget position", () => {
-    const columns = variantColumns([{ enabled: true }, { enabled: true }, { enabled: false }, { enabled: true }]);
+    const columns = variantColumns([
+      { enabled: true },   // position
+      { enabled: true },   // driverNumber
+      { enabled: true },   // driverName
+      { enabled: true },   // gap
+      { enabled: false },  // vehicleClass
+      { enabled: false },  // currentLap
+      { enabled: false },  // interval
+      { enabled: true },   // bestLap
+      { enabled: false },  // lastLap
+    ]);
     const { container } = render(
       <StandingsWidget editMode={true} updateHz={15} props={{ variant: standingsVariant(columns) }} />,
     );

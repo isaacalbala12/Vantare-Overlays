@@ -50,6 +50,18 @@ Variantes y persistencia frontend de `Standings` preparadas (S3, aprobada por GL
 - 37 tests focalizados pasan; suite completa 267/267; tsc y build OK.
 - No se toco renderer, UI, backend, schema ni configs.
 
+Render configurable de `Standings` en preview/desktop/OBS preparado (S4, aprobada por GLM):
+- `StandingsWidget` lee `props.variant.columns` y renderiza solo columnas habilitadas en orden de catálogo.
+- `standings-format.ts` aporta helpers puros: width/color/align, truncado de nombre, formato de tiempo de vuelta (full/compact, decimals 0-3), ancho intrinseco.
+- Sin variant, cae a `createDefaultStandingsColumns()` (legacy identico a antes).
+- `playerHighlight` nunca se renderiza como columna (es metrica no-columna).
+- Pit label, tire badge y FASTEST quedan como decoraciones de fila en el area de gap.
+- Brand cell standalone restaurado como decoracion (no columna): la marca de equipo es visible aunque `driverNumber` este deshabilitado.
+- Fingerprint actualizado para incluir config de columnas (re-renderiza al cambiar variant).
+- Tests: 36 nuevos/ajustados (standings-format + StandingsWidget); suite completa 293/293; tsc, build, lint y git diff --check OK.
+- Line endings normalizados a LF via `.gitattributes` (elimina warnings CRLF).
+- No se toco UI (`hub/**`), `WidgetRenderer`, `PreviewScaler`, `WidgetSandboxPreview`, `PreviewWidgetFrame`, backend, schema ni configs.
+
 La Fase A de `Overlays Studio` se encuentra completada:
 - La navegacion visible unifica `Overlays` y `Preview` bajo `Overlays Studio`.
 - `Overlays Studio` sustituye la antigua entrada visible a `Preview` como flujo principal de edicion.
@@ -92,16 +104,17 @@ El inventario S1 de `Standings` fue aprobado con veredicto `READY FOR S2`; no re
 
 El siguiente paso recomendado es:
 
-1. ejecutar `S4 - Standings render configurable en preview/desktop/OBS`,
-2. integrar el catalogo/variantes con el renderer de `Standings` respetando `enabled`/`width`/`format`/`style`,
-3. preparar `S5 - Standings UI en WidgetStudio`.
+1. ejecutar `S5 - Standings UI en WidgetStudio`,
+2. exponer toggles de columnas de Standings usando `toggleStandingsColumn` (S3) y el contrato renderer (S4),
+3. preparar `S6 - Standings verificacion completa y docs`.
 
 Ultimo miniplan completado y aprobado por GLM:
-- `docs/superpowers/plans/2026-06-22-s3-standings-variants-frontend.md`
-  - Variantes/persistencia frontend de `Standings` integradas en `widget-variants.ts`.
-  - Tests TDD pasando; suite completa 267/267 verde; tsc y build OK.
-  - Sin cambios en UI, render, backend, schema ni configs.
-  - Review GLM: ACCEPT tras corregir P2 (fallback templateId) y P3-5 (edge case tests).
+- `docs/superpowers/plans/2026-06-22-s4-standings-render-configurable.md`
+  - Renderer de `Standings` configurable por variantes (enabled/width/format/style).
+  - Helpers puros en `standings-format.ts`; brand cell restaurado como decoracion.
+  - Tests TDD pasando; suite completa 293/293 verde; tsc, build, lint y diff --check OK.
+  - Sin cambios en UI, backend, schema ni configs.
+  - Review GLM: ACCEPT WITH P3 FOLLOW-UPS; P3 resueltos por el orquestador (alineamiento con relative-format, test carry-over corregido, brand cell restaurado, test de posicion reforzado, line endings normalizados).
 
 Miniplan implementado tecnicamente:
 - `docs/superpowers/plans/2026-06-22-widget-sandbox-preview-architecture.md`
@@ -123,10 +136,10 @@ Miniplan implementado tecnicamente:
 
 ## Proximas tareas pequenas
 
-1. Crear miniplan `S4 - Standings render configurable en preview/desktop/OBS`.
-2. Ejecutar S4 con worker (Kimi K2.7).
-3. Revisar que el renderer de `Standings` respete `variant.columns` (enabled/width/format/style) sin tocar posicion/tamano.
-4. Preparar `S5 - Standings UI en WidgetStudio`.
+1. Crear miniplan `S5 - Standings UI en WidgetStudio`.
+2. Ejecutar S5 con worker (Minimax M3).
+3. Exponer toggles de columnas de Standings con `toggleStandingsColumn` respetando separacion WidgetStudio/LayoutStudio.
+4. Preparar `S6 - Standings verificacion completa y docs`.
 
 ## Riesgos actuales
 

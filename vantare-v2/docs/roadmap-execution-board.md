@@ -76,8 +76,8 @@ La implementacion normal debe ir a workers.
 | S1 | 0.3.1.X | Standings inventario tecnico | Done | Deepseek V4 Flash | Codex | A1 | No |
 | S2 | 0.3.2.X | Standings catalogo/metricas/columnas | Done | Kimi K2.7 | GLM | S1 | No |
 | S3 | 0.3.3.X | Standings variantes y persistencia frontend | Done | Kimi K2.7 | GLM | S2 | No |
-| S4 | 0.3.4.X | Standings render configurable en preview/desktop/OBS | Next | Kimi K2.7 | GLM | S3 | Si |
-| S5 | 0.3.5.X | Standings UI en WidgetStudio | Ready | Minimax M3 | GLM | S4 | Si |
+| S4 | 0.3.4.X | Standings render configurable en preview/desktop/OBS | Done | Kimi K2.7 | GLM | S3 | Si |
+| S5 | 0.3.5.X | Standings UI en WidgetStudio | Next | Minimax M3 | GLM | S4 | Si |
 | S6 | 0.3.6.X | Standings verificacion completa y docs | Ready | Deepseek V4 Flash | GLM | S5 | Si |
 | UI1 | 0.3.7.X | Leer HTML referencia y extraer decisiones visuales | Ready | Minimax M3 | Codex | A1 | No |
 | UI2 | 0.3.8.X | Miniplan rework UI Overlays Studio | Ready | Minimax M3 | Codex | UI1 | No |
@@ -236,4 +236,4 @@ No paralelizar:
 
 ## Proxima accion
 
-Ejecutar `S4 - Standings render configurable en preview/desktop/OBS` con worker Kimi K2.7 y review posterior obligatoria con GLM.
+Ejecutar `S5 - Standings UI en WidgetStudio` con worker Minimax M3 y review posterior obligatoria con GLM.

@@ -38,23 +38,6 @@ export function formatStandingsDriverName(name: string | undefined, column: Colu
   return truncateText(value, maxChars);
 }
 
-function roundHalfUp(value: number, decimals: number): number {
-  const factor = 10 ** decimals;
-  const n = value * factor + 1e-12;
-  const floored = Math.floor(n);
-  const frac = n - floored;
-  if (frac > 0.5) return (floored + 1) / factor;
-  return floored / factor;
-}
-
-function allDecimalsAreNine(value: number, decimals: number): boolean {
-  if (decimals <= 0) return false;
-  const str = value.toFixed(decimals);
-  const [, decimalPart] = str.split(".");
-  if (!decimalPart) return false;
-  return decimalPart.split("").every((char) => char === "9");
-}
-
 export function formatStandingsLapTime(seconds: number | undefined, column: ColumnConfig): string {
   if (seconds == null || !Number.isFinite(seconds) || seconds <= 0) return "-";
 
@@ -62,18 +45,11 @@ export function formatStandingsLapTime(seconds: number | undefined, column: Colu
   const decimals = clampDecimals(column.format?.decimals);
 
   let minutes = Math.floor(seconds / 60);
-  let remaining = seconds - minutes * 60;
-  let roundedRemaining = roundHalfUp(remaining, decimals);
-
-  // Edge case: values like 89.999s are expected to render as 1:30.000 rather
-  // than 1:29.999. When every decimal digit of the remaining seconds is a nine,
-  // nudge the value up by one ulp so it carries over within the same minute.
-  if (allDecimalsAreNine(remaining, decimals)) {
-    roundedRemaining = roundHalfUp(remaining + 1 / (10 ** decimals), decimals);
-  }
+  const remaining = seconds - minutes * 60;
+  let roundedRemaining = Number(remaining.toFixed(decimals));
   if (roundedRemaining >= 60) {
     minutes += 1;
-    roundedRemaining = 0;
+    roundedRemaining -= 60;
   }
 
   if (display === "compact") {

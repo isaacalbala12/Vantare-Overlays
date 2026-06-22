@@ -17,7 +17,6 @@ import {
   getStandingsColumnWidth,
   getStandingsIntrinsicWidth,
   getStandingsJustifyClass,
-  type StandingsTextAlign,
 } from "./standings-format";
 
 type StandingsProps = {
@@ -168,17 +167,26 @@ export function StandingsWidget({ editMode, telemetryMode, props, updateHz = 15 
         const rowTextColor = pitting ? PIT_COLOR : ON_TRACK_COLOR;
         const classPlace = i + 1;
 
-        const hasBrand = !!v.teamBrandColor;
-        const bi = hasBrand ? brandInitial(v.driverName) : "";
-        const teamBg = v.teamBrandColor || "transparent";
-        const tc = hasBrand ? brandTextColor(teamBg) : rowTextColor;
         const numColor = pitLabel ? "#000000" : rowTextColor;
         const numBg = pitLabel ? a.pitColor : (v.teamBrandColor || "transparent");
         const teamColor = isLeader ? a.posLeaderColor : rowTextColor;
 
+        const hasBrand = !!v.teamBrandColor;
+        const bi = hasBrand ? brandInitial(v.driverName) : "";
+        const teamBg = v.teamBrandColor || "transparent";
+        const tc = hasBrand ? brandTextColor(teamBg) : rowTextColor;
+
         const leaderShadow = isLeader ? `box-shadow: inset 2px 0 0 0 ${a.posLeaderColor}` : "";
         const fastestShadow = v.fastestLap ? `box-shadow: inset 2px 0 0 0 ${a.textColor}` : "";
         const leftInset = fastestShadow || leaderShadow;
+
+        const brandCell = hasBrand
+          ? `<div class="w-7 flex items-center justify-center py-[2px] px-[2px] shrink-0" style="height:${rowHeight}px">
+            <div class="w-full h-full flex items-center justify-center" style="background:${teamBg}">
+              <span class="font-black text-[10px]" style="color:${tc}">${bi}</span>
+            </div>
+          </div>`
+          : "";
 
         const cells = activeColumns.map((column) => {
           const def = getStandingsColumn(column.id);
@@ -263,7 +271,7 @@ export function StandingsWidget({ editMode, telemetryMode, props, updateHz = 15 
         }).join("");
 
         return `<div class="flex items-center text-[11px] font-bold border-b border-black/20 transition-all" data-standings-row style="min-width:${intrinsicWidth}px;width:max(100%, ${intrinsicWidth}px);height:${rowHeight}px;background:${bgRow};${leftInset}">
-          ${cells}
+          ${brandCell}${cells}
         </div>`;
       });
 

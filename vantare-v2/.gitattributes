@@ -1,0 +1,17 @@
+# Normalize line endings to LF in source files.
+# Prevents CRLF conversion warnings from git diff --check across environments.
+* text=auto eol=lf
+
+# Binary files (keep as-is).
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.svg binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.otf binary

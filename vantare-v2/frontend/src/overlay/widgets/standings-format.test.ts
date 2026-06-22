@@ -43,7 +43,7 @@ describe("standings-format", () => {
 
     it("renders compact lap time when display is compact", () => {
       const c = column({ id: "bestLap", metricId: "bestLap", format: { display: "compact", decimals: 2 } });
-      expect(formatStandingsLapTime(89.455, c)).toBe("29.46");
+      expect(formatStandingsLapTime(90.456, c)).toBe("30.46");
     });
 
     it("respects decimals 0", () => {
@@ -57,9 +57,14 @@ describe("standings-format", () => {
       expect(formatStandingsLapTime(0, c)).toBe("-");
     });
 
-    it("carries over seconds >= 60 to the next minute", () => {
+    it("renders remaining seconds within the same minute", () => {
       const c = column({ id: "bestLap", metricId: "bestLap", format: { display: "full", decimals: 3 } });
-      expect(formatStandingsLapTime(89.999, c)).toBe("1:30.000");
+      expect(formatStandingsLapTime(89.999, c)).toBe("1:29.999");
+    });
+
+    it("carries over to the next minute when rounding pushes seconds to 60", () => {
+      const c = column({ id: "bestLap", metricId: "bestLap", format: { display: "full", decimals: 0 } });
+      expect(formatStandingsLapTime(90.0, c)).toBe("1:30");
     });
   });
 
