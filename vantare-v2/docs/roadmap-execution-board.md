@@ -62,7 +62,7 @@ La implementacion normal debe ir a workers.
 | ID | Version | Minifase | Estado | Modelo worker | Reviewer | Depende de | Manual |
 |---|---:|---|---|---|---|---|---|
 | A1 | 0.2.1.X | Verificar separacion WidgetStudio/LayoutStudio | Done | Deepseek V4 Flash | Kimi o Codex | 0.1.3 | Si |
-| A2 | 0.2.2.X | Inventario LayoutStudio drag/resize/save | Ready | Deepseek V4 Flash | Kimi o Codex | A1 | Si |
+| A2 | 0.2.2.X | Inventario LayoutStudio drag/resize/save | Next | Deepseek V4 Flash | Kimi o Codex | A1 | Si |
 | A3 | 0.2.3.X | Implementar/fijar LayoutStudio drag/resize si falta | Ready | Minimax M3 o Kimi | GLM o Codex | A2 | Si |
 | A4 | 0.2.4.X | Recomendado -> copia editable: inventario | Ready | Deepseek V4 Flash | Codex | A1 | Si |
 | A5 | 0.2.5.X | Recomendado -> copia editable: implementacion/fixes | Ready | Kimi K2.7 | GLM o Codex | A4 | Si |
@@ -83,9 +83,11 @@ La implementacion normal debe ir a workers.
 | S5 | 0.3.5.X | Standings UI en WidgetStudio | Done | Minimax M3 | GLM | S4.6 | Si |
 | S6 | 0.3.6.1 | Standings verificacion completa y docs | Done | Deepseek V4 Flash | GLM | S5 | Si |
 | UI1 | 0.3.7.X | Leer HTML referencia y extraer decisiones visuales | Done | Minimax M3 | Codex | A1 | No |
-| UI2 | 0.3.8.X | Miniplan rework UI Overlays Studio | Next | Minimax M3 | Codex | UI1 | No |
-| UI3 | 0.3.9.X | Implementar rework UI en cortes pequenos | Ready | Minimax M3 | Codex | UI2, S6 | Si |
-| UI4 | 0.3.10.X | Verificacion alpha privada completa | Ready | Usuario + Codex | Codex | UI3, A8 | Si |
+| UI2 | 0.3.8.X | WidgetStudio Visual Rework | Done | Minimax M3 | GLM + Isaac | UI1 | Si |
+| PREVIEW2 | 0.3.9.0 | Intrinsic width contract en WidgetStudio preview | Done | GLM 5.2 + Kimi K2.7 | GLM + Isaac | UI2 | Si |
+| UI3 | 0.3.10.X | Polish visual final de WidgetStudio | Later | Minimax M3 | Codex | Features core | Si |
+| REL1 | 0.3.11.X | Changelog publico y publicacion Discord por version | Ready | Kimi K2.7 | GLM o Codex | UI3 | Si |
+| UI4 | 0.3.12.X | Verificacion alpha privada completa | Later | Usuario + Codex | Codex | UI3, REL1, A8 | Si |
 
 ## Fase 0.4.X.X - Beta privada testers: distribucion y uso real
 
@@ -251,6 +253,26 @@ Las tareas puramente documentales, analisis, planes y reviews no crean version/t
 
 La version visible de la app solo se actualiza cuando el checkpoint representa build/runtime publicable.
 
+## REL1 - Changelog publico y Discord
+
+Objetivo: preparar un flujo sencillo para que cada version funcional confirmada pueda anunciarse en el Discord oficial sin publicar ruido interno.
+
+Alcance:
+
+- Crear o consolidar `docs/changelog.md` como changelog publico orientado a testers/usuarios.
+- Definir formato corto para Discord: nuevo, mejorado, corregido, notas para testers.
+- Anadir checklist de release: actualizar changelog antes de commit/tag de version funcional.
+- Preparar plan para webhook de Discord usando secreto externo, por ejemplo `DISCORD_WEBHOOK_URL`.
+- Opcional si se aprueba en la tarea: GitHub Action que publique en Discord al pushear tags `v*`.
+- Documentar que planes, analisis, reviews y docs-only no se publican como version nueva.
+
+No alcance:
+
+- No crear ni exponer secretos reales.
+- No publicar automaticamente commits sueltos.
+- No cambiar version runtime/build salvo que REL1 se cierre junto a una version funcional real.
+- No mezclar con UI3 ni con la verificacion alpha privada.
+
 ## Proxima accion
 
-UI1 completado como analisis documental. Proximo paso: `UI2 - Miniplan rework UI Overlays Studio`.
+UI2 y PREVIEW2 validados manualmente. No ejecutar mas reworks visuales completos hasta cerrar la mayoria de features core. Proximo paso recomendado: continuar con minifases de feature, empezando por A2/A3 si el objetivo es cerrar alpha privada.

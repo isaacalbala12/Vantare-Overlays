@@ -4,9 +4,18 @@ Ultima actualizacion: 2026-06-23.
 
 ## Estado actual
 
+PREVIEW2 - WidgetStudio intrinsic width contract:
+- Corregido el espacio vacio a la derecha en la preview aislada de `WidgetStudio`.
+- Los widgets configurables (`relative`, `standings`) usan ancho intrinseco en el sandbox de `WidgetStudio`, envolviendo el contenido real, sea menor o mayor que `position.w`.
+- `position.h` sigue usandose para la altura en modo fill.
+- `WidgetRenderer` propaga un contexto interno runtime `__previewFillHost` a los widgets; no se persiste en schema.
+- `LayoutStudio` y overlays runtime siguen usando `position.w/h` como contrato de layout; sin cambios.
+- Bug log actualizado: `docs/widget-preview-bug-log.md` (entrada 8).
+- Plan ejecutado: `docs/superpowers/plans/2026-06-23-preview2-widgetstudio-intrinsic-width.md`.
+
 Vantare v2 es una app local de overlays para sim racing construida con Go/Wails y React/TypeScript.
 
-Version estable actual de runtime/build: `v0.3.6.1`.
+Version estable actual de runtime/build: `v0.3.9.0`.
 Ultimo checkpoint de roadmap confirmado: UI1 documental, sin tag/version propia.
 
 Base de schema v2 para perfiles preparada:
@@ -109,8 +118,8 @@ El inventario S1 de `Standings` fue aprobado con veredicto `READY FOR S2`; no re
 
 El siguiente paso recomendado es:
 
-1. preparar `UI2 - Miniplan rework UI Overlays Studio`,
-2. usar `docs/overlays-studio-visual-analysis-ui1.md` como fuente de decisiones visuales,
+1. revisar y aprobar `UI2 - WidgetStudio Visual Rework`,
+2. usar `docs/overlays-studio-visual-analysis-ui1.md` y `docs/superpowers/plans/2026-06-23-ui2-widgetstudio-visual-rework.md` como fuentes,
 3. no tocar codigo de producto hasta que UI2 este aprobado.
 
 Ultimo miniplan completado y aprobado por GLM:
@@ -154,6 +163,31 @@ UI1 - Analisis visual de `WidgetStudio` completado (2026-06-23):
 - No se toco codigo, tests, configs, schema ni backend.
 - Checkpoint documental: sin tag/version propia; se agrupara bajo la siguiente version funcional.
 
+UI2 - WidgetStudio Visual Rework ejecutado (2026-06-23):
+- Worker: Minimax M3.
+- Cambios solo en `WidgetStudio`, `WidgetSettingsPanel`, `StudioWidgetList`, `RelativeSettingsSection`, `StandingsSettingsSection` y componentes locales nuevos `studio-controls.tsx`.
+- Cabecera global minima (back, titulo, estado con dot rojo, Guardar); widget metadata movida al sticky header del panel derecho.
+- Secciones Relative/Standings reordenadas y compactadas; controles en filas densas con tipografia mono y label oculto de cabecera de seccion.
+- Lista de widgets compacta con tabs pill, busqueda con icono y dot rojo de seleccion.
+- Selector mock `Práctica` / `Qualy` / `Carrera` reestilizado como segmented control con `aria-pressed`.
+- Tests focales y de pagina actualizados a los nuevos textos; anadidos tests para sticky header y studio-controls.
+- Sin cambios en LayoutStudio, backend, schema, configs, build config ni versionado.
+- Checks: 328/328 tests frontend, `tsc -b`, `pnpm build`, `pnpm lint` y `git diff --check` sin errores (warnings CRLF conocidos no bloqueantes).
+- Verificacion manual: aprobada por el usuario tras PREVIEW2.
+
+PREVIEW2 - `WidgetStudio Intrinsic Width` completado (2026-06-23):
+- Documento: `docs/superpowers/plans/2026-06-23-preview2-widgetstudio-intrinsic-width.md`.
+- Alcance: corregir el espacio vacio derecho en la preview de `WidgetStudio` haciendo que `Relative` y `Standings` usen ancho intrinseco en sandbox.
+- Decision: `WidgetStudio` no edita tamano, por lo tanto la preview debe envolver el contenido; `LayoutStudio` y overlay runtime siguen usando `position.w/h`.
+- Review GLM: `NEEDS FIXES` inicial por altura fill de `Relative`; P2 corregido.
+- Verificacion manual: aprobada por el usuario; `Relative` y `Standings` se ajustan correctamente sin espacio vacio derecho.
+- Version objetivo: `v0.3.9.0`.
+
+UI2 - Miniplan `WidgetStudio Visual Rework` creado (2026-06-23):
+- Documento: `docs/superpowers/plans/2026-06-23-ui2-widgetstudio-visual-rework.md`.
+- Alcance: rework visual de `WidgetStudio` con densidad alta tipo RaceLabs y margen creativo para el worker UI/UX.
+- Estado: pendiente de revision/aprobacion antes de ejecutar UI3.
+
 ### Reconexión live-first aprobada para overlays
 
 - Al pulsar `Abrir overlay`, la app intenta reconectar con LMU antes de abrir la ventana.
@@ -163,10 +197,10 @@ UI1 - Analisis visual de `WidgetStudio` completado (2026-06-23):
 
 ## Proximas tareas pequenas
 
-1. Crear miniplan `UI2 - Rework UI Overlays Studio`.
-2. Revisar UI2 antes de ejecutar cualquier cambio visual.
-3. Dividir UI3 en cortes pequenos y commiteables.
-4. Hacer commit y push por cambios documentales; crear tag solo por features, fixes funcionales, build/runtime o checkpoints ejecutables confirmados.
+1. Hacer commit/push/tag de `v0.3.9.0`.
+2. No ejecutar mas reworks visuales completos hasta cerrar la mayoria de features core.
+3. Continuar con minifases de feature del roadmap, empezando por A2/A3 si el objetivo inmediato es cerrar alpha privada.
+4. Ejecutar REL1 despues de UI3, cuando se reactive el polish visual final.
 
 ## Riesgos actuales
 
