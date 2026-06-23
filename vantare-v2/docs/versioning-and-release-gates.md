@@ -43,6 +43,23 @@ v1.0.0.0
 - S5 UI de `Standings` en `WidgetStudio`.
 - S6 verificacion completa y documentacion.
 
+## Regla de cierre por version
+
+Toda version confirmada debe quedar trazada con:
+
+1. commit Git con scope claro;
+2. push de la rama activa;
+3. tag Git `vX.X.X.X` pusheado al remoto.
+
+Si la version confirma una build/runtime usable, tambien se actualiza la version visible de la app (`cmd/vantare/main.go` y `build/config.yml`). Si la version es solo documental o de analisis, se puede crear tag Git sin cambiar la version runtime.
+
+## Checkpoints confirmados
+
+| Version | Tipo | Alcance |
+|---|---|---|
+| `v0.3.6.1` | Runtime/build | Cierre de Standings configurable S4.5-S6 |
+| `v0.3.7.0` | Documentacion/analisis | UI1: analisis visual del HTML de referencia para `WidgetStudio` |
+
 ## Rango de versiones
 
 | Rango | Nombre | Estado |

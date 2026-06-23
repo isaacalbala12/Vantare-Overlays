@@ -30,6 +30,7 @@ La implementacion normal debe ir a workers.
 9. Corregir P0/P1/P2.
 10. Ejecutar verificacion manual si aplica.
 11. Actualizar este tablero y `docs/current-plan.md`.
+12. Cuando una version quede confirmada, hacer commit, push y tag Git antes de iniciar la siguiente version.
 
 ## Estados
 
@@ -81,8 +82,8 @@ La implementacion normal debe ir a workers.
 | S4.6 | 0.3.4.X | Guardado explicito en WidgetStudio sin autosave | Done | Kimi K2.7 | GLM | S4.5 | Si |
 | S5 | 0.3.5.X | Standings UI en WidgetStudio | Done | Minimax M3 | GLM | S4.6 | Si |
 | S6 | 0.3.6.1 | Standings verificacion completa y docs | Done | Deepseek V4 Flash | GLM | S5 | Si |
-| UI1 | 0.3.7.X | Leer HTML referencia y extraer decisiones visuales | Next | Minimax M3 | Codex | A1 | No |
-| UI2 | 0.3.8.X | Miniplan rework UI Overlays Studio | Ready | Minimax M3 | Codex | UI1 | No |
+| UI1 | 0.3.7.0 | Leer HTML referencia y extraer decisiones visuales | Done | Minimax M3 | Codex | A1 | No |
+| UI2 | 0.3.8.X | Miniplan rework UI Overlays Studio | Next | Minimax M3 | Codex | UI1 | No |
 | UI3 | 0.3.9.X | Implementar rework UI en cortes pequenos | Ready | Minimax M3 | Codex | UI2, S6 | Si |
 | UI4 | 0.3.10.X | Verificacion alpha privada completa | Ready | Usuario + Codex | Codex | UI3, A8 | Si |
 
@@ -236,6 +237,18 @@ No paralelizar:
 - rework UI con cambios funcionales de widgets;
 - `Standings` render y `Standings` persistencia sin contrato cerrado.
 
+## Regla de cierre por version
+
+Cuando el usuario confirme una version o minifase:
+
+1. Actualizar `docs/current-plan.md` y `docs/roadmap-execution-board.md`.
+2. Ejecutar checks proporcionales al tipo de cambio.
+3. Hacer commit con scope claro.
+4. Hacer push de la rama activa.
+5. Crear y pushear tag Git `vX.X.X.X` si la version queda cerrada.
+
+La version visible de la app solo se actualiza cuando el checkpoint representa build/runtime publicable. Para analisis o planes documentales, el tag Git puede existir sin cambiar `cmd/vantare/main.go`.
+
 ## Proxima accion
 
-S6 completado y verificado. Enviar a review adversarial con GLM. Proximo paso: `UI1 - Leer HTML referencia y extraer decisiones visuales` con worker Minimax M3.
+UI1 completado como analisis documental. Proximo paso: `UI2 - Miniplan rework UI Overlays Studio`.

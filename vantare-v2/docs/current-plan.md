@@ -6,7 +6,8 @@ Ultima actualizacion: 2026-06-23.
 
 Vantare v2 es una app local de overlays para sim racing construida con Go/Wails y React/TypeScript.
 
-Version estable actual del roadmap: `v0.3.6.1`.
+Version estable actual de runtime/build: `v0.3.6.1`.
+Ultimo checkpoint de roadmap confirmado: `v0.3.7.0`.
 
 Base de schema v2 para perfiles preparada:
 - `schemaVersion: 2` permite layouts por sesion y variantes de widgets.
@@ -108,9 +109,9 @@ El inventario S1 de `Standings` fue aprobado con veredicto `READY FOR S2`; no re
 
 El siguiente paso recomendado es:
 
-1. avanzar a `UI1 - Leer HTML referencia y extraer decisiones visuales`,
-2. extraer decisiones visuales sin tocar codigo de producto,
-3. preparar el miniplan del rework visual de `Overlays Studio` solo despues de cerrar UI1.
+1. preparar `UI2 - Miniplan rework UI Overlays Studio`,
+2. usar `docs/overlays-studio-visual-analysis-ui1.md` como fuente de decisiones visuales,
+3. no tocar codigo de producto hasta que UI2 este aprobado.
 
 Ultimo miniplan completado y aprobado por GLM:
 - `docs/superpowers/plans/2026-06-22-s4-standings-render-configurable.md`
@@ -146,6 +147,13 @@ S6 - Standings verificacion completa y docs ejecutada (2026-06-23):
 - Review GLM: `ACCEPT WITH P3`; se corrigieron los P2 documentales antes de avanzar a UI1.
 - Release/tag objetivo: `v0.3.6.1`.
 
+UI1 - Analisis visual de `WidgetStudio` completado (2026-06-23):
+- Worker: Minimax M3.
+- Documento creado: `docs/overlays-studio-visual-analysis-ui1.md`.
+- Alcance: solo `WidgetStudio`, no Home, `LayoutStudio`, perfiles, recomendados, comunidad ni navegacion global.
+- No se toco codigo, tests, configs, schema ni backend.
+- Checkpoint/tag objetivo: `v0.3.7.0`.
+
 ### Reconexión live-first aprobada para overlays
 
 - Al pulsar `Abrir overlay`, la app intenta reconectar con LMU antes de abrir la ventana.
@@ -155,10 +163,10 @@ S6 - Standings verificacion completa y docs ejecutada (2026-06-23):
 
 ## Proximas tareas pequenas
 
-1. Ejecutar `UI1 - Leer HTML referencia y extraer decisiones visuales` con worker Minimax M3.
-2. Revisar UI1 en este hilo como decision de producto/diseno, no como implementacion.
-3. Crear miniplan `UI2 - Rework UI Overlays Studio`.
-4. Mantener manual checkpoint antes de cerrar la fase 0.3.X.X.
+1. Crear miniplan `UI2 - Rework UI Overlays Studio`.
+2. Revisar UI2 antes de ejecutar cualquier cambio visual.
+3. Dividir UI3 en cortes pequenos y commiteables.
+4. Hacer commit, push y tag Git por cada version confirmada.
 
 ## Riesgos actuales
 
