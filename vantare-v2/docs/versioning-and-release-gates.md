@@ -45,20 +45,21 @@ v1.0.0.0
 
 ## Regla de cierre por version
 
-Toda version confirmada debe quedar trazada con:
+Toda version funcional confirmada debe quedar trazada con:
 
 1. commit Git con scope claro;
 2. push de la rama activa;
 3. tag Git `vX.X.X.X` pusheado al remoto.
 
-Si la version confirma una build/runtime usable, tambien se actualiza la version visible de la app (`cmd/vantare/main.go` y `build/config.yml`). Si la version es solo documental o de analisis, se puede crear tag Git sin cambiar la version runtime.
+Si la version confirma una build/runtime usable, tambien se actualiza la version visible de la app (`cmd/vantare/main.go` y `build/config.yml`).
+
+Las tareas puramente documentales, analisis, planes y reviews no crean version/tag por si solas. Se commitean con scope documental y se agrupan bajo la siguiente version funcional cuando corresponda.
 
 ## Checkpoints confirmados
 
 | Version | Tipo | Alcance |
 |---|---|---|
 | `v0.3.6.1` | Runtime/build | Cierre de Standings configurable S4.5-S6 |
-| `v0.3.7.0` | Documentacion/analisis | UI1: analisis visual del HTML de referencia para `WidgetStudio` |
 
 ## Rango de versiones
 

@@ -7,7 +7,7 @@ Ultima actualizacion: 2026-06-23.
 Vantare v2 es una app local de overlays para sim racing construida con Go/Wails y React/TypeScript.
 
 Version estable actual de runtime/build: `v0.3.6.1`.
-Ultimo checkpoint de roadmap confirmado: `v0.3.7.0`.
+Ultimo checkpoint de roadmap confirmado: UI1 documental, sin tag/version propia.
 
 Base de schema v2 para perfiles preparada:
 - `schemaVersion: 2` permite layouts por sesion y variantes de widgets.
@@ -152,7 +152,7 @@ UI1 - Analisis visual de `WidgetStudio` completado (2026-06-23):
 - Documento creado: `docs/overlays-studio-visual-analysis-ui1.md`.
 - Alcance: solo `WidgetStudio`, no Home, `LayoutStudio`, perfiles, recomendados, comunidad ni navegacion global.
 - No se toco codigo, tests, configs, schema ni backend.
-- Checkpoint/tag objetivo: `v0.3.7.0`.
+- Checkpoint documental: sin tag/version propia; se agrupara bajo la siguiente version funcional.
 
 ### Reconexión live-first aprobada para overlays
 
@@ -166,7 +166,7 @@ UI1 - Analisis visual de `WidgetStudio` completado (2026-06-23):
 1. Crear miniplan `UI2 - Rework UI Overlays Studio`.
 2. Revisar UI2 antes de ejecutar cualquier cambio visual.
 3. Dividir UI3 en cortes pequenos y commiteables.
-4. Hacer commit, push y tag Git por cada version confirmada.
+4. Hacer commit y push por cambios documentales; crear tag solo por features, fixes funcionales, build/runtime o checkpoints ejecutables confirmados.
 
 ## Riesgos actuales
 
