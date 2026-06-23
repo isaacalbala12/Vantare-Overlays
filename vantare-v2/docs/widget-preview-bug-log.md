@@ -149,6 +149,28 @@ Solucion:
 - `WidgetRenderer fillHost={false}` usa `width: fit-content` y no aplica `w-full`.
 - `logicalSize.width` pasa a representar el tamano visible real.
 
+### 8. Fill/Standings previews conservaban `position.w` y dejaban espacio vacio a la derecha
+
+Sintoma:
+
+- `Relative` fill y `Standings` mostraban un area vacia ancha a la derecha en `WidgetStudio`.
+- La caja de la preview reflejaba el ancho de `LayoutStudio` en vez del ancho real del contenido del widget.
+
+Causa:
+
+- `resolveWidgetPreviewBaseSize` usaba `Math.max(position.w, intrinsicWidth)`, que expandia pero nunca encojia.
+- `WidgetSandboxPreview` solo usaba `fit-content` para `Relative` compacto; fill y `Standings` seguan fijando `position.w`.
+- Las filas de `RelativeWidget` y `StandingsWidget` usaban `width:max(100%, intrinsicWidth)`, estirandose al padre.
+- `StandingsWidget` no tenia modo intrinsic/`fillHost`, por lo que en el sandbox siempre estiraba a `position.w`.
+
+Solucion:
+
+- En el sandbox de `WidgetStudio`, los widgets configurables con ancho intrinseco (`relative`, `standings`) usan el ancho intrinseco real, sea menor o mayor que `position.w`.
+- `position.h` sigue usandose para la altura en modo fill.
+- El modo intrinsic del sandbox se aplica cuando `baseSize.mode === "intrinsic"` o `Relative` esta en compacto.
+- `WidgetRenderer` propaga un contexto interno runtime `__previewFillHost` a los widgets; estos envuelven el contenido (filas + root) cuando es `false`.
+- Los overlays runtime y `LayoutStudio` siguen usando `position.w/h` porque `__previewFillHost` no llega fuera de `WidgetRenderer`.
+
 ## Reglas Para Futuros Workers
 
 - No corregir previews con offsets magicos (`translateX`, padding arbitrario, `center 40%`, etc.).
@@ -162,8 +184,11 @@ Solucion:
   - `getBoundingClientRect`,
   - `fillHost`,
   - `position.w/h` como minimo visual.
+- En `WidgetStudio`, los widgets configurables (`relative`, `standings`) usan ancho intrinseco. No usar `position.w` como ancho minimo visual alli.
+- En `LayoutStudio` y overlays runtime, `position.w/h` sigue siendo el contrato de layout.
 - En compacto, el tamano visual puede ser intrinseco.
-- En fill, el tamano visual respeta `position.w/h`.
+- En fill, el alto visual respeta `position.h`; el ancho es intrinseco en `WidgetStudio`.
+- `__previewFillHost` es contexto runtime interno de `WidgetRenderer`; no persistirlo en schema ni variantes.
 
 ## Tests Que Protegen Este Flujo
 

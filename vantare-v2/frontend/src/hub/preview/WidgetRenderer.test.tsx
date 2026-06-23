@@ -52,7 +52,7 @@ describe("WidgetRenderer", () => {
     expect(screen.getByTestId("renderer").className).toContain("w-full");
   });
 
-  it("can opt out of filling host height for intrinsic measurement", () => {
+  it("can opt out of filling host width while keeping full height for intrinsic measurement", () => {
     const widget: WidgetConfig = {
       id: "relative",
       type: "relative",
@@ -64,7 +64,7 @@ describe("WidgetRenderer", () => {
 
     render(<WidgetRenderer profile={profileWith(widget)} widget={widget} fillHost={false} testId="renderer" />);
 
-    expect(screen.getByTestId("renderer").className).not.toContain("h-full");
+    expect(screen.getByTestId("renderer").className).toContain("h-full");
     expect(screen.getByTestId("renderer").className).not.toContain("w-full");
     expect(screen.getByTestId("renderer").style.width).toBe("fit-content");
   });

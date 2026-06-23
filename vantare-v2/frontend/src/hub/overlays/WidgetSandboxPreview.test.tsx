@@ -3,6 +3,8 @@ import { afterEach, describe, expect, it } from "vitest";
 import type { ProfileConfig, WidgetConfig } from "../../lib/profile";
 import { createDefaultRelativeColumns } from "../../overlay/widgets/relative-catalog";
 import { getRelativeIntrinsicWidth } from "../../overlay/widgets/relative-format";
+import { createDefaultStandingsColumns } from "../../overlay/widgets/standings-catalog";
+import { getStandingsIntrinsicWidth } from "../../overlay/widgets/standings-format";
 import { WidgetSandboxPreview } from "./WidgetSandboxPreview";
 
 function profileWith(widget: WidgetConfig): ProfileConfig {
@@ -138,7 +140,7 @@ describe("WidgetSandboxPreview", () => {
       });
       expect(screen.getByTestId("widget-sandbox-scaler-inner").style.width).toBe(`${intrinsicWidth}px`);
       expect(screen.getByTestId("widget-sandbox-content").style.width).toBe("fit-content");
-      expect(screen.getByTestId("widget-sandbox-renderer").className).not.toContain("h-full");
+      expect(screen.getByTestId("widget-sandbox-renderer").className).toContain("h-full");
       expect(screen.getByTestId("widget-sandbox-renderer").className).not.toContain("w-full");
       expect(widget.position).toEqual({ x: 400, y: 500, w: 900, h: 420 });
     } finally {
@@ -217,7 +219,8 @@ describe("WidgetSandboxPreview", () => {
     }
   });
 
-  it("keeps fill relative preview at least as tall as saved position height", async () => {
+  it("keeps fill relative preview at saved position height while wrapping intrinsic width", async () => {
+    const intrinsicWidth = getRelativeIntrinsicWidth(createDefaultRelativeColumns());
     const originalScrollHeight = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "scrollHeight");
 
     Object.defineProperty(HTMLElement.prototype, "scrollHeight", {
@@ -254,8 +257,10 @@ describe("WidgetSandboxPreview", () => {
       await waitFor(() => {
         expect(screen.getByTestId("widget-sandbox-scaler-inner").style.height).toBe("420px");
       });
-      expect(screen.getByTestId("widget-sandbox-scaler-inner").style.width).toBe("600px");
+      expect(screen.getByTestId("widget-sandbox-scaler-inner").style.width).toBe(`${intrinsicWidth}px`);
+      expect(screen.getByTestId("widget-sandbox-content").style.width).toBe("fit-content");
       expect(screen.getByTestId("widget-sandbox-renderer").className).toContain("h-full");
+      expect(screen.getByTestId("widget-sandbox-renderer").className).not.toContain("w-full");
       expect(widget.position).toEqual({ x: 400, y: 500, w: 600, h: 420 });
     } finally {
       if (originalScrollHeight) {
@@ -278,5 +283,171 @@ describe("WidgetSandboxPreview", () => {
     await waitFor(() => {
       expect(screen.getByText("Leader")).toBeTruthy();
     });
+  });
+
+  it("uses intrinsic standings width without mutating position", () => {
+    const columns = createDefaultStandingsColumns().map((column) =>
+      column.id === "bestLap" || column.id === "lastLap" || column.id === "interval"
+        ? { ...column, enabled: true }
+        : column,
+    );
+    const widget: WidgetConfig = {
+      id: "standings",
+      type: "standings",
+      enabled: true,
+      updateHz: 15,
+      variantId: "variant-standings",
+      position: { x: 0, y: 0, w: 240, h: 300 },
+      props: {},
+    };
+    const profile: ProfileConfig = {
+      ...profileWith(widget),
+      variants: [{ id: "variant-standings", widgetType: "standings", columns }],
+    };
+
+    render(<WidgetSandboxPreview profile={profile} activeWidget={widget} />);
+
+    const inner = screen.getByTestId("widget-sandbox-scaler-inner");
+    expect(parseInt(inner.style.width, 10)).toBeGreaterThan(240);
+    expect(widget.position).toEqual({ x: 0, y: 0, w: 240, h: 300 });
+  });
+
+  it("uses standings intrinsic width when default columns fit without over-expansion", async () => {
+    const columns = createDefaultStandingsColumns();
+    const intrinsicWidth = getStandingsIntrinsicWidth(columns);
+    const widget: WidgetConfig = {
+      id: "standings",
+      type: "standings",
+      enabled: true,
+      updateHz: 15,
+      variantId: "variant-standings",
+      position: { x: 0, y: 0, w: 600, h: 300 },
+      props: {},
+    };
+    const profile: ProfileConfig = {
+      ...profileWith(widget),
+      variants: [{ id: "variant-standings", widgetType: "standings", columns }],
+    };
+
+    render(<WidgetSandboxPreview profile={profile} activeWidget={widget} />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("widget-sandbox-scaler-inner").style.width).toBe(`${intrinsicWidth}px`);
+    });
+    expect(screen.getByTestId("widget-sandbox-content").style.width).toBe("fit-content");
+    expect(screen.getByTestId("widget-sandbox-renderer").className).not.toContain("w-full");
+    expect(parseInt(screen.getByTestId("widget-sandbox-scaler-inner").style.width, 10)).toBeLessThanOrEqual(intrinsicWidth);
+    expect(widget.position).toEqual({ x: 0, y: 0, w: 600, h: 300 });
+  });
+
+  it("expands standings width when a single optional column is enabled", () => {
+    const defaultColumns = createDefaultStandingsColumns();
+    const defaultIntrinsicWidth = getStandingsIntrinsicWidth(defaultColumns);
+    const columns = defaultColumns.map((column) =>
+      column.id === "bestLap" ? { ...column, enabled: true } : column,
+    );
+    const widget: WidgetConfig = {
+      id: "standings",
+      type: "standings",
+      enabled: true,
+      updateHz: 15,
+      variantId: "variant-standings",
+      position: { x: 0, y: 0, w: 240, h: 300 },
+      props: {},
+    };
+    const profile: ProfileConfig = {
+      ...profileWith(widget),
+      variants: [{ id: "variant-standings", widgetType: "standings", columns }],
+    };
+
+    render(<WidgetSandboxPreview profile={profile} activeWidget={widget} />);
+
+    const inner = screen.getByTestId("widget-sandbox-scaler-inner");
+    expect(parseInt(inner.style.width, 10)).toBeGreaterThan(defaultIntrinsicWidth);
+    expect(parseInt(inner.style.width, 10)).toBeGreaterThan(240);
+    expect(widget.position).toEqual({ x: 0, y: 0, w: 240, h: 300 });
+  });
+
+  it("uses fit-content for relative fill intrinsic width when declared width is wider", async () => {
+    const intrinsicWidth = getRelativeIntrinsicWidth(createDefaultRelativeColumns());
+    const widget: WidgetConfig = {
+      id: "relative",
+      type: "relative",
+      enabled: true,
+      updateHz: 15,
+      variantId: "variant-relative",
+      position: { x: 400, y: 500, w: 900, h: 420 },
+      props: {},
+    };
+    const profile: ProfileConfig = {
+      ...profileWith(widget),
+      variants: [
+        {
+          id: "variant-relative",
+          widgetType: "relative",
+          columns: createDefaultRelativeColumns(),
+          filters: { rowHeightMode: "fill" },
+        },
+      ],
+    };
+
+    render(<WidgetSandboxPreview profile={profile} activeWidget={widget} />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("widget-sandbox-scaler-inner").style.width).toBe(`${intrinsicWidth}px`);
+    });
+    expect(screen.getByTestId("widget-sandbox-content").style.width).toBe("fit-content");
+    expect(screen.getByTestId("widget-sandbox-renderer").className).not.toContain("w-full");
+    expect(screen.getByTestId("widget-sandbox-renderer").className).toContain("h-full");
+    expect(widget.position).toEqual({ x: 400, y: 500, w: 900, h: 420 });
+  });
+
+  it("uses fit-content for standings intrinsic width when declared width is wider", async () => {
+    const columns = createDefaultStandingsColumns();
+    const intrinsicWidth = getStandingsIntrinsicWidth(columns);
+    const widget: WidgetConfig = {
+      id: "standings",
+      type: "standings",
+      enabled: true,
+      updateHz: 15,
+      variantId: "variant-standings",
+      position: { x: 0, y: 0, w: 600, h: 300 },
+      props: {},
+    };
+    const profile: ProfileConfig = {
+      ...profileWith(widget),
+      variants: [{ id: "variant-standings", widgetType: "standings", columns }],
+    };
+
+    render(<WidgetSandboxPreview profile={profile} activeWidget={widget} />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("widget-sandbox-scaler-inner").style.width).toBe(`${intrinsicWidth}px`);
+    });
+    expect(screen.getByTestId("widget-sandbox-content").style.width).toBe("fit-content");
+    expect(screen.getByTestId("widget-sandbox-renderer").className).not.toContain("w-full");
+    expect(screen.getByTestId("widget-sandbox-renderer").className).toContain("h-full");
+    expect(widget.position).toEqual({ x: 0, y: 0, w: 600, h: 300 });
+  });
+
+  it("keeps non-configurable widgets using declared layout width in sandbox", async () => {
+    const widget: WidgetConfig = {
+      id: "delta",
+      type: "delta",
+      enabled: true,
+      updateHz: 15,
+      position: { x: 100, y: 200, w: 320, h: 140 },
+      props: {},
+    };
+
+    render(<WidgetSandboxPreview profile={profileWith(widget)} activeWidget={widget} />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("widget-sandbox-scaler-inner").style.width).toBe("320px");
+      expect(screen.getByTestId("widget-sandbox-scaler-inner").style.height).toBe("140px");
+    });
+    expect(screen.getByTestId("widget-sandbox-content").style.width).not.toBe("fit-content");
+    expect(screen.getByTestId("widget-sandbox-renderer").className).toContain("h-full");
+    expect(screen.getByTestId("widget-sandbox-renderer").className).toContain("w-full");
   });
 });

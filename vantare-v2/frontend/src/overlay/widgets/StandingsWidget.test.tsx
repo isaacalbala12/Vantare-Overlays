@@ -2,6 +2,7 @@ import { act, cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ColumnConfig } from "../../lib/profile";
 import { createDefaultStandingsColumns } from "./standings-catalog";
+import { getStandingsIntrinsicWidth } from "./standings-format";
 import { StandingsWidget, formatStandingsGap, formatStandingsGapForMode, formatStandingsPit } from "./StandingsWidget";
 
 function variantColumns(overrides: Partial<ColumnConfig>[]): ColumnConfig[] {
@@ -247,5 +248,37 @@ describe("StandingsWidget", () => {
 
     const panel = screen.getByTestId("standings-panel");
     expect(panel.textContent).toContain("1:29.823");
+  });
+
+  it("wraps intrinsic width when preview fill host is disabled", () => {
+    const columns = createDefaultStandingsColumns();
+    const intrinsicWidth = getStandingsIntrinsicWidth(columns);
+    render(
+      <StandingsWidget
+        editMode={true}
+        updateHz={15}
+        props={{ __previewFillHost: false, variant: standingsVariant(columns) }}
+      />,
+    );
+    tick(100);
+
+    const panel = screen.getByTestId("standings-panel");
+    expect(panel.className).not.toContain("w-full");
+    expect(panel.style.width).toBe(`${intrinsicWidth}px`);
+  });
+
+  it("fills the host by default without preview fill host context", () => {
+    render(
+      <StandingsWidget
+        editMode={true}
+        updateHz={15}
+        props={{ variant: standingsVariant(createDefaultStandingsColumns()) }}
+      />,
+    );
+    tick(100);
+
+    const panel = screen.getByTestId("standings-panel");
+    expect(panel.className).toContain("w-full");
+    expect(panel.style.width).toBe("");
   });
 });

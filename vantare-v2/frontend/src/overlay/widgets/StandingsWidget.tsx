@@ -120,6 +120,8 @@ export function StandingsWidget({ editMode, telemetryMode, mockSessionScenario, 
   const { appearance: a } = resolveWidgetAppearance("standings", props);
   const activeColumns = getActiveStandingsColumns(props);
   const intrinsicWidth = getStandingsIntrinsicWidth(activeColumns);
+  const fillHost = props?.__previewFillHost !== false;
+  const intrinsicOnly = !fillHost;
 
   const readTelemetry = useCallback(
     () =>
@@ -281,14 +283,18 @@ export function StandingsWidget({ editMode, telemetryMode, mockSessionScenario, 
           }
         }).join("");
 
-        return `<div class="flex items-center text-[11px] font-bold border-b border-black/20 transition-all" data-standings-row style="min-width:${intrinsicWidth}px;width:max(100%, ${intrinsicWidth}px);height:${rowHeight}px;background:${bgRow};${leftInset}">
+        const rowWidthStyle = intrinsicOnly
+          ? `width:${intrinsicWidth}px`
+          : `min-width:${intrinsicWidth}px;width:max(100%, ${intrinsicWidth}px)`;
+
+        return `<div class="flex items-center text-[11px] font-bold border-b border-black/20 transition-all" data-standings-row style="${rowWidthStyle};height:${rowHeight}px;background:${bgRow};${leftInset}">
           ${brandCell}${cells}
         </div>`;
       });
 
       setHTMLIfChanged(container, rows.join(""));
     });
-  }, [maxRows, updateHz, editMode, telemetryMode, mockSessionScenario, props, a, activeColumns, intrinsicWidth, readTelemetry]);
+  }, [maxRows, updateHz, editMode, telemetryMode, mockSessionScenario, props, a, activeColumns, intrinsicWidth, intrinsicOnly, readTelemetry]);
 
   const t = readTelemetry();
   const player = t.vehicles.find((v) => v.isPlayer);
@@ -298,8 +304,9 @@ export function StandingsWidget({ editMode, telemetryMode, mockSessionScenario, 
   return (
     <div
       data-testid="standings-panel"
-      className="w-full h-fit flex flex-col overflow-hidden rounded-lg"
+      className={`${intrinsicOnly ? "inline-flex" : "flex w-full"} h-fit flex-col overflow-hidden rounded-lg`}
       style={{
+        width: intrinsicOnly ? `${intrinsicWidth}px` : undefined,
         background: BAKED_PANEL_BG,
         border: `1px solid ${a.borderColor}`,
         color: a.textColor,

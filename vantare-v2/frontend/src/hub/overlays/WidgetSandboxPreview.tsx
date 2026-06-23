@@ -43,7 +43,8 @@ export function WidgetSandboxPreview({ profile, activeWidget, mockSessionScenari
   }, [activeWidget, profile]);
   const compactRelative = activeWidget?.type === "relative"
     && getRelativeFilters(rendererProps?.variant?.filters, rendererProps ?? undefined).rowHeightMode === "compact";
-  const minimumWidth = compactRelative ? 1 : baseSize.width;
+  const intrinsicSizing = baseSize.mode === "intrinsic" || compactRelative;
+  const minimumWidth = baseSize.width;
   const minimumHeight = compactRelative ? 1 : baseSize.height;
   const widgetId = activeWidget?.id ?? null;
 
@@ -125,7 +126,7 @@ export function WidgetSandboxPreview({ profile, activeWidget, mockSessionScenari
           ref={contentRef}
           data-testid="widget-sandbox-content"
           style={{
-            width: compactRelative ? "fit-content" : `${logicalSize.width}px`,
+            width: intrinsicSizing ? "fit-content" : `${logicalSize.width}px`,
             minHeight: compactRelative ? undefined : `${logicalSize.height}px`,
           }}
         >
@@ -137,7 +138,7 @@ export function WidgetSandboxPreview({ profile, activeWidget, mockSessionScenari
             mockSessionScenario={mockSessionScenario}
             updateHz={activeWidget.updateHz}
             disabled
-            fillHost={!compactRelative}
+            fillHost={!intrinsicSizing}
             testId="widget-sandbox-renderer"
           />
         </div>

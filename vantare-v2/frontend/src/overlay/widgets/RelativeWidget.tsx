@@ -57,6 +57,8 @@ export function RelativeWidget({ editMode, telemetryMode, props, updateHz = 15 }
   const { rangeAhead, rangeBehind, classScope, includePlayer, rowHeightMode } = filters;
   const activeColumns = getActiveRelativeColumns(props);
   const intrinsicWidth = getRelativeIntrinsicWidth(activeColumns);
+  const fillHost = props?.__previewFillHost !== false;
+  const intrinsicOnly = !fillHost;
   const lastFingerprintRef = useRef("");
   const { appearance: a } = resolveWidgetAppearance("relative", props);
 
@@ -154,23 +156,28 @@ export function RelativeWidget({ editMode, telemetryMode, props, updateHz = 15 }
           }
         }).join("");
 
-        return `<div class="flex items-center text-[11px] font-bold border-b border-black/20 transition-all" style="min-width:${intrinsicWidth}px;width:max(100%, ${intrinsicWidth}px);height:${rowHeight}px;background:${isP ? BAKED_PLAYER_BG : bgRow};${leftInset}">
+        const rowWidthStyle = intrinsicOnly
+          ? `width:${intrinsicWidth}px`
+          : `min-width:${intrinsicWidth}px;width:max(100%, ${intrinsicWidth}px)`;
+
+        return `<div class="flex items-center text-[11px] font-bold border-b border-black/20 transition-all" style="${rowWidthStyle};height:${rowHeight}px;background:${isP ? BAKED_PLAYER_BG : bgRow};${leftInset}">
           ${cells}
         </div>`;
       });
 
       setHTMLIfChanged(container, rows.join(""));
     });
-  }, [rangeAhead, rangeBehind, classScope, includePlayer, rowHeightMode, updateHz, editMode, telemetryMode, props, a, activeColumns, intrinsicWidth]);
+  }, [rangeAhead, rangeBehind, classScope, includePlayer, rowHeightMode, updateHz, editMode, telemetryMode, props, a, activeColumns, intrinsicWidth, intrinsicOnly]);
 
   const compactRows = rowHeightMode === "compact";
+  const intrinsicRoot = intrinsicOnly || compactRows;
 
   return (
     <div
       data-testid="relative-panel"
-      className={`${compactRows ? "inline-flex" : "flex w-full h-full"} flex-col overflow-hidden rounded-lg font-display`}
+      className={`${intrinsicOnly && !compactRows ? "inline-flex h-full" : compactRows ? "inline-flex" : "flex w-full h-full"} flex-col overflow-hidden rounded-lg font-display`}
       style={{
-        width: compactRows ? `${intrinsicWidth}px` : undefined,
+        width: intrinsicRoot ? `${intrinsicWidth}px` : undefined,
         background: BAKED_PANEL_BG,
         border: `1px solid ${a.borderColor}`,
         color: a.textColor,

@@ -9,6 +9,8 @@ import {
   resolveClassColor,
   selectRelativeRowsByGap,
 } from "./relative-widget-helpers";
+import { createDefaultRelativeColumns } from "./relative-catalog";
+import { getRelativeIntrinsicWidth } from "./relative-format";
 
 describe("RelativeWidget helpers", () => {
   it("resolves class colors", () => {
@@ -300,5 +302,55 @@ describe("RelativeWidget", () => {
     expect(panel.className).not.toContain("w-full");
     expect(panel.getAttribute("style")).toContain("width: 224px");
     expect(screen.getByText("TOYOTA GAZOO").parentElement?.getAttribute("style")).toContain("height:31px");
+  });
+
+  it("wraps intrinsic width in fill mode when preview fill host is disabled", () => {
+    const columns = createDefaultRelativeColumns();
+    const intrinsicWidth = getRelativeIntrinsicWidth(columns);
+    render(
+      <RelativeWidget
+        editMode={true}
+        updateHz={15}
+        props={{
+          __previewFillHost: false,
+          variant: {
+            id: "variant-relative-default",
+            templateId: "relative-vantare-default",
+            filters: { rangeAhead: 3, rangeBehind: 3, includePlayer: true, rowHeightMode: "fill" },
+            columns,
+          },
+        }}
+      />,
+    );
+
+    tick(100);
+
+    const panel = screen.getByTestId("relative-panel");
+    expect(panel.className).not.toContain("w-full");
+    expect(panel.className).toContain("h-full");
+    expect(panel.style.width).toBe(`${intrinsicWidth}px`);
+  });
+
+  it("fills the host by default in fill mode without preview fill host context", () => {
+    render(
+      <RelativeWidget
+        editMode={true}
+        updateHz={15}
+        props={{
+          variant: {
+            id: "variant-relative-default",
+            templateId: "relative-vantare-default",
+            filters: { rangeAhead: 3, rangeBehind: 3, includePlayer: true, rowHeightMode: "fill" },
+            columns: createDefaultRelativeColumns(),
+          },
+        }}
+      />,
+    );
+
+    tick(100);
+
+    const panel = screen.getByTestId("relative-panel");
+    expect(panel.className).toContain("w-full");
+    expect(panel.style.width).toBe("");
   });
 });

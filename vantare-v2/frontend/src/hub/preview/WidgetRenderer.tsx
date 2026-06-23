@@ -58,11 +58,12 @@ export function WidgetRenderer({
 }: WidgetRendererProps) {
   const Component = WIDGETS[widget.type];
   const props = enrichWidgetPropsWithVariant(profile ?? undefined, widget);
+  const renderedProps = { ...props, __previewFillHost: fillHost };
 
   return (
     <div
       data-testid={testId}
-      className={`${fillHost ? "h-full w-full" : ""} ${disabled ? "pointer-events-none" : ""} ${className}`.trim()}
+      className={`${fillHost ? "w-full" : ""} h-full ${disabled ? "pointer-events-none" : ""} ${className}`.trim()}
       style={{ width: fillHost ? undefined : "fit-content", ...(style ?? {}) }}
     >
       {Component ? (
@@ -71,7 +72,7 @@ export function WidgetRenderer({
           telemetryMode={telemetryMode}
           mockSessionScenario={mockSessionScenario}
           updateHz={updateHz ?? widget.updateHz}
-          props={props}
+          props={renderedProps}
         />
       ) : (
         <div className="flex h-full w-full items-center justify-center text-xs text-neutral-500">
