@@ -1,14 +1,16 @@
+//go:build windows
+
 package app
 
 import (
 	"fmt"
-	"runtime"
-	"time"
 	"log"
+	"runtime"
 	"strings"
 	"sync"
 	"sync/atomic"
 	"syscall"
+	"time"
 	"unsafe"
 )
 
@@ -65,8 +67,8 @@ var keyCodeMap = map[string]uint32{
 }
 
 var (
-	user32            = syscall.NewLazyDLL("user32.dll")
-	kernel32          = syscall.NewLazyDLL("kernel32.dll")
+	user32   = syscall.NewLazyDLL("user32.dll")
+	kernel32 = syscall.NewLazyDLL("kernel32.dll")
 
 	procRegisterHotKey   = user32.NewProc("RegisterHotKey")
 	procUnregisterHotKey = user32.NewProc("UnregisterHotKey")
@@ -103,7 +105,7 @@ func ParseHotkeyCombo(combo string) (mods uint32, vk uint32, err error) {
 		return mods, code, nil
 	}
 	if len(key) == 1 && key[0] >= 'a' && key[0] <= 'z' {
-		return mods, uint32(key[0]-'a'+0x41), nil
+		return mods, uint32(key[0] - 'a' + 0x41), nil
 	}
 	return 0, 0, fmt.Errorf("unknown key: %q", key)
 }

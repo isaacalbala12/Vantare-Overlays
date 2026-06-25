@@ -1,7 +1,12 @@
 import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ProfileConfig, WidgetConfig } from "../../lib/profile";
 import { WidgetRenderer } from "./WidgetRenderer";
+
+// Minimal mock for @wailsio/runtime needed by EngineerNotificationsWidget
+vi.mock("@wailsio/runtime", () => ({
+  Events: { On: vi.fn(), Emit: vi.fn() },
+}));
 
 function profileWith(widget: WidgetConfig): ProfileConfig {
   return {
@@ -82,6 +87,30 @@ describe("WidgetRenderer", () => {
     render(<WidgetRenderer profile={profileWith(widget)} widget={widget} testId="renderer" />);
 
     expect(screen.getByTestId("renderer").textContent).toContain("unknown-widget");
+  });
+
+  it("renders engineer-notifications placeholder in edit mode", () => {
+    const widget: WidgetConfig = {
+      id: "engineer",
+      type: "engineer-notifications",
+      enabled: true,
+      updateHz: 15,
+      position: { x: 0, y: 0, w: 300, h: 80 },
+      props: {},
+    };
+
+    render(
+      <WidgetRenderer
+        profile={profileWith(widget)}
+        widget={widget}
+        editMode={true}
+        testId="renderer"
+      />,
+    );
+
+    expect(screen.getByTestId("renderer")).toBeTruthy();
+    // EngineerNotificationsWidget renders "Ingeniero" in the placeholder
+    expect(screen.getByText("Ingeniero")).toBeTruthy();
   });
 
   it("accepts a mock session scenario prop for standings preview", () => {

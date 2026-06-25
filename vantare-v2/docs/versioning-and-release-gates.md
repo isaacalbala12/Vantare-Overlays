@@ -36,6 +36,18 @@ v1.0.0.0
 
 ## Version actual
 
+`v0.3.10.0` marca el cierre del lote beta privada inicial B1-B6:
+
+- Vantare Suite integra el modulo `Ingeniero` como seccion interna y widget de notificaciones.
+- Documentacion base para testers privados, known issues, feedback y OBS local.
+- Hotkeys basicas endurecidas en Windows con stubs multiplataforma.
+- URL de OBS en Ajustes corregida para apuntar a perfiles reales.
+- Delta best live implementado usando `DeltaBest` nativo de LMU cuando esta disponible.
+- `DeltaWidget` muestra `Target` y `Lap` desde telemetria real/mock en lugar de textos fijos.
+- Version runtime/build actualizada.
+
+Versiones previas relevantes:
+
 `v0.3.9.2` marca el cierre de mock/live/demo UX y automatizacion Discord:
 
 - Inventario mock/live/demo documentado.
@@ -43,8 +55,6 @@ v1.0.0.0
 - Selector mock de `Standings` verificado como preview-only.
 - Changelog publico y GitHub Action para publicar tags `v*` en Discord.
 - Version runtime/build actualizada.
-
-Versiones previas relevantes:
 
 `v0.3.9.1` marca el cierre del lote de producto usable posterior a PREVIEW2:
 
@@ -93,6 +103,7 @@ Al pushear un tag `v*`, `.github/workflows/discord-release.yml` lee la entrada d
 | `v0.3.9.0` | Runtime/build | UI2 WidgetStudio visual rework + PREVIEW2 intrinsic width |
 | `v0.3.9.1` | Runtime/build | LayoutStudio resize proporcional + recomendados editables |
 | `v0.3.9.2` | Runtime/build | Mock/live/demo UX + Discord release automation |
+| `v0.3.10.0` | Runtime/build | Beta privada B1-B6: Ingeniero foundation, tester docs, OBS URL, hotkeys y Delta live |
 
 ## Rango de versiones
 

@@ -21,6 +21,7 @@ import { StandingsWidget } from "./widgets/StandingsWidget";
 import { TelemetryWidget } from "./widgets/TelemetryWidget";
 import { TelemetryVerticalWidget } from "./widgets/TelemetryVerticalWidget";
 import { PedalsWidget } from "./widgets/PedalsWidget";
+import { EngineerNotificationsWidget } from "./widgets/EngineerNotificationsWidget";
 import { applyOverlayDocumentMode } from "./overlay-document";
 import type { ComponentType } from "react";
 import type { WidgetTelemetryMode } from "./widgets/use-widget-telemetry";
@@ -32,6 +33,7 @@ const WIDGETS: Record<string, ComponentType<{ editMode: boolean; telemetryMode?:
   telemetry: TelemetryWidget,
   "telemetry-vertical": TelemetryVerticalWidget,
   pedals: PedalsWidget,
+  "engineer-notifications": EngineerNotificationsWidget,
 };
 
 export function CompositeApp() {
@@ -110,7 +112,7 @@ export function CompositeApp() {
         const localPos = toWindowLocal(w.position, layoutOrigin);
         return (
           <WidgetHost key={w.id} id={w.id} position={localPos} widget={w} profile={profile}>
-            <Component editMode={false} telemetryMode="live" updateHz={w.updateHz} props={enrichWidgetPropsWithVariant(profile, w)} />
+            <Component editMode={false} telemetryMode="live" updateHz={w.updateHz} props={{ ...enrichWidgetPropsWithVariant(profile, w), __engineerTransport: "wails" as const }} />
           </WidgetHost>
         );
       })}

@@ -53,6 +53,15 @@ func SetPlayerSpeedMPS(buf []byte, speedMPS float64) {
 	setPlayerSpeedMPS(buf, telemetryTelemOffset, speedMPS)
 }
 
+// SetPlayerDeltaBest overwrites the player slot delta best for tests.
+func SetPlayerDeltaBest(buf []byte, deltaBest float64) {
+	if len(buf) < ObjectOutSize {
+		return
+	}
+	po := telemetryTelemOffset
+	writeFloat64(buf, po+vehicleTelemetryDeltaBest, deltaBest)
+}
+
 func writeVehicle(buf []byte, v vehicleSpec) {
 	o := v.offset
 	writeInt32(buf, o+vehicleScoringID, v.id)

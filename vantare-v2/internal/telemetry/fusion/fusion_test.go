@@ -88,9 +88,25 @@ func TestMergeAppliesDeltaBestOnlyIfValid(t *testing.T) {
 	if out.Player.DeltaBest != 1.234 {
 		t.Fatalf("expected delta 1.234, got %v", out.Player.DeltaBest)
 	}
-	out2 := fusion.Merge(base, rows, nil, -1)
-	if out2.Player.DeltaBest != 0 {
-		t.Fatalf("expected delta 0 for invalid time, got %v", out2.Player.DeltaBest)
+	out2 := fusion.Merge(base, rows, nil, -1.5)
+	if out2.Player.DeltaBest != -1.5 {
+		t.Fatalf("expected delta -1.5 for negative delta, got %v", out2.Player.DeltaBest)
+	}
+	out3 := fusion.Merge(base, rows, nil, 12000) // absurdly large
+	if out3.Player.DeltaBest != 0 {
+		t.Fatalf("expected delta 0 for absurdly large delta, got %v", out3.Player.DeltaBest)
+	}
+}
+
+func TestMergePreservesExistingDeltaBestWhenIncomingIsZero(t *testing.T) {
+	base := &models.Telemetry{
+		Connected: true,
+		Player:    &models.PlayerTelemetry{ID: 1, Speed: 10, DeltaBest: -0.250},
+	}
+	rows := []lmuapi.StandingRow{{DriverName: "A", Player: true}}
+	out := fusion.Merge(base, rows, nil, 0)
+	if out.Player.DeltaBest != -0.250 {
+		t.Fatalf("expected DeltaBest to be preserved as -0.250 when incoming is 0, got %v", out.Player.DeltaBest)
 	}
 }
 

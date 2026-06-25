@@ -17,6 +17,7 @@ import (
 	"github.com/vantare/overlays/v2/configs"
 	"github.com/vantare/overlays/v2/frontend"
 	"github.com/vantare/overlays/v2/internal/app"
+	engineerservice "github.com/vantare/overlays/v2/internal/engineer/service"
 	"github.com/vantare/overlays/v2/internal/ops"
 	"github.com/vantare/overlays/v2/internal/server"
 	"github.com/vantare/overlays/v2/internal/telemetry/delta"
@@ -29,7 +30,7 @@ import (
 )
 
 // version is the current application version.
-var version = "v0.3.9.2"
+var version = "v0.3.10.0"
 
 // reorderArgs moves flag arguments to the front of os.Args so flag.Parse() can
 // see them even when the user types `vantare serve -live -profile foo.json`.
@@ -122,7 +123,7 @@ func installerURL(release updater.Release) string {
 func main() {
 	// Set WebView2 user data folder to version-specific path to prevent cache issues across releases
 	if appData := os.Getenv("LOCALAPPDATA"); appData != "" {
-		udf := filepath.Join(appData, "Vantare", "webview_v0.3.9.2")
+		udf := filepath.Join(appData, "Vantare", "webview_v0.3.10.0")
 		_ = os.Setenv("WEBVIEW2_USER_DATA_FOLDER", udf)
 	}
 
@@ -158,6 +159,7 @@ func main() {
 	var rtSampler *ops.RuntimeSampler
 	var overlayRunning atomic.Bool
 	var hkMgr *app.HotkeyManager
+	var engBridge *app.EngineerBridge
 	cleanupApp := func() {
 		cleanup.Do(func() {
 			if overlayController != nil {
@@ -176,6 +178,9 @@ func main() {
 			}
 			if hkMgr != nil {
 				hkMgr.Stop()
+			}
+			if engBridge != nil {
+				engBridge.Stop()
 			}
 			vapp.StopTelemetry()
 		})
@@ -244,6 +249,15 @@ func main() {
 	settingsPath := filepath.Join(cfgDir, "updater-settings.json")
 	updaterSvc := app.NewUpdaterService(version, settingsPath, emitter)
 	wailsApp.RegisterService(application.NewService(updaterSvc))
+
+	// Create and start EngineerService (core & simulator/replay)
+	engSvc := engineerservice.NewEngineerService(emitter)
+	engSvc.Start(ctx)
+	defer engSvc.Stop()
+
+	// Register Wails bridge for Engineer events and commands
+	engBridge = app.NewEngineerBridge(wailsApp, emitter, engSvc)
+	engBridge.Start()
 
 	// App settings service (delta mode, hotkeys, cpu sampling toggle)
 	appSettingsPath := filepath.Join(cfgDir, "app-settings.json")
@@ -662,10 +676,11 @@ func main() {
 
 	// --- OBS / SSE HTTP server ---
 	httpSrv = server.New(server.ServerConfig{
-		Addr:   *httpAddr,
-		DistFS: distFS,
-		CfgDir: cfgDir,
-		Svc:    vapp.Telemetry,
+		Addr:        *httpAddr,
+		DistFS:      distFS,
+		CfgDir:      cfgDir,
+		Svc:         vapp.Telemetry,
+		EngineerSvc: engSvc,
 	})
 	httpSrv.Start()
 	log.Printf("OBS overlay: http://%s/overlay?profile=%s", *httpAddr, filepath.Base(*profilePath))

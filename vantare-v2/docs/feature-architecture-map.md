@@ -10,6 +10,18 @@ La app separa configuracion interna de widgets y layout global.
 - `LayoutStudio`: donde esta el widget y que tamano externo tiene.
 - Overlay runtime: render final para desktop/OBS.
 - Profile services: persistencia de perfiles, layouts y variantes.
+- Ingeniero: modulo interno de suite que calcula y emite notificaciones de carrera.
+
+## Vantare Suite
+
+Vantare contiene varios modulos internos bajo un mismo Hub:
+
+- `Overlays Studio`: configuracion, perfiles, widgets, layouts y runtime visual.
+- `Ingeniero`: spotter/ingeniero, historial, notification bus y widget de mensajes.
+- `Telemetria`: fuente compartida para overlays e Ingeniero.
+- `Setup`: configuracion local.
+
+Regla: compartir infraestructura no permite mezclar responsabilidades. Un widget puede mostrar informacion de Ingeniero, pero no debe calcular decisiones de ingeniero.
 
 ## Overlays Studio
 
@@ -211,6 +223,37 @@ Fuera:
 - editor libre;
 - templates multiples.
 
+## Ingeniero
+
+Estado:
+
+- modulo inicial integrado como parte intrinseca de la app;
+- EN0-EN5 implementado y aceptado con P3 no bloqueantes;
+- live LMU real queda pendiente de EN6.
+
+Responsabilidad:
+
+- core determinista Go bajo `internal/engineer`;
+- servicio de lifecycle, simulator/replay y notification store;
+- pagina `Ingeniero` en el Hub;
+- bus de notificaciones para Wails y OBS;
+- widget `engineer-notifications` en overlays.
+
+No puede:
+
+- editar posicion/tamano de widgets;
+- editar columnas, filtros o formatos de otros widgets;
+- guardar configuracion dentro de perfiles de overlay sin plan aprobado;
+- abrir un segundo reader LMU;
+- poner logica de carrera en React o en el widget visual.
+
+EN6 previsto:
+
+- adaptar Ingeniero a LMU live reutilizando el buffer/fuente actual de overlays;
+- parser paralelo de geometria en `internal/engineer/lmu`;
+- adapter Go hacia `EngineerService`;
+- sin tocar `pkg/models.Telemetry` salvo decision explicita.
+
 ## OBS
 
 Beta testers:
@@ -219,6 +262,7 @@ Beta testers:
   - URL;
   - copiar URL;
   - instrucciones.
+- `engineer-notifications` consume `/engineer/stream` para OBS.
 
 Futuro:
 

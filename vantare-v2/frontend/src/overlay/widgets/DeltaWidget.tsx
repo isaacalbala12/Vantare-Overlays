@@ -24,9 +24,25 @@ export function formatDelta(delta: number): string {
   return `${sign}${delta.toFixed(3)}s`;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
+export function formatLapTime(seconds: number | undefined): string {
+  if (seconds == null || !Number.isFinite(seconds) || seconds <= 0) return "—";
+  const minutes = Math.floor(seconds / 60);
+  const remaining = seconds % 60;
+  let roundedRemaining = Number(remaining.toFixed(3));
+  let mins = minutes;
+  if (roundedRemaining >= 60) {
+    mins += 1;
+    roundedRemaining -= 60;
+  }
+  return `${mins}:${roundedRemaining.toFixed(3).padStart(6, "0")}`;
+}
+
 export function DeltaWidget({ editMode, telemetryMode, updateHz = 30, props }: DeltaProps) {
   const { appearance: a } = resolveWidgetAppearance("delta", props);
   const deltaRef = useRef<HTMLSpanElement>(null);
+  const targetRef = useRef<HTMLSpanElement>(null);
+  const lapRef = useRef<HTMLSpanElement>(null);
   const fillRef = useRef<HTMLDivElement>(null);
 
   const getTelemetry = useMemo(
@@ -37,8 +53,19 @@ export function DeltaWidget({ editMode, telemetryMode, updateHz = 30, props }: D
   useEffect(() => {
     return startFrameBudgetLoop(updateHz, () => {
       const t = getTelemetry();
+      const player = t.vehicles?.find((v) => v.isPlayer);
+
       if (deltaRef.current) {
         setTextIfChanged(deltaRef.current, formatDelta(t.deltaBest));
+      }
+      if (targetRef.current) {
+        const bestLap = player?.bestLapTime;
+        const targetText = bestLap && bestLap > 0 ? `Target ${formatLapTime(bestLap)}` : "Target —";
+        setTextIfChanged(targetRef.current, targetText);
+      }
+      if (lapRef.current) {
+        const lapText = player?.totalLaps != null ? `Lap ${player.totalLaps}` : "Lap —";
+        setTextIfChanged(lapRef.current, lapText);
       }
       if (fillRef.current) {
         const delta = Number.isFinite(t.deltaBest) ? t.deltaBest : 0;
@@ -68,11 +95,19 @@ export function DeltaWidget({ editMode, telemetryMode, updateHz = 30, props }: D
       }}
     >
       <div className="flex justify-between w-full px-4 mb-2 opacity-80">
-        <span className="font-mono text-[16px] font-bold tracking-widest uppercase" style={{ textShadow: "0 2px 10px rgba(0,0,0,1)" }}>
-          Target 1:24.350
+        <span
+          ref={targetRef}
+          className="font-mono text-[16px] font-bold tracking-widest uppercase"
+          style={{ textShadow: "0 2px 10px rgba(0,0,0,1)" }}
+        >
+          Target —
         </span>
-        <span className="font-mono text-[16px] font-bold tracking-widest uppercase" style={{ textShadow: "0 2px 10px rgba(0,0,0,1)" }}>
-          Lap 34
+        <span
+          ref={lapRef}
+          className="font-mono text-[16px] font-bold tracking-widest uppercase"
+          style={{ textShadow: "0 2px 10px rgba(0,0,0,1)" }}
+        >
+          Lap —
         </span>
       </div>
       <div className="text-center mb-4 z-20">

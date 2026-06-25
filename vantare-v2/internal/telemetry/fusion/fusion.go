@@ -22,8 +22,12 @@ func Merge(base *models.Telemetry, standings []lmuapi.StandingRow, session *lmua
 		}
 		out.PlayerHasVehicle = hasPlayer(standings)
 	}
-	if out.Player != nil && isValidTime(deltaBest) {
-		out.Player.DeltaBest = deltaBest
+	if out.Player != nil {
+		// P2-2: DeltaBest == 0 means "no data/not available", so we only overwrite if deltaBest != 0.
+		// If deltaBest is valid and non-zero, we apply it.
+		if deltaBest != 0 && IsValidDelta(deltaBest) {
+			out.Player.DeltaBest = deltaBest
+		}
 	}
 	return out
 }
@@ -90,7 +94,7 @@ func enrichPlayerFromRows(player *models.PlayerTelemetry, rows []lmuapi.Standing
 			continue
 		}
 		player.VehicleName = firstNonEmpty(r.VehicleName, player.VehicleName)
-		if isValidTime(deltaBest) {
+		if deltaBest != 0 && IsValidDelta(deltaBest) {
 			player.DeltaBest = deltaBest
 		}
 		return
@@ -134,6 +138,11 @@ func sanitizeTime(v float64) float64 {
 
 func isValidTime(v float64) bool {
 	return !math.IsNaN(v) && !math.IsInf(v, 0) && v >= 0
+}
+
+func IsValidDelta(v float64) bool {
+	// Delta can be negative, but must not be NaN, Inf, or absurdly large (e.g., 10000+ seconds)
+	return !math.IsNaN(v) && !math.IsInf(v, 0) && math.Abs(v) < 10000
 }
 
 func firstNonEmpty(a, b string) string {

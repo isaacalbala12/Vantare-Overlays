@@ -90,6 +90,8 @@ export function SettingsPage() {
   const [appSettings, setAppSettings] = useState<AppSettings>(DEFAULT_APP_SETTINGS);
   const [settingsStatus, setSettingsStatus] = useState<string | null>(null);
   const [expandedTag, setExpandedTag] = useState<string | null>(null);
+  const [activeProfileId, setActiveProfileId] = useState<string | null>(null);
+
 
   useEffect(() => {
     const handlers: (() => void)[] = [];
@@ -170,6 +172,18 @@ export function SettingsPage() {
 
     Events.Emit('updater:settings:get');
     Events.Emit('updater:check');
+
+    const unsubProfile = Events.On(
+      'profile:loaded',
+      (event: { data: { profile?: { id: string } } }) => {
+        if (event.data?.profile?.id) {
+          setActiveProfileId(event.data.profile.id);
+        }
+      }
+    );
+    handlers.push(unsubProfile);
+    Events.Emit('profile:request');
+
 
     return () => {
       handlers.forEach((h) => h?.());
@@ -342,7 +356,9 @@ export function SettingsPage() {
             <h2 className="font-display font-semibold text-lg text-white mb-4">
               OBS Browser Source
             </h2>
-            <ObsSetup url={window.location.origin + '/overlay?profile=' + (info?.currentVersion ?? 'actual')} />
+            <ObsSetup url={window.location.origin + '/overlay?profile=' + encodeURIComponent(activeProfileId ?? 'example-racing.json')} />
+
+
           </div>
 
           {settingsStatus && (

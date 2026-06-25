@@ -4,6 +4,32 @@ Ultima actualizacion: 2026-06-25.
 
 ## Estado actual
 
+Vantare v2 se documenta desde ahora como una suite local para sim racing, no solo como una app de overlays. Los modulos internos actuales son:
+
+- `Overlays Studio`: perfiles, widgets, layouts, overlay desktop y OBS.
+- `Ingeniero`: spotter/ingeniero determinista, historial y notificaciones.
+- `Telemetria`: fuente compartida live/mock/demo.
+- `Setup`: configuracion local.
+
+Documento base: `docs/vantare-suite-architecture.md`.
+
+EN3-EN5 - UI Ingeniero + Bus de notificaciones + Widget de overlays completado:
+- Creada la nueva sección de `Ingeniero` en el Hub para gestionar el estado, spotter, sensibilidad, y ver el historial de mensajes de forma reactiva.
+- Implementado el bus de notificaciones de Ingeniero que alimenta en tiempo real a Wails (Hub/Desktop) y a OBS a través de un nuevo stream SSE (`/engineer/stream`).
+- Creado el widget `engineer-notifications` y registrado en el pipeline de renderizado de `WidgetRenderer`, `CompositeApp`, `ObsOverlayApp` y `WidgetList`.
+- Validadas las reglas de negocio: el widget es invisible en runtime cuando no hay notificaciones activas, muestra un placeholder premium en modo edición, e ignora/oculta mensajes expirados basándose en `expiresAt`.
+- Tests automatizados (400/400 de frontend y todos los de Go) y checks de linter, compilación y formato en verde al 100%.
+- Review GLM de fixes EN0-EN5: ACCEPT WITH P3. No quedan P0/P1/P2 conocidos.
+- EN6 (`Ingeniero` con LMU live real) queda preparado a nivel de analisis en `docs/engineer-live-lmu-adapter-analysis.md`, pero aparcado hasta que pueda validarse con datos live.
+
+A8 - Checklist alpha privada completado:
+- Auditoria integral de preparacion para alpha privada: PASS.
+- 18/18 areas evaluadas como PASS para alpha privada automatizada.
+- Checklist versionado en `docs/alpha-private-checklist.md`.
+- Queda pendiente smoke manual antes de distribuir a testers cercanos.
+- Completada la preparación de `B1 - Build compartible e instrucciones` con inventario de build, verificación de empaquetado y la creación de la guía para testers (`docs/tester-build-instructions.md`).
+
+
 PREVIEW2 - WidgetStudio intrinsic width contract:
 - Corregido el espacio vacio a la derecha en la preview aislada de `WidgetStudio`.
 - Los widgets configurables (`relative`, `standings`) usan ancho intrinseco en el sandbox de `WidgetStudio`, envolviendo el contenido real, sea menor o mayor que `position.w`.
@@ -13,10 +39,10 @@ PREVIEW2 - WidgetStudio intrinsic width contract:
 - Bug log actualizado: `docs/widget-preview-bug-log.md` (entrada 8).
 - Plan ejecutado: `docs/superpowers/plans/2026-06-23-preview2-widgetstudio-intrinsic-width.md`.
 
-Vantare v2 es una app local de overlays para sim racing construida con Go/Wails y React/TypeScript.
+Vantare v2 es una suite local para sim racing construida con Go/Wails y React/TypeScript.
 
-Version estable actual de runtime/build: `v0.3.9.2`.
-Ultimo checkpoint de roadmap confirmado: UI1 documental, sin tag/version propia.
+Version estable actual de runtime/build: `v0.3.10.0`.
+Ultimo checkpoint de roadmap confirmado: beta privada inicial B1-B6, con tag/version funcional.
 
 Base de schema v2 para perfiles preparada:
 - `schemaVersion: 2` permite layouts por sesion y variantes de widgets.
@@ -132,11 +158,32 @@ Checkpoint funcional `v0.3.9.2` cerrado:
 - Changelog publico y publicacion automatica a Discord por tags `v*` preparados.
 - Version runtime/build actualizada a `v0.3.9.2`.
 
-El siguiente paso recomendado es volver al roadmap de features:
+Checkpoint funcional `v0.3.10.0` preparado para cierre:
 
-1. `A6+A7 - Mock/live/demo UX` ejecutado como lote rapido;
-2. review posterior de GLM si toca backend/estado live (no fue necesario);
-3. ejecutar ahora `A8 - Checklist alpha privada`.
+- B1 build compartible e instrucciones para testers completado.
+- B2 known issues y protocolo de feedback completado.
+- B3 OBS setup local documentado y B3.1 corregido para usar perfiles reales en la URL de Ajustes.
+- B4 hotkeys basicas endurecidas en Windows con stub multiplataforma.
+- B5 inventario Delta best live completado.
+- B6 Delta best live implementado: backend prioriza `DeltaBest` nativo de LMU, fusion acepta deltas negativos, `DeltaWidget` muestra `Target` y `Lap` desde telemetria.
+- Reviews GLM de B4/B6 aceptadas sin P0/P1/P2.
+- Ingeniero queda integrado como modulo de suite, con EN6 live LMU aparcado hasta validacion real.
+- Queda pendiente verificacion manual prolongada de Delta live con LMU.
+
+El siguiente paso recomendado tras cerrar `v0.3.10.0` es continuar con `P1 - Pedals inventario datos/diseño actual`:
+
+1. `A8 - Checklist alpha privada` completado con PASS;
+2. `B1 - Build compartible e instrucciones` completado con la guía del tester;
+3. `B2 - Known issues y canal feedback` completado con la definición de canales de Discord y plantilla de bug report;
+4. `B3 - OBS setup local sencillo` completado con la guía de OBS local;
+5. `B4 - Hotkeys basicas` completado;
+6. `B5 - Delta best live inventario` completado;
+7. `B6 - Delta best live implementacion` completado a nivel automatico y pendiente de prueba live prolongada;
+8. mantener EN6 aparcado hasta poder validar LMU live;
+9. no iniciar nuevos reworks visuales completos hasta cerrar mas features core.
+
+
+
 
 Ultimo miniplan completado y aprobado por GLM:
 - `docs/superpowers/plans/2026-06-22-s4-standings-render-configurable.md`
@@ -232,9 +279,20 @@ A4+A5 - Recomendado -> copia editable implementado (2026-06-25):
      - Tests de mock scenario: cambiados de className a `aria-pressed`.
    - Documento de hallazgos: `docs/mock-live-demo-ux.md`.
    - No se tocó telemetría, preview/layout, schema, backend Go ni configs.
-2. `A8 - Checklist alpha privada`: siguiente tarea activa.
-3. No ejecutar mas reworks visuales completos hasta cerrar la mayoria de features core.
-4. Ejecutar REL1 despues de UI3, cuando se reactive el polish visual final.
+2. `A8 - Checklist alpha privada`: ejecutado y documentado en `docs/alpha-private-checklist.md`.
+3. `B1 - Build compartible e instrucciones`: completado.
+4. `B2 - Known issues y canal feedback`: completado.
+5. `B3 - OBS setup local sencillo`: completado.
+6. `B4 - Hotkeys basicas`: Fase B4.1 (Hardening de atajos, stubs multiplataforma y documentación para testers) completada y validada mediante tests. Listo para siguientes fases de UX.
+7. `B5 - Delta best live inventario`: completado. Viabilidad YES, detectado bug crítico de fusión de Go.
+8. `B6 - Delta best live implementacion`: completado automaticamente. Backend y frontend listos; queda smoke manual live con LMU para recopilar feedback real.
+9. mantener EN6 aparcado hasta poder validar LMU live.
+10. No iniciar mas reworks visuales completos hasta cerrar la mayoria de features core.
+11. Siguiente operativo tras `v0.3.10.0`: `P1 - Pedals inventario datos/diseño actual`.
+12. Ejecutar REL1/Discord release al pushear el tag funcional.
+
+
+
 
 ## Riesgos actuales
 

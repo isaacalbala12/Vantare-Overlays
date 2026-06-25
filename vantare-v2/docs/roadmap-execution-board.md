@@ -4,6 +4,8 @@ Tablero operativo para ejecutar el roadmap por minifases y miniplanes.
 
 Este documento esta pensado para que otro modelo pueda orquestar el desarrollo sin depender del contexto de este chat.
 
+Vantare debe tratarse como suite local. Overlays Studio e Ingeniero son modulos internos del mismo producto.
+
 ## Regla principal
 
 El agente principal de este hilo debe actuar como orquestador/reviewer por defecto.
@@ -22,15 +24,24 @@ La implementacion normal debe ir a workers.
 1. Leer `AGENTS.md`.
 2. Leer `docs/current-plan.md`.
 3. Leer `docs/master-feature-plan.md`.
-4. Elegir la primera fila con estado `Next`.
-5. Crear un miniplan en `docs/superpowers/plans/YYYY-MM-DD-<id>-<slug>.md`.
-6. Crear prompt para worker con alcance cerrado.
-7. Worker implementa.
-8. Reviewer audita.
-9. Corregir P0/P1/P2.
-10. Ejecutar verificacion manual si aplica.
-11. Actualizar este tablero y `docs/current-plan.md`.
-12. Cuando una version funcional quede confirmada, hacer commit, push y tag Git antes de iniciar la siguiente version funcional.
+4. Leer `docs/vantare-suite-architecture.md` si la tarea toca limites entre Overlays, Ingeniero, telemetria, OBS o runtime.
+5. Elegir la primera fila con estado `Next`.
+6. Crear un miniplan en `docs/superpowers/plans/YYYY-MM-DD-<id>-<slug>.md`.
+7. Crear prompt para worker con alcance cerrado.
+8. Worker implementa.
+9. Reviewer audita.
+10. Corregir P0/P1/P2.
+11. Ejecutar verificacion manual si aplica.
+12. Actualizar este tablero y `docs/current-plan.md`.
+13. Cuando una version funcional quede confirmada, hacer commit, push y tag Git antes de iniciar la siguiente version funcional.
+
+Si la tarea toca Go, el prompt debe exigir estas skills:
+
+- `golang-error-handling`;
+- `golang-testing`;
+- `golang-code-style`;
+- `golang-concurrency` y `golang-context` si hay lifecycle, goroutines, SSE, loops o cancelacion;
+- `golang-safety` si hay filesystem, I/O, procesos, config o datos externos.
 
 ## Estados
 
@@ -68,7 +79,7 @@ La implementacion normal debe ir a workers.
 | A5 | 0.2.5.X | Recomendado -> copia editable: implementacion/fixes | Done | Kimi K2.7 | GLM o Codex | A4 | Si |
 | A6 | 0.2.6.X | Mock/live/demo UX: inventario | Done | Deepseek V4 Flash | Codex | A1 | Si |
 | A7 | 0.2.7.X | Mock/live/demo UX: implementacion/fixes | Done | Deepseek V4 Flash | Codex | A6 | Si |
-| A8 | 0.2.8.X | Checklist alpha privada | Next | Deepseek V4 Flash | Codex | A3, A5, A7 | Si |
+| A8 | 0.2.8.X | Checklist alpha privada | Done | Deepseek V4 Flash | Codex | A3, A5, A7 | Si |
 
 ## Fase 0.3.X.X - Alpha privada: UI y widgets core
 
@@ -89,22 +100,36 @@ La implementacion normal debe ir a workers.
 | REL1 | 0.3.11.X | Changelog publico y publicacion Discord por version | Ready | Kimi K2.7 | GLM o Codex | UI3 | Si |
 | UI4 | 0.3.12.X | Verificacion alpha privada completa | Later | Usuario + Codex | Codex | UI3, REL1, A8 | Si |
 
+## Modulo Ingeniero - Suite foundation
+
+| ID | Version | Minifase | Estado | Modelo worker | Reviewer | Depende de | Manual |
+|---|---:|---|---|---|---|---|---|
+| EN0 | 0.3.13.X | Inventario integracion Vantare-Ingeniero-Go | Done | Gemini/Kimi | GLM | Suite decision | No |
+| EN1 | 0.3.13.X | Import core determinista bajo `internal/engineer` | Done | Gemini/Kimi | GLM | EN0 | No |
+| EN2 | 0.3.13.X | EngineerService + bridge Wails defensivo | Done | Gemini/Kimi | GLM | EN1 | No |
+| EN3 | 0.3.13.X | Pagina Hub Ingeniero | Done | Gemini/Kimi | GLM | EN2 | Si |
+| EN4 | 0.3.13.X | Bus notificaciones Wails + SSE `/engineer/stream` | Done | Gemini/Kimi | GLM | EN2 | Si |
+| EN5 | 0.3.13.X | Widget `engineer-notifications` en overlays | Done | Gemini/Kimi | GLM | EN4 | Si |
+| EN6 | 0.3.14.X | LMU live adapter reutilizando fuente/buffer de overlays | Ready | GLM 5.2 | GLM | EN0-EN5 | Si |
+
+Nota operativa: EN6 queda aparcado mientras no se pueda probar live. Se puede continuar con la seccion Overlays sin bloquear la suite.
+
 ## Fase 0.4.X.X - Beta privada testers: distribucion y uso real
 
 | ID | Version | Minifase | Estado | Modelo worker | Reviewer | Depende de | Manual |
 |---|---:|---|---|---|---|---|---|
-| B1 | 0.4.1.X | Build compartible e instrucciones | Later | Kimi K2.7 | Codex | UI4 | Si |
-| B2 | 0.4.2.X | Known issues y canal feedback | Later | Deepseek V4 Flash | Codex | B1 | No |
-| B3 | 0.4.3.X | OBS setup local sencillo | Later | Kimi K2.7 | Codex | B1 | Si |
-| B4 | 0.4.4.X | Hotkeys basicas | Later | GLM 5.2 | Codex | B1 | Si |
-| B5 | 0.4.5.X | Delta best live inventario | Later | GLM 5.2 | Codex | B1 | Si |
-| B6 | 0.4.6.X | Delta best live implementacion | Later | GLM 5.2 | Codex | B5 | Si |
+| B1 | 0.4.1.X | Build compartible e instrucciones | Done | Deepseek V4 Flash | Codex | A8 | Si |
+| B2 | 0.4.2.X | Known issues y canal feedback | Done | Deepseek V4 Flash | Codex | B1 | No |
+| B3 | 0.4.3.X | OBS setup local sencillo | Done | Kimi K2.7 | Codex | B1 | Si |
+| B4 | 0.4.4.X | Hotkeys basicas | Done | GLM 5.2 | Codex | B1 | Si |
+| B5 | 0.4.5.X | Delta best live inventario | Done | GLM 5.2 | Codex | B1 | Si |
+| B6 | 0.4.6.X | Delta best live implementacion | Done | GLM 5.2 | Codex | B5 | Si |
 
 ## Fase 0.5.X.X - Beta privada testers: core LMU completo
 
 | ID | Version | Minifase | Estado | Modelo worker | Reviewer | Depende de | Manual |
 |---|---:|---|---|---|---|---|---|
-| P1 | 0.5.1.X | Pedals inventario datos/diseño actual | Later | Deepseek V4 Flash | Codex | B6 | No |
+| P1 | 0.5.1.X | Pedals inventario datos/diseño actual | Next | Deepseek V4 Flash | Codex | B6 | No |
 | P2 | 0.5.2.X | Pedals nuevo diseño pequeño | Later | Minimax M3 | Codex | P1 | Si |
 | P3 | 0.5.3.X | Pedals throttle/brake/clutch render | Later | Kimi K2.7 | Codex | P2 | Si |
 | P4 | 0.5.4.X | Pedals configuracion visual basica | Later | Minimax M3 | Codex | P3 | Si |
@@ -164,6 +189,7 @@ Lee obligatoriamente:
 - docs/current-plan.md
 - docs/master-feature-plan.md
 - docs/roadmap-execution-board.md
+- docs/vantare-suite-architecture.md si toca Ingeniero, telemetria, OBS, runtime o limites entre modulos
 - [docs especificos de la tarea]
 
 Alcance:
@@ -178,6 +204,11 @@ Requisitos:
 - no dependencias nuevas;
 - no commits ni staging salvo instruccion explicita;
 - parar si aparece contradiccion o hace falta tocar mas scope.
+
+Si toca Go:
+- aplicar `golang-error-handling`, `golang-testing` y `golang-code-style`;
+- aplicar `golang-concurrency` y `golang-context` si hay goroutines, SSE, loops, lifecycle o cancelacion;
+- aplicar `golang-safety` si hay filesystem, I/O, procesos, config o datos externos.
 
 Checks esperados:
 - [comandos]
@@ -275,4 +306,12 @@ No alcance:
 
 ## Proxima accion
 
-`v0.3.9.1` cierra el lote de producto usable: A3 LayoutStudio drag/resize/save, A5 recomendado -> copia editable y resize proporcional de `Relative`/`Standings` en LayoutStudio/runtime. No ejecutar mas reworks visuales completos hasta cerrar la mayoria de features core. Proximo paso recomendado: A6+A7 mock/live/demo UX como lote rapido con review posterior.
+Checkpoint funcional `v0.3.10.0` listo para cierre con commit unico, push y tag tras checks completos. B6 queda completado automaticamente: fusión de deltas negativos corregida, Shared Memory de LMU priorizada para `DeltaBest`, `DeltaWidget` con labels live y documentación de testers actualizada.
+
+El próximo paso operativo tras el tag es `P1 - Pedals inventario datos/diseño actual`.
+
+Checklist manual pendiente para Isaac antes de distribuir:
+1. Smoke manual (ver `docs/alpha-private-checklist.md` seccion Smoke test manual recomendado).
+2. Confirmar que el .exe no está firmado (Windows Defender puede bloquearlo).
+3. Decidir canal de feedback (Discord DM/hilo/formulario).
+4. Comprimir y enviar `bin/vantare.exe` a testers.

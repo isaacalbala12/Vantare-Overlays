@@ -19,6 +19,7 @@ import { StandingsWidget } from "./widgets/StandingsWidget";
 import { TelemetryWidget } from "./widgets/TelemetryWidget";
 import { TelemetryVerticalWidget } from "./widgets/TelemetryVerticalWidget";
 import { PedalsWidget } from "./widgets/PedalsWidget";
+import { EngineerNotificationsWidget } from "./widgets/EngineerNotificationsWidget";
 import { applyOverlayDocumentMode } from "./overlay-document";
 import type { WidgetTelemetryMode } from "./widgets/use-widget-telemetry";
 
@@ -35,6 +36,7 @@ const WIDGETS: Record<string, ComponentType<WidgetProps>> = {
   telemetry: TelemetryWidget,
   "telemetry-vertical": TelemetryVerticalWidget,
   pedals: PedalsWidget,
+  "engineer-notifications": EngineerNotificationsWidget,
 };
 
 const STREAMING_MODE_HINT = "obs-streaming";
@@ -132,7 +134,7 @@ export function ObsOverlayApp() {
         const localPos = toWindowLocal(w.position, layoutOrigin);
         return (
           <WidgetHost key={w.id} id={w.id} position={localPos} widget={w} profile={profile}>
-            <Component editMode={false} telemetryMode="live" updateHz={w.updateHz} props={enrichWidgetPropsWithVariant(profile, w)} />
+            <Component editMode={false} telemetryMode="live" updateHz={w.updateHz} props={{ ...enrichWidgetPropsWithVariant(profile, w), __engineerTransport: "sse" as const }} />
           </WidgetHost>
         );
       })}

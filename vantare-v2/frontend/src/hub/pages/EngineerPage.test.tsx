@@ -1,0 +1,134 @@
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { EngineerPage } from './EngineerPage';
+
+type Handler = (event: { data: unknown }) => void;
+
+const runtimeMock = vi.hoisted(() => ({
+  handlers: new Map<string, Handler[]>(),
+  emit: vi.fn(),
+}));
+
+vi.mock('@wailsio/runtime', () => ({
+  Events: {
+    On: (name: string, handler: Handler) => {
+      runtimeMock.handlers.set(name, [...(runtimeMock.handlers.get(name) ?? []), handler]);
+      return () =>
+        runtimeMock.handlers.set(
+          name,
+          (runtimeMock.handlers.get(name) ?? []).filter((h) => h !== handler),
+        );
+    },
+    Emit: runtimeMock.emit,
+  },
+}));
+
+function dispatch(name: string, data: unknown) {
+  act(() => {
+    for (const handler of runtimeMock.handlers.get(name) ?? []) {
+      handler({ data });
+    }
+  });
+}
+
+const mockStatus = {
+  enabled: true,
+  connected: true,
+  source: 'simulator',
+  spotterEnabled: true,
+  sensitivity: 'normal',
+  ttsCacheCount: 0,
+  recentMessages: [
+    {
+      id: 'msg-1',
+      category: 'spotter',
+      severity: 'info',
+      textKey: 'spotter.car_left',
+      text: 'Coche a la izquierda',
+      priority: 100,
+      createdAt: 1623800000000,
+      source: 'simulator',
+    },
+  ],
+};
+
+describe('EngineerPage', () => {
+  beforeEach(() => {
+    runtimeMock.handlers.clear();
+    runtimeMock.emit.mockClear();
+  });
+
+  afterEach(() => {
+    cleanup();
+  });
+
+  it('renders section heading and description', () => {
+    render(<EngineerPage />);
+    expect(screen.getByRole('heading', { name: 'Vantare Ingeniero' })).toBeDefined();
+    expect(screen.getByText('Configuración del ingeniero de pista y spotter en tiempo real.')).toBeDefined();
+  });
+
+  it('requests status on mount', () => {
+    render(<EngineerPage />);
+    expect(runtimeMock.emit).toHaveBeenCalledWith('engineer:status:get');
+  });
+
+  it('displays connection status and recent messages from status', () => {
+    render(<EngineerPage />);
+    dispatch('engineer:status', mockStatus);
+
+    const badge = screen.getByTestId('connection-badge');
+    expect(badge.textContent).toContain('CONECTADO');
+    expect(screen.getByText('Coche a la izquierda')).toBeDefined();
+  });
+
+  it('handles real-time notifications', () => {
+    render(<EngineerPage />);
+    dispatch('engineer:status', { ...mockStatus, recentMessages: [] });
+
+    expect(screen.queryByText('Coche a la izquierda')).toBeNull();
+
+    dispatch('engineer:notification', mockStatus.recentMessages[0]);
+    expect(screen.getByText('Coche a la izquierda')).toBeDefined();
+  });
+
+  it('emits correct event when clicking active/enabled toggle', () => {
+    render(<EngineerPage />);
+    dispatch('engineer:status', mockStatus);
+
+    const toggle = screen.getByTestId('toggle-enabled');
+    fireEvent.click(toggle);
+
+    expect(runtimeMock.emit).toHaveBeenCalledWith('engineer:enabled:set', false);
+  });
+
+  it('emits correct event when clicking spotter toggle', () => {
+    render(<EngineerPage />);
+    dispatch('engineer:status', mockStatus);
+
+    const toggle = screen.getByTestId('toggle-spotter');
+    fireEvent.click(toggle);
+
+    expect(runtimeMock.emit).toHaveBeenCalledWith('engineer:spotter:set', false);
+  });
+
+  it('emits correct event when changing telemetry source', () => {
+    render(<EngineerPage />);
+    dispatch('engineer:status', mockStatus);
+
+    const select = screen.getByTestId('select-source');
+    fireEvent.change(select, { target: { value: 'replay' } });
+
+    expect(runtimeMock.emit).toHaveBeenCalledWith('engineer:source:set', 'replay');
+  });
+
+  it('emits correct event when changing spotter sensitivity', () => {
+    render(<EngineerPage />);
+    dispatch('engineer:status', mockStatus);
+
+    const select = screen.getByTestId('select-sensitivity');
+    fireEvent.change(select, { target: { value: 'aggressive' } });
+
+    expect(runtimeMock.emit).toHaveBeenCalledWith('engineer:sensitivity:set', 'aggressive');
+  });
+});

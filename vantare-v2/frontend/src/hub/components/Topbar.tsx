@@ -11,6 +11,7 @@ type NavItem = { label: string; id: string; active?: boolean };
 const NAV_ITEMS: NavItem[] = [
   { label: 'Hub', id: 'dashboard', active: true },
   { label: 'Overlays Studio', id: 'profiles' },
+  { label: 'Ingeniero', id: 'engineer' },
   { label: 'Telemetría', id: 'telemetry' },
   { label: 'Setup', id: 'setup' },
 ];

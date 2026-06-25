@@ -1,6 +1,6 @@
 # Master Feature Plan
 
-Plan maestro de features de Vantare Overlays Studio.
+Plan maestro de features de Vantare Suite, con Overlays Studio e Ingeniero como modulos internos.
 
 Este documento es la fuente principal para decidir que feature se implementa despues. Si hay conflicto entre este documento y un roadmap antiguo, este documento gana salvo decision explicita del usuario.
 
@@ -10,6 +10,9 @@ Este documento es la fuente principal para decidir que feature se implementa des
 - `docs/beta-widget-system-spec.md`
 - `docs/product-widget-customization.md`
 - `docs/current-plan.md`
+- `docs/vantare-suite-architecture.md`
+- `docs/superpowers/plans/2026-06-25-vantare-suite-ingeniero-integration.md`
+- `docs/engineer-live-lmu-adapter-analysis.md`
 - `C:\Users\isaac\Desktop\trabajo\Proyectos\Overlays\Desarollo\Roadmap - Vantare Overlays.md`
 - `C:\Users\isaac\Desktop\trabajo\Proyectos\Overlays\Desarollo\Roadmap Dia a Dia - Vantare Overlays.md`
 - `C:\Users\isaac\Desktop\trabajo\Proyectos\Overlays\Desarollo\Features por desarrollar.md`
@@ -36,6 +39,9 @@ La politica completa vive en `docs/versioning-and-release-gates.md`.
 - No saltar a multisimulador antes de cerrar LMU.
 - No ampliar configuracion profunda de otros widgets antes de cerrar producto usable.
 - No ejecutar mas reworks visuales completos hasta cerrar la mayoria de features core; los proximos cambios visuales deben ser polish acotado o fixes.
+- Vantare debe tratarse como suite local. Overlays Studio e Ingeniero son modulos internos del mismo producto, no apps separadas en runtime.
+- Ingeniero no sustituye el roadmap de Overlays. Si no puede probarse live, se aparca EN6 y se sigue desarrollando Overlays.
+- Cualquier prompt de worker que toque Go debe exigir las skills `golang-error-handling`, `golang-testing` y `golang-code-style`; si toca lifecycle, goroutines, SSE o cancelacion, tambien `golang-concurrency` y `golang-context`; si toca I/O/config/seguridad, tambien `golang-safety`.
 - Cada feature grande debe pasar por inventario, miniplan, implementacion, review y verificacion manual.
 - El agente principal debe actuar como orquestador/reviewer por defecto y delegar codigo a workers salvo necesidad estricta.
 - Mantener la separacion:
@@ -62,7 +68,7 @@ Usuarios:
 
 Objetivo:
 
-Validar que Vantare Overlays Studio ya es un producto local usable para LMU.
+Validar que Vantare Suite ya es un producto local usable para LMU, empezando por Overlays Studio como flujo principal.
 
 Debe cerrar:
 
@@ -75,6 +81,8 @@ Debe cerrar:
 - recomendados como punto de partida;
 - mock/live/demo entendible;
 - overlay desktop funcional;
+- seccion Ingeniero visible y funcional en modo simulator/replay;
+- widget de notificaciones de Ingeniero registrado en desktop/OBS/previews;
 - separacion clara `WidgetStudio`/`LayoutStudio`;
 - checklist manual de alpha.
 
@@ -87,6 +95,8 @@ No bloquea alpha privada:
 - pagos;
 - cuentas;
 - multisimulador.
+- Ingeniero live LMU real si no puede probarse con datos live.
+- audio/TTS real de Ingeniero.
 
 ### Beta privada de testers
 

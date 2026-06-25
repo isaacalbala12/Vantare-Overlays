@@ -6,8 +6,9 @@ import { UpdateBanner } from './components/UpdateBanner';
 import { DashboardPage } from './pages/DashboardPage';
 import { OverlaysStudioPage } from './pages/OverlaysStudioPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { EngineerPage } from './pages/EngineerPage';
 
-type Section = 'dashboard' | 'profiles' | 'telemetry' | 'setup';
+type Section = 'dashboard' | 'profiles' | 'telemetry' | 'setup' | 'engineer';
 
 type SourceStatus = {
   kind: string;
@@ -50,6 +51,7 @@ export function HubApp() {
         {section === "dashboard" && <DashboardPage />}
         {section === "profiles" && <OverlaysStudioPage />}
         {section === "setup" && <SettingsPage />}
+        {section === "engineer" && <EngineerPage />}
         {section === "telemetry" && (
           <div className="flex items-center justify-center h-[60vh] text-vantare-textMuted text-sm font-mono">
             Telemetría — próxima actualización

@@ -7,6 +7,7 @@ import { StandingsWidget } from "../../overlay/widgets/StandingsWidget";
 import { TelemetryWidget } from "../../overlay/widgets/TelemetryWidget";
 import { TelemetryVerticalWidget } from "../../overlay/widgets/TelemetryVerticalWidget";
 import { PedalsWidget } from "../../overlay/widgets/PedalsWidget";
+import { EngineerNotificationsWidget } from "../../overlay/widgets/EngineerNotificationsWidget";
 import type { WidgetTelemetryMode } from "../../overlay/widgets/use-widget-telemetry";
 import type { MockSessionScenario } from "../../overlay/widgets/mock-telemetry";
 
@@ -25,6 +26,7 @@ const WIDGETS: Record<string, ComponentType<InnerWidgetProps>> = {
   telemetry: TelemetryWidget,
   "telemetry-vertical": TelemetryVerticalWidget,
   pedals: PedalsWidget,
+  "engineer-notifications": EngineerNotificationsWidget,
 };
 
 export type WidgetTelemetryModeProp = WidgetTelemetryMode;
@@ -58,7 +60,7 @@ export function WidgetRenderer({
 }: WidgetRendererProps) {
   const Component = WIDGETS[widget.type];
   const props = enrichWidgetPropsWithVariant(profile ?? undefined, widget);
-  const renderedProps = { ...props, __previewFillHost: fillHost };
+  const renderedProps = { ...props, __previewFillHost: fillHost, __engineerTransport: "none" as const };
 
   return (
     <div

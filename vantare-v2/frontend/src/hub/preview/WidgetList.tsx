@@ -10,7 +10,7 @@ type WidgetListProps = {
   onAddWidget?: (type: string) => void;
 };
 
-const WIDGET_TYPES = ["delta", "relative", "standings", "telemetry", "telemetry-vertical", "pedals"];
+const WIDGET_TYPES = ["delta", "relative", "standings", "telemetry", "telemetry-vertical", "pedals", "engineer-notifications"];
 
 // Map widget types to specific icon SVG paths
 function getWidgetIcon(type: string) {
@@ -39,6 +39,12 @@ function getWidgetIcon(type: string) {
       return (
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+        </svg>
+      );
+    case "engineer-notifications":
+      return (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9h8m-8 4h6m2 5a2 2 0 11-4 0h-5V7a2 2 0 012-2h10a2 2 0 012 2v7a2 2 0 01-2 2h-3l-4 4z" />
         </svg>
       );
     default:
