@@ -40,7 +40,19 @@ func (s *EnrichedLMUSource) ReadTelemetry() *models.Telemetry {
 		rows, session = s.cache.Snapshot()
 	}
 
-	d := computeDeltaFromEngine(s, rows, session)
+	var d float64
+	if base != nil && base.Player != nil {
+		if base.Player.DeltaBest != 0 && fusion.IsValidDelta(base.Player.DeltaBest) {
+			// Prioritize native DeltaBest from Shared Memory
+			d = base.Player.DeltaBest
+		} else {
+			// Clear invalid/zero delta to avoid passing it to Merge
+			base.Player.DeltaBest = 0
+			d = computeDeltaFromEngine(s, rows, session)
+		}
+	} else {
+		d = computeDeltaFromEngine(s, rows, session)
+	}
 	return fusion.Merge(base, rows, session, d)
 }
 
@@ -167,7 +179,6 @@ func (s *EnrichedLMUSource) Close() error {
 	return nil
 }
 
-
 func wrapLMUSourceWithREST(mmap service.Source) *EnrichedLMUSource {
 	api := lmuapi.NewClient("http://localhost:6397", 750*time.Millisecond)
 	src := &EnrichedLMUSource{
@@ -180,8 +191,6 @@ func wrapLMUSourceWithREST(mmap service.Source) *EnrichedLMUSource {
 	src.SetDeltaMode(delta.ModeSelf)
 	return src
 }
-
-
 
 type lmuRESTCache struct {
 	api            *lmuapi.Client

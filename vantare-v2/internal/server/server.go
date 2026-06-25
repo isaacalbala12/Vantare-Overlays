@@ -8,37 +8,42 @@ import (
 	"net/http"
 	"time"
 
+	engineerservice "github.com/vantare/overlays/v2/internal/engineer/service"
 	"github.com/vantare/overlays/v2/internal/telemetry/service"
 )
 
 type Server struct {
-	mux    *http.ServeMux
-	srv    *http.Server
-	svc    *service.Service
-	distFS fs.FS
-	cfgDir string
+	mux         *http.ServeMux
+	srv         *http.Server
+	svc         *service.Service
+	engineerSvc *engineerservice.EngineerService
+	distFS      fs.FS
+	cfgDir      string
 }
 
 type ServerConfig struct {
-	Addr   string
-	DistFS fs.FS
-	CfgDir string
-	Svc    *service.Service
+	Addr        string
+	DistFS      fs.FS
+	CfgDir      string
+	Svc         *service.Service
+	EngineerSvc *engineerservice.EngineerService
 }
 
 func New(cfg ServerConfig) *Server {
 	mux := http.NewServeMux()
 	s := &Server{
-		mux:    mux,
-		svc:    cfg.Svc,
-		distFS: cfg.DistFS,
-		cfgDir: cfg.CfgDir,
+		mux:         mux,
+		svc:         cfg.Svc,
+		engineerSvc: cfg.EngineerSvc,
+		distFS:      cfg.DistFS,
+		cfgDir:      cfg.CfgDir,
 	}
 
 	mux.HandleFunc("GET /health", s.handleHealth)
 	mux.HandleFunc("GET /overlay", s.handleOverlay)
 	mux.HandleFunc("GET /api/profile", s.handleProfile)
 	mux.HandleFunc("GET /telemetry/stream", s.handleSSE)
+	mux.HandleFunc("GET /engineer/stream", s.handleEngineerSSE)
 	if cfg.DistFS != nil {
 		mux.Handle("GET /assets/", http.FileServerFS(cfg.DistFS))
 		mux.Handle("GET /favicon.svg", http.FileServerFS(cfg.DistFS))

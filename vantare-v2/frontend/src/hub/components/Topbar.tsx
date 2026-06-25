@@ -10,19 +10,27 @@ type NavItem = { label: string; id: string; active?: boolean };
 
 const NAV_ITEMS: NavItem[] = [
   { label: 'Hub', id: 'dashboard', active: true },
-  { label: 'Perfiles', id: 'profiles' },
-  { label: 'Widgets', id: 'widgets' },
+  { label: 'Overlays Studio', id: 'profiles' },
+  { label: 'Ingeniero', id: 'engineer' },
   { label: 'Telemetría', id: 'telemetry' },
   { label: 'Setup', id: 'setup' },
 ];
+
+type SourceStatus = {
+  kind: string;
+  name: string;
+  live: boolean;
+  available: boolean;
+};
 
 type TopbarProps = {
   activeSection: string;
   onNavigate: (section: string) => void;
   version?: string | null;
+  sourceStatus?: SourceStatus | null;
 };
 
-export function Topbar({ activeSection, onNavigate, version }: TopbarProps) {
+export function Topbar({ activeSection, onNavigate, version, sourceStatus }: TopbarProps) {
   const [liteMode, setLiteMode] = useState(() => getStoredThemeId() === 'vantare-lite');
 
   useEffect(() => {
@@ -30,6 +38,18 @@ export function Topbar({ activeSection, onNavigate, version }: TopbarProps) {
     applyTheme(theme);
     persistThemeId(theme.id === 'vantare-lite' ? 'vantare-lite' : 'vantare-v5');
   }, [liteMode]);
+
+  const sourceLabel = !sourceStatus
+    ? 'Fuente pendiente'
+    : sourceStatus.live
+    ? sourceStatus.available
+      ? 'LMU conectado'
+      : 'Esperando LMU'
+    : 'Mock';
+
+  const sourceColor = sourceStatus?.live && sourceStatus.available
+    ? 'text-green-400'
+    : 'text-vantare-textMuted';
 
   const handleNav = useCallback(
     (id: string) => (e: React.MouseEvent) => {
@@ -82,6 +102,13 @@ export function Topbar({ activeSection, onNavigate, version }: TopbarProps) {
                 {version}
               </span>
             )}
+            <span
+              className={`hidden sm:inline text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 border border-white/5 ${sourceColor}`}
+              title={sourceStatus?.name ?? "Fuente pendiente"}
+              aria-label={`Fuente de telemetría: ${sourceLabel}`}
+            >
+              {sourceLabel}
+            </span>
           </div>
 
           <div className="hidden md:flex items-center gap-6 text-sm font-medium text-vantare-textMuted">
@@ -92,7 +119,14 @@ export function Topbar({ activeSection, onNavigate, version }: TopbarProps) {
                 onClick={handleNav(item.id)}
                 className={`nav-item ${activeSection === item.id ? 'active text-vantare-text' : ''}`}
               >
-                {item.label}
+                {item.id === 'live' ? (
+                  <span className="flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-vantare-red-500 live-indicator" />
+                    En Directo
+                  </span>
+                ) : (
+                  item.label
+                )}
               </a>
             ))}
           </div>

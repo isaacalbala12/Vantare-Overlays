@@ -10,15 +10,85 @@ import (
 	"github.com/vantare/overlays/v2/pkg/config"
 )
 
+// SaveProfileAsOwnCopy persists an imported/read-only preset as a normal user profile.
+// The profile is converted to schema v2 if needed and assigned a unique file id so
+// copying the same preset multiple times never overwrites an existing profile.
+func (s *HubService) SaveProfileAsOwnCopy(profile *config.ProfileConfig) error {
+	if s.profilesDir == "" {
+		return fmt.Errorf("profiles directory not configured")
+	}
+	if profile == nil {
+		return fmt.Errorf("profile is required")
+	}
+	id := strings.TrimSpace(profile.ID)
+	if id == "" {
+		return fmt.Errorf("profile id is required")
+	}
+	basename := filepath.Base(id)
+	if basename != id || strings.Contains(basename, "..") {
+		return fmt.Errorf("invalid profile id")
+	}
+	if !strings.HasPrefix(id, "custom-") {
+		id = "custom-" + id
+	}
+	if id == "custom-" {
+		return fmt.Errorf("invalid profile id")
+	}
+
+	uniqueID, err := uniqueProfileFileID(s.profilesDir, id)
+	if err != nil {
+		return fmt.Errorf("resolving unique profile id: %w", err)
+	}
+
+	profileCopy := *profile
+	profileCopy.ID = uniqueID
+
+	// Editable copies must have schema v2 layouts and variants so WidgetStudio
+	// can save column/filter changes without silent data loss.
+	profileToSave := config.ConvertProfileToV2(&profileCopy)
+
+	path := filepath.Join(s.profilesDir, uniqueID+".json")
+	return config.SaveFile(path, profileToSave)
+}
+
+// uniqueProfileFileID returns a profile id whose JSON file does not yet exist,
+// appending an incrementing numeric suffix when the base id is taken.
+// Any os.Stat error other than os.ErrNotExist is propagated so the caller does
+// not loop forever on unreadable directories.
+func uniqueProfileFileID(profilesDir, baseID string) (string, error) {
+	candidate := baseID
+	_, err := os.Stat(filepath.Join(profilesDir, candidate+".json"))
+	if err != nil {
+		if os.IsNotExist(err) {
+			return candidate, nil
+		}
+		return "", fmt.Errorf("stat profile %s: %w", candidate, err)
+	}
+
+	suffix := 1
+	for {
+		candidate = fmt.Sprintf("%s-%d", baseID, suffix)
+		_, err := os.Stat(filepath.Join(profilesDir, candidate+".json"))
+		if err != nil {
+			if os.IsNotExist(err) {
+				return candidate, nil
+			}
+			return "", fmt.Errorf("stat profile %s: %w", candidate, err)
+		}
+		suffix++
+	}
+}
+
 var invalidProfileNameChars = regexp.MustCompile(`[<>:"/\\|?*\x00-\x1f]`)
 
 // ProfileEntry is a lightweight profile descriptor for hub listing.
 type ProfileEntry struct {
-	ID          string             `json:"id"`
-	File        string             `json:"file"` // basename on disk (e.g. example-racing.json)
-	Name        string             `json:"name,omitempty"`
-	DisplayMode config.DisplayMode `json:"displayMode"`
-	Widgets     int                `json:"widgets"`
+	ID          string                `json:"id"`
+	File        string                `json:"file"` // basename on disk (e.g. example-racing.json)
+	Name        string                `json:"name,omitempty"`
+	DisplayMode config.DisplayMode    `json:"displayMode"`
+	Widgets     int                   `json:"widgets"`
+	Profile     *config.ProfileConfig `json:"profile,omitempty"`
 }
 
 // OverlayRuntime is the interface HubService uses to start/stop the desktop overlay.
@@ -66,6 +136,9 @@ func (s *HubService) ListProfiles() ([]ProfileEntry, error) {
 		if err != nil {
 			continue
 		}
+		if !isListableProfile(p) {
+			continue
+		}
 		id := p.ID
 		if id == "" {
 			id = strings.TrimSuffix(e.Name(), ".json")
@@ -76,9 +149,22 @@ func (s *HubService) ListProfiles() ([]ProfileEntry, error) {
 			Name:        p.Name,
 			DisplayMode: p.DisplayMode,
 			Widgets:     len(p.Widgets),
+			Profile:     p,
 		})
 	}
 	return profiles, nil
+}
+
+func isListableProfile(p *config.ProfileConfig) bool {
+	if p == nil || p.Widgets == nil {
+		return false
+	}
+	switch p.DisplayMode {
+	case config.ModeRacing, config.ModeEdit, config.ModeStreaming:
+		return true
+	default:
+		return false
+	}
 }
 
 // CreateProfile creates a new profile with default widgets.
@@ -114,6 +200,8 @@ func (s *HubService) CreateProfile(name string) error {
 			{ID: "standings", Type: "standings", Enabled: true, UpdateHz: 15, Position: config.Rect{X: 1560, Y: 40, W: 340, H: 420}},
 		},
 	}
+
+	profile = config.ConvertProfileToV2(profile)
 
 	return config.SaveFile(path, profile)
 }

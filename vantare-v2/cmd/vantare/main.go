@@ -17,6 +17,7 @@ import (
 	"github.com/vantare/overlays/v2/configs"
 	"github.com/vantare/overlays/v2/frontend"
 	"github.com/vantare/overlays/v2/internal/app"
+	engineerservice "github.com/vantare/overlays/v2/internal/engineer/service"
 	"github.com/vantare/overlays/v2/internal/ops"
 	"github.com/vantare/overlays/v2/internal/server"
 	"github.com/vantare/overlays/v2/internal/telemetry/delta"
@@ -29,7 +30,7 @@ import (
 )
 
 // version is the current application version.
-var version = "v0.2.14-alpha.1"
+var version = "v0.3.10.0"
 
 // reorderArgs moves flag arguments to the front of os.Args so flag.Parse() can
 // see them even when the user types `vantare serve -live -profile foo.json`.
@@ -122,7 +123,7 @@ func installerURL(release updater.Release) string {
 func main() {
 	// Set WebView2 user data folder to version-specific path to prevent cache issues across releases
 	if appData := os.Getenv("LOCALAPPDATA"); appData != "" {
-		udf := filepath.Join(appData, "Vantare", "webview_v0.1.1")
+		udf := filepath.Join(appData, "Vantare", "webview_v0.3.10.0")
 		_ = os.Setenv("WEBVIEW2_USER_DATA_FOLDER", udf)
 	}
 
@@ -152,12 +153,13 @@ func main() {
 	emitter := &wailsEmitter{wailsApp: wailsApp}
 	var cleanup sync.Once
 	var bridge *app.TelemetryBridge
-		var opsBridge *app.OpsBridge
+	var opsBridge *app.OpsBridge
 	var httpSrv *server.Server
 	var overlayController *app.OverlayController
 	var rtSampler *ops.RuntimeSampler
 	var overlayRunning atomic.Bool
 	var hkMgr *app.HotkeyManager
+	var engBridge *app.EngineerBridge
 	cleanupApp := func() {
 		cleanup.Do(func() {
 			if overlayController != nil {
@@ -176,6 +178,9 @@ func main() {
 			}
 			if hkMgr != nil {
 				hkMgr.Stop()
+			}
+			if engBridge != nil {
+				engBridge.Stop()
 			}
 			vapp.StopTelemetry()
 		})
@@ -245,6 +250,15 @@ func main() {
 	updaterSvc := app.NewUpdaterService(version, settingsPath, emitter)
 	wailsApp.RegisterService(application.NewService(updaterSvc))
 
+	// Create and start EngineerService (core & simulator/replay)
+	engSvc := engineerservice.NewEngineerService(emitter)
+	engSvc.Start(ctx)
+	defer engSvc.Stop()
+
+	// Register Wails bridge for Engineer events and commands
+	engBridge = app.NewEngineerBridge(wailsApp, emitter, engSvc)
+	engBridge.Start()
+
 	// App settings service (delta mode, hotkeys, cpu sampling toggle)
 	appSettingsPath := filepath.Join(cfgDir, "app-settings.json")
 	settingsSvc := app.NewSettingsService(appSettingsPath, emitter)
@@ -252,14 +266,11 @@ func main() {
 		log.Printf("warning: could not load settings: %v (using defaults)", err)
 	}
 
-	// Apply current delta mode to telemetry source if it supports it.
-	if enriched, ok := vapp.TelemetrySource().(*app.EnrichedLMUSource); ok {
-		mode := delta.ReferenceMode(settingsSvc.Settings().DeltaMode)
-		if mode == "" {
-			mode = delta.ModeSelf
-		}
-		enriched.SetDeltaMode(mode)
+	mode := delta.ReferenceMode(settingsSvc.Settings().DeltaMode)
+	if mode == "" {
+		mode = delta.ModeSelf
 	}
+	vapp.SetDeltaMode(mode)
 
 	// Set profiles directory for profile cycling
 	profileSvc.SetProfilesDir(cfgDir)
@@ -333,6 +344,10 @@ func main() {
 		emitter.Emit("app:version", map[string]any{"version": version})
 	})
 
+	wailsApp.Event.On("telemetry:source-status:get", func(event *application.CustomEvent) {
+		emitter.Emit("telemetry:source-status", vapp.SourceInfo())
+	})
+
 	emitUpdaterError := func(message string) {
 		emitter.Emit("updater:error", map[string]any{"message": message})
 	}
@@ -396,7 +411,6 @@ func main() {
 			emitter.Emit("updater:installed", map[string]any{"ok": true})
 		}()
 	})
-
 
 	wailsApp.Event.On("updater:ignore", func(event *application.CustomEvent) {
 		var data struct {
@@ -504,13 +518,11 @@ func main() {
 		if rtSampler != nil {
 			rtSampler.SetCPUEnabled(s.CpuSampling)
 		}
-		if enriched, ok := vapp.TelemetrySource().(*app.EnrichedLMUSource); ok {
-			mode := delta.ReferenceMode(s.DeltaMode)
-			if mode == "" {
-				mode = delta.ModeSelf
-			}
-			enriched.SetDeltaMode(mode)
+		mode := delta.ReferenceMode(s.DeltaMode)
+		if mode == "" {
+			mode = delta.ModeSelf
 		}
+		vapp.SetDeltaMode(mode)
 		// Rebuild hotkeys with new combos
 		rebuildHotkeys()
 		emitter.Emit("settings-saved", map[string]any{"ok": true})
@@ -531,6 +543,23 @@ func main() {
 		emitter.Emit("hub:profiles", map[string]any{
 			"profiles": profiles,
 		})
+	})
+
+	wailsApp.Event.On("hub:save-own-copy", func(event *application.CustomEvent) {
+		var data struct {
+			Profile config.ProfileConfig `json:"profile"`
+		}
+		if event.Data != nil {
+			if raw, err := json.Marshal(event.Data); err == nil {
+				_ = json.Unmarshal(raw, &data)
+			}
+		}
+		if err := hubSvc.SaveProfileAsOwnCopy(&data.Profile); err != nil {
+			log.Printf("hub:save-own-copy error: %v", err)
+			emitHubError(err.Error())
+			return
+		}
+		emitter.Emit("hub:profile-created", map[string]any{"ok": true})
 	})
 
 	wailsApp.Event.On("hub:create", func(event *application.CustomEvent) {
@@ -568,23 +597,28 @@ func main() {
 			log.Printf("hub:delete error: %v", err)
 			emitHubError(err.Error())
 			return
-	}
-	emitter.Emit("hub:profile-deleted", map[string]any{"ok": true})
-})
+		}
+		emitter.Emit("hub:profile-deleted", map[string]any{"ok": true})
+	})
 
-wailsApp.Event.On("hub:activate", func(event *application.CustomEvent) {
-	target := readProfileTarget(event)
-	if err := hubSvc.ActivateProfile(target); err != nil {
-		log.Printf("hub:activate error: %v", err)
-		emitHubError(err.Error())
-		return
-	}
-	profileSvc.EmitLoaded()
-	emitter.Emit("hub:profile-activated", map[string]any{"ok": true})
-})
+	wailsApp.Event.On("hub:activate", func(event *application.CustomEvent) {
+		target := readProfileTarget(event)
+		if err := hubSvc.ActivateProfile(target); err != nil {
+			log.Printf("hub:activate error: %v", err)
+			emitHubError(err.Error())
+			return
+		}
+		profileSvc.EmitLoaded()
+		emitter.Emit("hub:profile-activated", map[string]any{"ok": true})
+	})
 
 	wailsApp.Event.On("overlay:start", func(event *application.CustomEvent) {
 		target := readProfileTarget(event)
+		if err := vapp.EnsureLiveTelemetry(); err != nil {
+			log.Printf("overlay:start live telemetry unavailable, using fallback: %v", err)
+		}
+		emitter.Emit("telemetry:source-status", vapp.SourceInfo())
+
 		_, err := hubSvc.StartOverlay(target)
 		if err != nil {
 			log.Printf("overlay:start error: %v", err)
@@ -622,106 +656,6 @@ wailsApp.Event.On("hub:activate", func(event *application.CustomEvent) {
 		profileSvc.EmitLoaded()
 	})
 
-	wailsApp.Event.On("hub:profile:get", func(event *application.CustomEvent) {
-		p := profileSvc.GetProfile()
-		wailsApp.Event.Emit("hub:profile", map[string]any{"profile": p})
-	})
-
-	wailsApp.Event.On("hub:profile:get-config", func(event *application.CustomEvent) {
-		data, ok := eventPayload(event)
-		if !ok {
-			log.Printf("hub:profile:get-config: invalid event payload")
-			return
-		}
-		id, _ := data["id"].(string)
-		file, _ := data["file"].(string)
-		target := id
-		if target == "" {
-			target = file
-		}
-		if target == "" {
-			log.Printf("hub:profile:get-config: missing id/file")
-			return
-		}
-		p, err := hubSvc.GetProfileConfig(target)
-		if err != nil {
-			log.Printf("hub:profile:get-config failed: %v", err)
-			return
-		}
-		wailsApp.Event.Emit("hub:profile:config", map[string]any{"id": id, "profile": p})
-	})
-	wailsApp.Event.On("profile:save", func(event *application.CustomEvent) {
-		data, ok := eventPayload(event)
-		if !ok {
-			log.Printf("profile:save: invalid event payload")
-			emitHubError("invalid event payload")
-			return
-		}
-		profileMap, ok := data["profile"].(map[string]any)
-		if !ok {
-			log.Printf("profile:save: missing profile payload")
-			emitHubError("missing profile payload")
-			return
-		}
-		b, err := json.Marshal(profileMap)
-		if err != nil {
-			log.Printf("profile:save marshal failed: %v", err)
-			emitHubError(err.Error())
-			return
-		}
-		var profile config.ProfileConfig
-		if err := json.Unmarshal(b, &profile); err != nil {
-			log.Printf("profile:save unmarshal failed: %v", err)
-			emitHubError(err.Error())
-			return
-		}
-		if err := hubSvc.SaveProfile(&profile); err != nil {
-			log.Printf("profile:save failed: %v", err)
-			emitHubError(err.Error())
-			return
-		}
-		// Success ack lets WidgetsPage clear transient error state.
-		emitter.Emit("profile:saved", map[string]any{"ok": true})
-	})
-	wailsApp.Event.On("profile:widget:update", func(event *application.CustomEvent) {
-		data, ok := eventPayload(event)
-		if !ok {
-			return
-		}
-		widgetID, _ := data["widgetId"].(string)
-		enabled, _ := data["enabled"].(bool)
-		if widgetID == "" {
-			return
-		}
-		if err := hubSvc.SetWidgetEnabled(widgetID, enabled); err != nil {
-			log.Printf("profile:widget:update failed: %v", err)
-		}
-	})
-
-	wailsApp.Event.On("overlay:edit:start", func(event *application.CustomEvent) {
-		data, ok := eventPayload(event)
-		if !ok {
-			log.Printf("overlay:edit:start: invalid event payload")
-			return
-		}
-		id, _ := data["id"].(string)
-		file, _ := data["file"].(string)
-		if id == "" && file == "" {
-			log.Printf("overlay:edit:start: missing id/file")
-			return
-		}
-		target := id
-		if target == "" {
-			target = file
-		}
-		status, err := hubSvc.StartEditOverlay(target)
-		if err != nil {
-			log.Printf("overlay:edit:start failed: %v", err)
-			return
-		}
-		wailsApp.Event.Emit("overlay:status", status)
-	})
-
 	log.Printf("telemetry source: kind=%s name=%s live=%v available=%v", vapp.SourceInfo().Kind, vapp.SourceInfo().Name, vapp.SourceInfo().Live, vapp.SourceInfo().Available)
 
 	// Start telemetry
@@ -742,10 +676,11 @@ wailsApp.Event.On("hub:activate", func(event *application.CustomEvent) {
 
 	// --- OBS / SSE HTTP server ---
 	httpSrv = server.New(server.ServerConfig{
-		Addr:   *httpAddr,
-		DistFS: distFS,
-		CfgDir: cfgDir,
-		Svc:    vapp.Telemetry,
+		Addr:        *httpAddr,
+		DistFS:      distFS,
+		CfgDir:      cfgDir,
+		Svc:         vapp.Telemetry,
+		EngineerSvc: engSvc,
 	})
 	httpSrv.Start()
 	log.Printf("OBS overlay: http://%s/overlay?profile=%s", *httpAddr, filepath.Base(*profilePath))
@@ -753,7 +688,8 @@ wailsApp.Event.On("hub:activate", func(event *application.CustomEvent) {
 	// Listen for layout:save events from frontend (Preview editor or edit mode drag-save)
 	wailsApp.Event.On("layout:save", func(event *application.CustomEvent) {
 		type layoutSaveData struct {
-			Widgets []config.WidgetConfig `json:"widgets"`
+			Widgets  []config.WidgetConfig        `json:"widgets"`
+			Variants []config.WidgetVariantConfig `json:"variants"`
 		}
 		var data layoutSaveData
 		switch v := event.Data.(type) {
@@ -764,9 +700,15 @@ wailsApp.Event.On("hub:activate", func(event *application.CustomEvent) {
 					json.Unmarshal(widgetsJSON, &data.Widgets)
 				}
 			}
+			// Extract variants only when present; nil means "keep existing variants".
+			if variantsRaw, ok := v["variants"]; ok {
+				if variantsJSON, err := json.Marshal(variantsRaw); err == nil {
+					json.Unmarshal(variantsJSON, &data.Variants)
+				}
+			}
 		}
 		if len(data.Widgets) > 0 {
-			if err := profileSvc.SaveLayout(data.Widgets); err != nil {
+			if err := profileSvc.SaveProfileState(data.Widgets, data.Variants); err != nil {
 				log.Printf("layout save error: %v", err)
 				emitHubError(err.Error())
 			}
@@ -840,40 +782,18 @@ func (h *wailsWindowHandle) ensureTransparent() {
 })()`)
 }
 
-// wailsOverlayWindow adapts *application.WebviewWindow to app.OverlayWindow.
-type wailsOverlayWindow struct {
-	w *application.WebviewWindow
-}
-
-func (o *wailsOverlayWindow) Close() {
-	o.w.Close()
-}
-
 // wailsOverlayFactory creates a fresh Wails overlay window for each Start call.
 type wailsOverlayFactory struct {
 	app         *application.App
 	stopOverlay func()
 }
 
-// eventPayload safely extracts a map[string]any from a Wails custom event.
-func eventPayload(event *application.CustomEvent) (map[string]any, bool) {
-	if event == nil {
-		return nil, false
-	}
-	switch v := event.Data.(type) {
-	case map[string]any:
-		return v, true
-	default:
-		// Wails may deliver map[string]interface{} or other map-like types.
-		if m, ok := event.Data.(map[string]interface{}); ok {
-			out := make(map[string]any, len(m))
-			for k, val := range m {
-				out[k] = val
-			}
-			return out, true
-		}
-	}
-	return nil, false
+type wailsOverlayWindow struct {
+	w *application.WebviewWindow
+}
+
+func (o *wailsOverlayWindow) Close() {
+	o.w.Close()
 }
 
 func (f *wailsOverlayFactory) NewOverlayWindow(profile *config.ProfileConfig, origin config.Rect, bounds config.Rect) (app.OverlayWindow, error) {
@@ -884,7 +804,7 @@ func (f *wailsOverlayFactory) NewOverlayWindow(profile *config.ProfileConfig, or
 		Frameless:         true,
 		BackgroundType:    application.BackgroundTypeTransparent,
 		BackgroundColour:  application.NewRGBA(0, 0, 0, 0),
-		IgnoreMouseEvents: profile.DisplayMode != config.ModeEdit,
+		IgnoreMouseEvents: false,
 		AlwaysOnTop:       true,
 		URL:               "/",
 	})
@@ -900,16 +820,10 @@ func (f *wailsOverlayFactory) NewOverlayWindow(profile *config.ProfileConfig, or
 	})
 
 	handle := &wailsWindowHandle{w: w}
-	if profile.DisplayMode == config.ModeEdit {
-		handle.SetIgnoreMouseEvents(false)
-		handle.SetResizable(true)
-		handle.Fullscreen()
-	} else {
-		handle.SetIgnoreMouseEvents(true)
-		handle.SetResizable(false)
-		handle.Fullscreen()
-		handle.SetIgnoreMouseEvents(true)
-	}
+	handle.SetIgnoreMouseEvents(true)
+	handle.SetResizable(false)
+	handle.Fullscreen()
+	handle.SetIgnoreMouseEvents(true)
 	return &wailsOverlayWindow{w: w}, nil
 }
 
@@ -929,4 +843,3 @@ func readProfileTarget(event *application.CustomEvent) string {
 	}
 	return data.ID
 }
-

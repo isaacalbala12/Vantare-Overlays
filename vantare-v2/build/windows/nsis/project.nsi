@@ -22,7 +22,7 @@ Unicode true
 !define INFO_PROJECTNAME    "vantare"
 !define INFO_COMPANYNAME    "Vantare"
 !define INFO_PRODUCTNAME    "Vantare Overlays"
-!define INFO_PRODUCTVERSION "0.2.14"
+!define INFO_PRODUCTVERSION "0.2.12"
 !define INFO_COPYRIGHT      "© 2026 Vantare"
 !define PRODUCT_EXECUTABLE  "vantare.exe"
 ###
@@ -54,7 +54,9 @@ ManifestDPIAware true
 
 !define MUI_ICON "..\icon.ico"
 !define MUI_UNICON "..\icon.ico"
-# !define MUI_WELCOMEFINISHPAGE_BITMAP "resources\leftimage.bmp" #Include this to add a bitmap on the left side of the Welcome Page. Must be a size of 164x314
+!define MUI_WELCOMEFINISHPAGE_BITMAP "resources\leftimage.bmp"
+!define MUI_HEADERIMAGE
+!define MUI_HEADERIMAGE_BITMAP "resources\headerimage.bmp"
 !define MUI_FINISHPAGE_NOAUTOCLOSE # Wait on the INSTFILES page so the user can take a look into the details of the installation steps
 !define MUI_ABORTWARNING # This will warn the user if they exit from the installer.
 

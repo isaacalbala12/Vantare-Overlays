@@ -7,7 +7,9 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
+	"sync/atomic"
 
+	"github.com/vantare/overlays/v2/internal/telemetry/delta"
 	"github.com/vantare/overlays/v2/internal/telemetry/service"
 )
 
@@ -16,37 +18,45 @@ var openLMUSource = service.OpenLMUSource
 
 type App struct {
 	Telemetry *service.Service
-	source    service.Source
+	sources   *TelemetrySourceManager
 	lmuSource *service.LMUSource
+	deltaMode *atomic.Value
 	cancel    context.CancelFunc
 	wg        sync.WaitGroup
 }
 
-// New builds the app and a telemetry service (single LMU mmap open when live).
+// New builds the app and a telemetry service with live-first source management.
 func New(useLiveLMU bool) *App {
-	var src service.Source
 	var lmuSrc *service.LMUSource
+	deltaModeValue := &atomic.Value{}
+	deltaModeValue.Store(delta.ModeSelf)
 
-	if useLiveLMU {
-		if s, err := openLMUSource(); err == nil {
+	manager := NewTelemetrySourceManager(TelemetrySourceManagerConfig{
+		UseLive: useLiveLMU,
+		OpenLive: func() (service.Source, error) {
+			s, err := openLMUSource()
+			if err != nil {
+				log.Printf("warning: live LMU source unavailable: %v (falling back to mock)", err)
+				return nil, err
+			}
 			lmuSrc = s
-			src = wrapLMUSourceWithREST(s)
 			log.Printf("live LMU source opened")
-		} else {
-			log.Printf("warning: live LMU source unavailable: %v (falling back to mock)", err)
-		}
-	}
-	if src == nil {
-		src = createMockSource()
-	}
+			enriched := wrapLMUSourceWithREST(s)
+			if mode, ok := deltaModeValue.Load().(delta.ReferenceMode); ok {
+				enriched.SetDeltaMode(mode)
+			}
+			return enriched, nil
+		},
+		Mock: createMockSource(),
+	})
 
 	svc := service.New(service.Config{
 		ReadHz: 60,
 		EmitHz: 30,
-		Source: src,
+		Source: manager,
 	})
 
-	return &App{Telemetry: svc, source: src, lmuSource: lmuSrc}
+	return &App{Telemetry: svc, sources: manager, lmuSource: lmuSrc, deltaMode: deltaModeValue}
 }
 
 func (a *App) StartTelemetry(ctx context.Context) {
@@ -67,8 +77,31 @@ func (a *App) StopTelemetry() {
 		a.cancel()
 	}
 	a.wg.Wait()
-	if closer, ok := a.source.(interface{ Close() error }); ok {
-		_ = closer.Close()
+	if a.sources != nil {
+		a.sources.Close()
+	}
+}
+
+// EnsureLiveTelemetry tries to reconnect to live telemetry if not already active.
+func (a *App) EnsureLiveTelemetry() error {
+	if a == nil || a.sources == nil {
+		return nil
+	}
+	return a.sources.EnsureLive()
+}
+
+func (a *App) SetDeltaMode(mode delta.ReferenceMode) {
+	if mode == "" {
+		mode = delta.ModeSelf
+	}
+	if a == nil {
+		return
+	}
+	if a.deltaMode != nil {
+		a.deltaMode.Store(mode)
+	}
+	if enriched, ok := a.TelemetrySource().(*EnrichedLMUSource); ok {
+		enriched.SetDeltaMode(mode)
 	}
 }
 
@@ -78,18 +111,18 @@ func (a *App) LMUSource() *service.LMUSource {
 }
 
 func (a *App) TelemetrySource() service.Source {
-	if a == nil {
+	if a == nil || a.sources == nil {
 		return nil
 	}
-	return a.source
+	return a.sources.Source()
 }
 
 // SourceInfo returns metadata about the active telemetry source.
 func (a *App) SourceInfo() service.SourceInfo {
-	if a == nil {
+	if a == nil || a.sources == nil {
 		return service.SourceInfo{Kind: service.SimulatorUnknown, Name: "No source", Live: false, Available: false}
 	}
-	return service.InfoForSource(a.source)
+	return a.sources.Info()
 }
 
 // FrontendDistFS locates the built Vite output (CWD, then next to executable).

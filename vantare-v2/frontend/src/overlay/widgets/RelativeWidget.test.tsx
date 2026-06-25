@@ -2,10 +2,15 @@ import { act, cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   RelativeWidget,
+} from "./RelativeWidget";
+import {
+  formatLapTime,
   formatSignedGap,
   resolveClassColor,
   selectRelativeRowsByGap,
-} from "./RelativeWidget";
+} from "./relative-widget-helpers";
+import { createDefaultRelativeColumns } from "./relative-catalog";
+import { getRelativeIntrinsicWidth } from "./relative-format";
 
 describe("RelativeWidget helpers", () => {
   it("resolves class colors", () => {
@@ -48,7 +53,6 @@ describe("RelativeWidget helpers", () => {
     ]);
   });
 });
-
 describe("RelativeWidget", () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -88,5 +92,265 @@ describe("RelativeWidget", () => {
     tick(100);
     const redSpan = screen.getByText("+2.4");
     expect(redSpan.style.color).toBe("#ff0000");
+  });
+
+  it("formats lap times as m:ss.mmm with dash fallback", () => {
+    expect(formatLapTime(undefined)).toBe("-");
+    expect(formatLapTime(0)).toBe("-");
+    expect(formatLapTime(NaN)).toBe("-");
+    expect(formatLapTime(90.876)).toBe("1:30.876");
+    expect(formatLapTime(89.455)).toBe("1:29.455");
+  });
+
+  it("renders best lap and last lap columns when enabled by variant", () => {
+    render(
+      <RelativeWidget
+        editMode={true}
+        updateHz={15}
+        props={{
+          variant: {
+            id: "variant-relative-default",
+            templateId: "relative-vantare-default",
+            columns: [
+              { id: "position", metricId: "position", enabled: true },
+              { id: "class", metricId: "class", enabled: true },
+              { id: "carNumber", metricId: "carNumber", enabled: true },
+              { id: "driverName", metricId: "driverName", enabled: true },
+              { id: "gap", metricId: "gap", enabled: true },
+              { id: "bestLap", metricId: "bestLap", enabled: true },
+              { id: "lastLap", metricId: "lastLap", enabled: true },
+            ],
+          },
+        }}
+      />,
+    );
+
+    tick(100);
+
+    expect(screen.getByText("1:30.876")).toBeTruthy();
+    expect(screen.getByText("1:29.455")).toBeTruthy();
+    expect(screen.getByText("1:31.221")).toBeTruthy();
+    expect(screen.getByText("+3.1").parentElement?.getAttribute("style")).toContain("width:48px");
+    expect(screen.getByText("1:30.876").parentElement?.getAttribute("style")).toContain("width:62px");
+    expect(screen.getByText("1:31.221").parentElement?.getAttribute("style")).toContain("width:62px");
+  });
+
+  it("keeps optional lap columns hidden by default", () => {
+    render(<RelativeWidget editMode={true} updateHz={15} />);
+
+    tick(100);
+
+    expect(screen.queryByText("1:30.876")).toBeNull();
+    expect(screen.queryByText("1:29.455")).toBeNull();
+  });
+
+  it("does not truncate driver names by default when optional columns are enabled", () => {
+    render(
+      <RelativeWidget
+        editMode={true}
+        updateHz={15}
+        props={{
+          variant: {
+            id: "variant-relative-default",
+            templateId: "relative-vantare-default",
+            columns: [
+              { id: "position", metricId: "position", enabled: true, width: 24 },
+              { id: "class", metricId: "class", enabled: true, width: 6 },
+              { id: "carNumber", metricId: "carNumber", enabled: true, width: 28 },
+              { id: "driverName", metricId: "driverName", enabled: true, width: 210, format: { mode: "full", maxChars: 18 } },
+              { id: "gap", metricId: "gap", enabled: true, width: 48 },
+              { id: "bestLap", metricId: "bestLap", enabled: true, width: 62, format: { display: "full", decimals: 3 } },
+              { id: "lastLap", metricId: "lastLap", enabled: true, width: 62, format: { display: "compact", decimals: 2 } },
+            ],
+          },
+        }}
+      />,
+    );
+
+    tick(100);
+
+    expect(screen.getByText("PORSCHE PENSKE")).toBeTruthy();
+    expect(screen.queryByText("PORSCHE…")).toBeNull();
+    expect(screen.getByText("1:30.101")).toBeTruthy();
+  });
+
+  it("truncates driver names only when configured", () => {
+    render(
+      <RelativeWidget
+        editMode={true}
+        updateHz={15}
+        props={{
+          variant: {
+            id: "variant-relative-default",
+            templateId: "relative-vantare-default",
+            columns: [
+              { id: "driverName", metricId: "driverName", enabled: true, width: 110, format: { mode: "truncate", maxChars: 8 } },
+            ],
+          },
+        }}
+      />,
+    );
+
+    tick(100);
+
+    expect(screen.getByText("PORSCHE…")).toBeTruthy();
+  });
+
+  it("applies compact lap format, column width, color and alignment", () => {
+    render(
+      <RelativeWidget
+        editMode={true}
+        updateHz={15}
+        props={{
+          variant: {
+            id: "variant-relative-default",
+            templateId: "relative-vantare-default",
+            columns: [
+              { id: "driverName", metricId: "driverName", enabled: true, width: 180 },
+              { id: "bestLap", metricId: "bestLap", enabled: true, width: 90, format: { display: "compact", decimals: 1 }, style: { color: "#ffcc00", align: "center" } },
+            ],
+          },
+        }}
+      />,
+    );
+
+    tick(100);
+
+    const compact = screen.getByText("30.9");
+    expect(compact.style.color).toBe("#ffcc00");
+    expect(compact.parentElement?.getAttribute("style")).toContain("width:90px");
+    expect(compact.parentElement?.className).toContain("justify-center");
+  });
+
+  it("filters relative rows to the player class when configured", () => {
+    render(
+      <RelativeWidget
+        editMode={true}
+        updateHz={15}
+        props={{
+          variant: {
+            id: "variant-relative-default",
+            templateId: "relative-vantare-default",
+            filters: { classScope: "sameClass", rangeAhead: 3, rangeBehind: 3, includePlayer: true },
+            columns: [
+              { id: "position", metricId: "position", enabled: true },
+              { id: "driverName", metricId: "driverName", enabled: true },
+              { id: "gap", metricId: "gap", enabled: true },
+            ],
+          },
+        }}
+      />,
+    );
+
+    tick(100);
+
+    expect(screen.getByText("TOYOTA GAZOO")).toBeTruthy();
+    expect(screen.queryByText("UNITED AUTOSPORTS")).toBeNull();
+  });
+
+  it("can hide the player row when includePlayer is false", () => {
+    render(
+      <RelativeWidget
+        editMode={true}
+        updateHz={15}
+        props={{
+          variant: {
+            id: "variant-relative-default",
+            templateId: "relative-vantare-default",
+            filters: { rangeAhead: 1, rangeBehind: 1, includePlayer: false },
+            columns: [
+              { id: "position", metricId: "position", enabled: true },
+              { id: "driverName", metricId: "driverName", enabled: true },
+              { id: "gap", metricId: "gap", enabled: true },
+            ],
+          },
+        }}
+      />,
+    );
+
+    tick(100);
+
+    expect(screen.queryByText("TOYOTA GAZOO")).toBeNull();
+    expect(screen.getByText("CADILLAC RACING")).toBeTruthy();
+    expect(screen.getByText("PEUGEOT")).toBeTruthy();
+  });
+
+  it("can render compact rows without forcing the panel to full height", () => {
+    render(
+      <RelativeWidget
+        editMode={true}
+        updateHz={15}
+        props={{
+          variant: {
+            id: "variant-relative-default",
+            templateId: "relative-vantare-default",
+            filters: { rangeAhead: 1, rangeBehind: 1, includePlayer: true, rowHeightMode: "compact" },
+            columns: [
+              { id: "position", metricId: "position", enabled: true },
+              { id: "driverName", metricId: "driverName", enabled: true },
+              { id: "gap", metricId: "gap", enabled: true },
+            ],
+          },
+        }}
+      />,
+    );
+
+    tick(100);
+
+    const panel = screen.getByTestId("relative-panel");
+    expect(panel.className).not.toContain("h-full");
+    expect(panel.className).not.toContain("w-full");
+    expect(panel.getAttribute("style")).toContain("width: 224px");
+    expect(screen.getByText("TOYOTA GAZOO").parentElement?.getAttribute("style")).toContain("height:31px");
+  });
+
+  it("wraps intrinsic width in fill mode when preview fill host is disabled", () => {
+    const columns = createDefaultRelativeColumns();
+    const intrinsicWidth = getRelativeIntrinsicWidth(columns);
+    render(
+      <RelativeWidget
+        editMode={true}
+        updateHz={15}
+        props={{
+          __previewFillHost: false,
+          variant: {
+            id: "variant-relative-default",
+            templateId: "relative-vantare-default",
+            filters: { rangeAhead: 3, rangeBehind: 3, includePlayer: true, rowHeightMode: "fill" },
+            columns,
+          },
+        }}
+      />,
+    );
+
+    tick(100);
+
+    const panel = screen.getByTestId("relative-panel");
+    expect(panel.className).not.toContain("w-full");
+    expect(panel.className).toContain("h-full");
+    expect(panel.style.width).toBe(`${intrinsicWidth}px`);
+  });
+
+  it("fills the host by default in fill mode without preview fill host context", () => {
+    render(
+      <RelativeWidget
+        editMode={true}
+        updateHz={15}
+        props={{
+          variant: {
+            id: "variant-relative-default",
+            templateId: "relative-vantare-default",
+            filters: { rangeAhead: 3, rangeBehind: 3, includePlayer: true, rowHeightMode: "fill" },
+            columns: createDefaultRelativeColumns(),
+          },
+        }}
+      />,
+    );
+
+    tick(100);
+
+    const panel = screen.getByTestId("relative-panel");
+    expect(panel.className).toContain("w-full");
+    expect(panel.style.width).toBe("");
   });
 });

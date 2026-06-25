@@ -2,8 +2,13 @@ package app_test
 
 import (
 	"errors"
+	"os"
 	"path/filepath"
+	"reflect"
+	"sort"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/vantare/overlays/v2/internal/app"
 	"github.com/vantare/overlays/v2/internal/window"
@@ -177,6 +182,74 @@ func TestHubServiceActivateByIDWhenFilenameDiffers(t *testing.T) {
 	}
 }
 
+func TestHubServiceListProfilesIncludesProfileConfig(t *testing.T) {
+	dir := t.TempDir()
+	profile := &config.ProfileConfig{
+		ID:           "preview-profile",
+		Name:         "Preview Profile",
+		DisplayMode:  config.ModeRacing,
+		MonitorIndex: 0,
+		Widgets: []config.WidgetConfig{
+			{ID: "delta", Type: "delta", Enabled: true, UpdateHz: 30, Position: config.Rect{X: 760, Y: 40, W: 400, H: 48}},
+		},
+	}
+	if err := config.SaveFile(filepath.Join(dir, "preview-profile.json"), profile); err != nil {
+		t.Fatalf("save profile: %v", err)
+	}
+
+	service := app.NewHubService(dir, nil, nil, nil)
+	got, err := service.ListProfiles()
+	if err != nil {
+		t.Fatalf("ListProfiles() error = %v", err)
+	}
+	if len(got) != 1 {
+		t.Fatalf("profiles len=%d, want 1", len(got))
+	}
+	if got[0].Profile == nil {
+		t.Fatal("Profile is nil, want full profile config for previews")
+	}
+	if got[0].Profile.ID != "preview-profile" {
+		t.Fatalf("Profile.ID=%q, want preview-profile", got[0].Profile.ID)
+	}
+	if len(got[0].Profile.Widgets) != 1 {
+		t.Fatalf("Profile.Widgets len=%d, want 1", len(got[0].Profile.Widgets))
+	}
+}
+
+func TestHubServiceListProfilesSkipsNonProfileJSONFiles(t *testing.T) {
+	dir := t.TempDir()
+	profile := &config.ProfileConfig{
+		ID:           "preview-profile",
+		Name:         "Preview Profile",
+		DisplayMode:  config.ModeRacing,
+		MonitorIndex: 0,
+		Widgets: []config.WidgetConfig{
+			{ID: "delta", Type: "delta", Enabled: true, Position: config.Rect{X: 1, Y: 2, W: 3, H: 4}},
+		},
+	}
+	if err := config.SaveFile(filepath.Join(dir, "preview-profile.json"), profile); err != nil {
+		t.Fatalf("save profile: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "app-settings.json"), []byte(`{"deltaMode":"self","cpuSampling":true}`), 0644); err != nil {
+		t.Fatalf("write settings: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "updater-settings.json"), []byte(`{"channel":"stable"}`), 0644); err != nil {
+		t.Fatalf("write updater settings: %v", err)
+	}
+
+	service := app.NewHubService(dir, nil, nil, nil)
+	got, err := service.ListProfiles()
+	if err != nil {
+		t.Fatalf("ListProfiles() error = %v", err)
+	}
+	if len(got) != 1 {
+		t.Fatalf("profiles len=%d, want 1", len(got))
+	}
+	if got[0].ID != "preview-profile" {
+		t.Fatalf("profile id=%q, want preview-profile", got[0].ID)
+	}
+}
+
 func TestHubServiceCreateDuplicate(t *testing.T) {
 	dir := t.TempDir()
 	fw := &fakeWindow{}
@@ -189,6 +262,325 @@ func TestHubServiceCreateDuplicate(t *testing.T) {
 	}
 	if err := hubSvc.CreateProfile("Racing"); err == nil {
 		t.Fatal("expected duplicate create error")
+	}
+}
+
+func TestHubServiceSaveProfileAsOwnCopy(t *testing.T) {
+	dir := t.TempDir()
+	profileSvc := app.NewProfileService(filepath.Join(dir, "dummy.json"), nil, nil)
+	hubSvc := app.NewHubService(dir, profileSvc, nil, nil)
+
+	p := &config.ProfileConfig{
+		ID:          "custom-recommended-copy",
+		Name:        "Recommended Copy",
+		DisplayMode: config.ModeRacing,
+		Widgets: []config.WidgetConfig{
+			{ID: "delta", Type: "delta", Enabled: true, Position: config.Rect{X: 1, Y: 2, W: 3, H: 4}},
+		},
+	}
+
+	if err := hubSvc.SaveProfileAsOwnCopy(p); err != nil {
+		t.Fatal(err)
+	}
+	loaded, err := config.LoadFile(filepath.Join(dir, "custom-recommended-copy.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if loaded.Name != "Recommended Copy" {
+		t.Fatalf("name=%q", loaded.Name)
+	}
+}
+
+func TestHubServiceSaveProfileAsOwnCopyDoesNotMutateInputProfile(t *testing.T) {
+	dir := t.TempDir()
+	profileSvc := app.NewProfileService(filepath.Join(dir, "dummy.json"), nil, nil)
+	hubSvc := app.NewHubService(dir, profileSvc, nil, nil)
+
+	p := &config.ProfileConfig{
+		ID:          "recommended-copy",
+		Name:        "Recommended Copy",
+		DisplayMode: config.ModeRacing,
+		Widgets: []config.WidgetConfig{
+			{ID: "relative", Type: "relative", Enabled: true, Position: config.Rect{X: 1, Y: 2, W: 300, H: 250}},
+		},
+	}
+
+	if err := hubSvc.SaveProfileAsOwnCopy(p); err != nil {
+		t.Fatal(err)
+	}
+
+	if p.ID != "recommended-copy" {
+		t.Fatalf("input profile ID mutated: got %q", p.ID)
+	}
+	if p.SchemaVersion != 0 {
+		t.Fatalf("input schema version mutated: got %d", p.SchemaVersion)
+	}
+	if p.Widgets[0].VariantID != "" {
+		t.Fatalf("input widget variant ID mutated: got %q", p.Widgets[0].VariantID)
+	}
+
+	loaded, err := config.LoadFile(filepath.Join(dir, "custom-recommended-copy.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if loaded.ID != "custom-recommended-copy" {
+		t.Fatalf("saved profile ID=%q, want custom-recommended-copy", loaded.ID)
+	}
+	if loaded.SchemaVersion != config.ProfileSchemaVersionV2 {
+		t.Fatalf("saved SchemaVersion=%d, want %d", loaded.SchemaVersion, config.ProfileSchemaVersionV2)
+	}
+}
+
+func TestHubServiceSaveProfileAsOwnCopyGeneratesUniqueIDOnCollision(t *testing.T) {
+	dir := t.TempDir()
+	profileSvc := app.NewProfileService(filepath.Join(dir, "dummy.json"), nil, nil)
+	hubSvc := app.NewHubService(dir, profileSvc, nil, nil)
+
+	makeProfile := func() *config.ProfileConfig {
+		return &config.ProfileConfig{
+			ID:          "custom-racing",
+			Name:        "Racing Copy",
+			DisplayMode: config.ModeRacing,
+			Widgets: []config.WidgetConfig{
+				{ID: "delta", Type: "delta", Enabled: true, Position: config.Rect{X: 1, Y: 2, W: 3, H: 4}},
+			},
+		}
+	}
+
+	for i := 0; i < 3; i++ {
+		if err := hubSvc.SaveProfileAsOwnCopy(makeProfile()); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	files, err := os.ReadDir(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var profiles []string
+	for _, f := range files {
+		if strings.HasSuffix(f.Name(), ".json") && f.Name() != "dummy.json" {
+			profiles = append(profiles, f.Name())
+		}
+	}
+	sort.Strings(profiles)
+	want := []string{"custom-racing-1.json", "custom-racing-2.json", "custom-racing.json"}
+	if !reflect.DeepEqual(profiles, want) {
+		t.Fatalf("files=%v, want %v", profiles, want)
+	}
+}
+
+func TestHubServiceSaveProfileAsOwnCopyConvertsLegacyToSchemaV2(t *testing.T) {
+	dir := t.TempDir()
+	profileSvc := app.NewProfileService(filepath.Join(dir, "dummy.json"), nil, nil)
+	hubSvc := app.NewHubService(dir, profileSvc, nil, nil)
+
+	p := &config.ProfileConfig{
+		ID:          "legacy-copy",
+		Name:        "Legacy Copy",
+		DisplayMode: config.ModeRacing,
+		Widgets: []config.WidgetConfig{
+			{ID: "relative", Type: "relative", Enabled: true, Position: config.Rect{X: 10, Y: 20, W: 300, H: 250}},
+		},
+	}
+
+	if err := hubSvc.SaveProfileAsOwnCopy(p); err != nil {
+		t.Fatal(err)
+	}
+
+	loaded, err := config.LoadFile(filepath.Join(dir, "custom-legacy-copy.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if loaded.SchemaVersion != config.ProfileSchemaVersionV2 {
+		t.Fatalf("SchemaVersion=%d, want %d", loaded.SchemaVersion, config.ProfileSchemaVersionV2)
+	}
+	if _, ok := loaded.Layouts[config.LayoutGeneral]; !ok {
+		t.Fatal("general layout missing")
+	}
+	if len(loaded.Variants) != 1 {
+		t.Fatalf("variants=%d, want 1", len(loaded.Variants))
+	}
+	if loaded.Variants[0].WidgetType != "relative" {
+		t.Fatalf("variant widgetType=%q, want relative", loaded.Variants[0].WidgetType)
+	}
+}
+
+func TestHubServiceSaveProfileAsOwnCopyPreservesExistingV2VariantsAndLayouts(t *testing.T) {
+	dir := t.TempDir()
+	profileSvc := app.NewProfileService(filepath.Join(dir, "dummy.json"), nil, nil)
+	hubSvc := app.NewHubService(dir, profileSvc, nil, nil)
+
+	p := &config.ProfileConfig{
+		SchemaVersion: config.ProfileSchemaVersionV2,
+		ID:            "v2-copy",
+		Name:          "V2 Copy",
+		DisplayMode:   config.ModeRacing,
+		Widgets: []config.WidgetConfig{
+			{ID: "relative", Type: "relative", VariantID: "variant-relative-custom", Enabled: true, Position: config.Rect{X: 10, Y: 20, W: 300, H: 250}},
+		},
+		Layouts: map[config.LayoutType]config.ProfileLayout{
+			config.LayoutGeneral: {
+				Type:    config.LayoutGeneral,
+				Widgets: []config.WidgetConfig{{ID: "relative", Type: "relative", VariantID: "variant-relative-custom", Enabled: true, Position: config.Rect{X: 10, Y: 20, W: 300, H: 250}}},
+			},
+			config.LayoutRace: {
+				Type:    config.LayoutRace,
+				Widgets: []config.WidgetConfig{{ID: "relative", Type: "relative", VariantID: "variant-relative-custom", Enabled: true, Position: config.Rect{X: 100, Y: 200, W: 300, H: 250}}},
+			},
+		},
+		Variants: []config.WidgetVariantConfig{
+			{
+				ID:         "variant-relative-custom",
+				WidgetType: "relative",
+				TemplateID: "relative-custom",
+				Columns: []config.ColumnConfig{
+					{ID: "bestLap", MetricID: "bestLap", Enabled: true},
+				},
+			},
+		},
+		Source: &config.ProfileSourceMeta{
+			Kind:      "recommended",
+			ProfileID: "vantare-racing-basic",
+			Name:      "Racing Básico",
+		},
+	}
+
+	if err := hubSvc.SaveProfileAsOwnCopy(p); err != nil {
+		t.Fatal(err)
+	}
+
+	loaded, err := config.LoadFile(filepath.Join(dir, "custom-v2-copy.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if loaded.SchemaVersion != config.ProfileSchemaVersionV2 {
+		t.Fatalf("SchemaVersion=%d, want %d", loaded.SchemaVersion, config.ProfileSchemaVersionV2)
+	}
+	race, ok := loaded.Layouts[config.LayoutRace]
+	if !ok {
+		t.Fatal("race layout was dropped")
+	}
+	if race.Widgets[0].Position.X != 100 {
+		t.Fatalf("race layout X=%d, want 100", race.Widgets[0].Position.X)
+	}
+	if len(loaded.Variants) != 1 || loaded.Variants[0].TemplateID != "relative-custom" {
+		t.Fatalf("variant lost: %+v", loaded.Variants)
+	}
+	if loaded.Variants[0].Columns[0].ID != "bestLap" || !loaded.Variants[0].Columns[0].Enabled {
+		t.Fatalf("variant column lost: %+v", loaded.Variants[0].Columns)
+	}
+	if loaded.Source == nil || loaded.Source.ProfileID != "vantare-racing-basic" {
+		t.Fatalf("source lost: %+v", loaded.Source)
+	}
+}
+
+func TestHubServiceSaveProfileAsOwnCopyRejectsInvalidInput(t *testing.T) {
+	dir := t.TempDir()
+	profileSvc := app.NewProfileService(filepath.Join(dir, "dummy.json"), nil, nil)
+	hubSvc := app.NewHubService(dir, profileSvc, nil, nil)
+
+	if err := hubSvc.SaveProfileAsOwnCopy(nil); err == nil {
+		t.Fatal("expected error for nil profile")
+	}
+	if err := hubSvc.SaveProfileAsOwnCopy(&config.ProfileConfig{ID: "", Name: "No ID"}); err == nil {
+		t.Fatal("expected error for empty id")
+	}
+	if err := hubSvc.SaveProfileAsOwnCopy(&config.ProfileConfig{ID: "../traversal", Name: "Bad ID"}); err == nil {
+		t.Fatal("expected error for invalid id")
+	}
+}
+
+func TestHubServiceSaveProfileAsOwnCopyRejectsDegenerateCustomID(t *testing.T) {
+	dir := t.TempDir()
+	profileSvc := app.NewProfileService(filepath.Join(dir, "dummy.json"), nil, nil)
+	hubSvc := app.NewHubService(dir, profileSvc, nil, nil)
+
+	if err := hubSvc.SaveProfileAsOwnCopy(&config.ProfileConfig{
+		ID:          "custom-",
+		Name:        "Degenerate",
+		DisplayMode: config.ModeRacing,
+		Widgets:     []config.WidgetConfig{{ID: "delta", Type: "delta", Enabled: true, Position: config.Rect{X: 1, Y: 2, W: 3, H: 4}}},
+	}); err == nil {
+		t.Fatal("expected error for degenerate custom- id")
+	}
+}
+
+func TestHubServiceSaveProfileAsOwnCopyReturnsErrorWhenStatFails(t *testing.T) {
+	dir := t.TempDir()
+	// Use a regular file as profilesDir so os.Stat on any subpath fails with
+	// a non-ErrNotExist error (e.g., "not a directory"), ensuring the function
+	// returns instead of looping forever.
+	profilesFile := filepath.Join(dir, "notadir")
+	if err := os.WriteFile(profilesFile, []byte{}, 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	profileSvc := app.NewProfileService(filepath.Join(dir, "dummy.json"), nil, nil)
+	hubSvc := app.NewHubService(profilesFile, profileSvc, nil, nil)
+
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		err := hubSvc.SaveProfileAsOwnCopy(&config.ProfileConfig{
+			ID:          "custom-test",
+			Name:        "Test",
+			DisplayMode: config.ModeRacing,
+			Widgets:     []config.WidgetConfig{{ID: "delta", Type: "delta", Enabled: true, Position: config.Rect{X: 1, Y: 2, W: 3, H: 4}}},
+		})
+		if err == nil {
+			t.Error("expected error when stat fails")
+		}
+	}()
+
+	select {
+	case <-done:
+	case <-time.After(2 * time.Second):
+		t.Fatal("SaveProfileAsOwnCopy hung on stat error")
+	}
+}
+
+func TestHubServiceSaveProfileAsOwnCopyRequiresProfilesDir(t *testing.T) {
+	hubSvc := app.NewHubService("", nil, nil, nil)
+
+	if err := hubSvc.SaveProfileAsOwnCopy(&config.ProfileConfig{
+		ID:          "custom-test",
+		Name:        "Test",
+		DisplayMode: config.ModeRacing,
+		Widgets:     []config.WidgetConfig{{ID: "delta", Type: "delta", Enabled: true, Position: config.Rect{X: 1, Y: 2, W: 3, H: 4}}},
+	}); err == nil {
+		t.Fatal("expected error when profiles directory is not configured")
+	}
+}
+
+func TestHubServiceCreateProfileWritesSchemaV2(t *testing.T) {
+	dir := t.TempDir()
+	profileSvc := app.NewProfileService(filepath.Join(dir, "dummy.json"), nil, nil)
+	hubSvc := app.NewHubService(dir, profileSvc, nil, nil)
+
+	if err := hubSvc.CreateProfile("Schema Two"); err != nil {
+		t.Fatal(err)
+	}
+
+	loaded, err := config.LoadFile(filepath.Join(dir, "custom-schema-two.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if loaded.SchemaVersion != config.ProfileSchemaVersionV2 {
+		t.Fatalf("SchemaVersion=%d, want %d", loaded.SchemaVersion, config.ProfileSchemaVersionV2)
+	}
+	general, ok := loaded.Layouts[config.LayoutGeneral]
+	if !ok {
+		t.Fatal("general layout missing")
+	}
+	if len(general.Widgets) != len(loaded.Widgets) {
+		t.Fatalf("general widgets=%d, compat widgets=%d", len(general.Widgets), len(loaded.Widgets))
+	}
+	if len(loaded.Variants) != len(loaded.Widgets) {
+		t.Fatalf("variants=%d, widgets=%d", len(loaded.Variants), len(loaded.Widgets))
+	}
+	if loaded.Widgets[0].Position.W == 0 {
+		t.Fatal("created widget lost layout position")
 	}
 }
 
@@ -241,7 +633,6 @@ func TestProfileServiceLoadActiveProfileUpdatesSavePath(t *testing.T) {
 		t.Fatalf("saved to wrong file: X=%d", reloaded.Widgets[0].Position.X)
 	}
 }
-
 
 type fakeOverlayRuntime struct {
 	started int

@@ -2,3 +2,4 @@
   - "apps/*"
   - "packages/*"
   - "shared/*"
+  - "vantare-v2/frontend"

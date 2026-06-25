@@ -131,4 +131,30 @@ describe('SettingsPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Downgrade' }));
     expect(screen.getByText('Confirmar downgrade')).toBeDefined();
   });
+
+  it('displays the active profile ID in the OBS setup URL and falls back to example-racing.json', () => {
+    render(<SettingsPage />);
+
+    // Fallback initially
+    const inputs = screen.getAllByRole('textbox') as HTMLInputElement[];
+    const input = inputs.find((i) => i.readOnly || i.value.includes('/overlay'));
+    expect(input).toBeDefined();
+    expect(input!.value).toContain('profile=example-racing.json');
+    expect(input!.value).not.toContain('profile=v0.1.');
+    expect(input!.value).not.toContain('profile=default-racing');
+
+    // Simulate active profile load
+    dispatch('profile:loaded', {
+      profile: {
+        id: 'my-custom-profile',
+      },
+    });
+
+    const inputsAfter = screen.getAllByRole('textbox') as HTMLInputElement[];
+    const inputAfter = inputsAfter.find((i) => i.readOnly || i.value.includes('/overlay'));
+    expect(inputAfter).toBeDefined();
+    expect(inputAfter!.value).toContain('my-custom-profile');
+    expect(inputAfter!.value).not.toContain('profile=example-racing.json');
+    expect(inputAfter!.value).not.toContain('profile=default-racing');
+  });
 });

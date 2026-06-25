@@ -90,6 +90,35 @@ describe("CompositeApp", () => {
     expect(screen.getByText("Isaac Albala")).toBeTruthy();
   });
 
+  it("renders engineer-notifications widget without crash or warning", () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    render(<CompositeApp />);
+    dispatch("profile:loaded", {
+      profile: {
+        id: "engineer-test",
+        displayMode: "racing",
+        widgets: [
+          {
+            id: "engineer-notif-1",
+            type: "engineer-notifications",
+            enabled: true,
+            updateHz: 5,
+            position: { x: 100, y: 100, w: 300, h: 80 },
+          },
+        ],
+      },
+      layoutOrigin: { x: 0, y: 0 },
+      windowMode: "racing",
+    });
+
+    tick(100);
+    // Should NOT log warning for unknown widget type
+    expect(warnSpy).not.toHaveBeenCalled();
+    // In runtime without active notification, nothing visible is expected (renders null)
+    // The widget is mounted and listening via transport="wails" (__engineerTransport)
+    warnSpy.mockRestore();
+  });
+
   it("renders only enabled widgets", () => {
     render(<CompositeApp />);
     dispatch("profile:loaded", {

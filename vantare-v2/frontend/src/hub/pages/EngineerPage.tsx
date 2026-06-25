@@ -1,0 +1,250 @@
+import { useEffect, useState } from 'react';
+import { Events } from '@wailsio/runtime';
+import type { EngineerStatus, EngineerNotification } from '../../engineer/engineer-types';
+
+const INITIAL_STATUS: EngineerStatus = {
+  enabled: true,
+  connected: true,
+  source: 'simulator',
+  spotterEnabled: true,
+  sensitivity: 'normal',
+  ttsCacheCount: 0,
+  recentMessages: [],
+};
+
+export function EngineerPage() {
+  const [status, setStatus] = useState<EngineerStatus>(INITIAL_STATUS);
+  const [notifications, setNotifications] = useState<EngineerNotification[]>([]);
+
+  useEffect(() => {
+    // Request initial status
+    Events.Emit('engineer:status:get');
+
+    // Listen to status updates
+    const unsubStatus = Events.On('engineer:status', (event: { data: EngineerStatus }) => {
+      setStatus(event.data);
+      if (event.data.recentMessages) {
+        setNotifications(event.data.recentMessages);
+      }
+    });
+
+    // Listen to real-time notifications
+    const unsubNotification = Events.On('engineer:notification', (event: { data: EngineerNotification }) => {
+      setNotifications((prev) => {
+        // Keep the latest 50 notifications, same as backend
+        const next = [...prev, event.data];
+        if (next.length > 50) {
+          return next.slice(next.length - 50);
+        }
+        return next;
+      });
+    });
+
+    return () => {
+      unsubStatus?.();
+      unsubNotification?.();
+    };
+  }, []);
+
+  const handleToggleEnabled = () => {
+    Events.Emit('engineer:enabled:set', !status.enabled);
+  };
+
+  const handleToggleSpotter = () => {
+    Events.Emit('engineer:spotter:set', !status.spotterEnabled);
+  };
+
+  const handleSourceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    Events.Emit('engineer:source:set', e.target.value);
+  };
+
+  const handleSensitivityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    Events.Emit('engineer:sensitivity:set', e.target.value);
+  };
+
+  // Helper to format timestamp
+  const formatTime = (timestamp: number) => {
+    try {
+      return new Date(timestamp).toLocaleTimeString();
+    } catch {
+      return '';
+    }
+  };
+
+  return (
+    <div className="max-w-[1920px] mx-auto px-6 py-8 flex flex-col gap-6 h-full">
+      <div className="flex flex-col gap-1">
+        <h1 className="font-display text-2xl font-bold text-white tracking-wide">
+          Vantare Ingeniero
+        </h1>
+        <p className="text-sm text-vantare-textMuted">
+          Configuración del ingeniero de pista y spotter en tiempo real.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        {/* Left Column: Configuration Panels */}
+        <div className="lg:col-span-1 flex flex-col gap-6">
+          <div className="glass-panel rounded-xl p-6 flex flex-col gap-6 border border-white/5">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-white">Estado de Conexión</span>
+              <span
+                data-testid="connection-badge"
+                className={`text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 ${
+                  status.connected
+                    ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                    : 'bg-red-500/10 text-red-400 border border-red-500/20'
+                }`}
+              >
+                <span className={`w-1.5 h-1.5 rounded-full ${status.connected ? 'bg-emerald-400' : 'bg-red-400'}`} />
+                {status.connected ? 'CONECTADO' : 'DESCONECTADO'}
+              </span>
+            </div>
+
+            <div className="h-px bg-white/5" />
+
+            {/* Toggles */}
+            <div className="flex flex-col gap-4">
+              <label className="flex items-center justify-between cursor-pointer group">
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-sm font-bold text-white group-hover:text-vantare-red-400 transition-colors">
+                    Ingeniero de pista activo
+                  </span>
+                  <span className="text-xs text-vantare-textMuted">
+                    Habilita o deshabilita la suite del ingeniero.
+                  </span>
+                </div>
+                <input
+                  type="checkbox"
+                  data-testid="toggle-enabled"
+                  checked={status.enabled}
+                  onChange={handleToggleEnabled}
+                  className="w-4 h-4 rounded border-white/10 bg-[#0a0a0a] text-vantare-red-500 focus:ring-vantare-red-500"
+                />
+              </label>
+
+              <label className="flex items-center justify-between cursor-pointer group">
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-sm font-bold text-white group-hover:text-vantare-red-400 transition-colors">
+                    Spotter activo
+                  </span>
+                  <span className="text-xs text-vantare-textMuted">
+                    Anuncios geométricos de coches alrededor.
+                  </span>
+                </div>
+                <input
+                  type="checkbox"
+                  data-testid="toggle-spotter"
+                  checked={status.spotterEnabled}
+                  onChange={handleToggleSpotter}
+                  className="w-4 h-4 rounded border-white/10 bg-[#0a0a0a] text-vantare-red-500 focus:ring-vantare-red-500"
+                />
+              </label>
+            </div>
+
+            <div className="h-px bg-white/5" />
+
+            {/* Selects */}
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-bold uppercase tracking-wider text-vantare-textMuted">
+                  Fuente de Telemetría
+                </label>
+                <select
+                  data-testid="select-source"
+                  value={status.source}
+                  onChange={handleSourceChange}
+                  className="w-full bg-[#0a0a0a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-vantare-red-500 transition-colors"
+                >
+                  <option value="simulator">Simulador (Detrás/Delante/Paralelo)</option>
+                  <option value="replay">Replay (Fixture JSONL)</option>
+                </select>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-bold uppercase tracking-wider text-vantare-textMuted">
+                  Sensibilidad del Spotter
+                </label>
+                <select
+                  data-testid="select-sensitivity"
+                  value={status.sensitivity}
+                  onChange={handleSensitivityChange}
+                  className="w-full bg-[#0a0a0a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-vantare-red-500 transition-colors"
+                >
+                  <option value="conservative">Conservadora (Mayor margen lateral)</option>
+                  <option value="normal">Normal (Estándar)</option>
+                  <option value="aggressive">Agresiva (Margen lateral estrecho)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: Live Notifications Timeline */}
+        <div className="lg:col-span-2 flex flex-col gap-4 h-[600px]">
+          <div className="glass-panel rounded-xl p-6 flex flex-col overflow-hidden h-full border border-white/5">
+            <div className="flex items-center justify-between mb-4 flex-shrink-0">
+              <h2 className="font-display text-sm font-bold uppercase tracking-wider text-white">
+                Mensajes Recientes
+              </h2>
+              <span className="font-mono text-xs text-vantare-textMuted">
+                {notifications.length} mensajes
+              </span>
+            </div>
+
+            <div className="flex-1 overflow-y-auto pr-1 flex flex-col gap-3">
+              {notifications.slice().reverse().map((msg) => (
+                <div
+                  key={msg.id}
+                  data-testid={`notification-${msg.id}`}
+                  className="bg-black/25 border border-white/5 rounded-lg p-3 flex items-start gap-4 hover:bg-white/5 transition-colors"
+                >
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-vantare-red-950/40 border border-vantare-red-500/20 flex items-center justify-center text-vantare-red-400">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M8 9h8m-8 4h6m2 5a2 2 0 11-4 0h-5V7a2 2 0 012-2h10a2 2 0 012 2v7a2 2 0 01-2 2h-3l-4 4z"
+                      />
+                    </svg>
+                  </div>
+                  <div className="flex-1 flex flex-col gap-1">
+                    <div className="flex items-center justify-between w-full">
+                      <span className="text-xs font-bold uppercase tracking-wider text-vantare-textMuted">
+                        Spotter
+                      </span>
+                      <span className="font-mono text-[10px] text-vantare-textDim">
+                        {formatTime(msg.createdAt)}
+                      </span>
+                    </div>
+                    <span className="text-sm font-medium text-white">{msg.text}</span>
+                    <span className="font-mono text-[9px] text-vantare-textDim mt-1">
+                      clave: {msg.textKey} · fuente: {msg.source}
+                    </span>
+                  </div>
+                </div>
+              ))}
+
+              {notifications.length === 0 && (
+                <div className="flex flex-col items-center justify-center h-[300px] text-center gap-2">
+                  <svg className="w-12 h-12 text-white/10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="1.5"
+                      d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                    />
+                  </svg>
+                  <span className="text-xs text-vantare-textDim font-mono">
+                    Esperando mensajes de telemetría...
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
