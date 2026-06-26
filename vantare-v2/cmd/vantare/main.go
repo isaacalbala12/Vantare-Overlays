@@ -249,15 +249,49 @@ func main() {
 
 	// License service for online entitlement validation (Release 02 Mini-Plan B).
 	licenseCachePath := filepath.Join(cfgDir, "license-cache.json")
+	supabaseURL := os.Getenv("VANTARE_SUPABASE_URL")
+	if supabaseURL == "" {
+		supabaseURL = os.Getenv("SUPABASE_URL")
+	}
+	supabaseAnonKey := os.Getenv("VANTARE_SUPABASE_ANON_KEY")
+	if supabaseAnonKey == "" {
+		supabaseAnonKey = os.Getenv("SUPABASE_ANON_KEY")
+	}
 	licenseSvc := license.NewService(license.Config{
-		GracePeriod: 24 * time.Hour,
-		CachePath:   licenseCachePath,
-	}, license.MachineFingerprint)
+		SupabaseURL:     supabaseURL,
+		SupabaseAnonKey: supabaseAnonKey,
+		GracePeriod:     24 * time.Hour,
+		CachePath:       licenseCachePath,
+	}, emitter, license.MachineFingerprint)
 	licenseSvc.WithCache(license.NewLicenseCache(licenseCachePath))
+	if supabaseURL != "" && supabaseAnonKey != "" {
+		licenseSvc.WithClient(license.NewStdlibSupabaseClient(supabaseURL, supabaseAnonKey))
+	}
 	if err := licenseSvc.LoadCache(); err != nil {
 		log.Printf("warning: could not load license cache: %v", err)
 	}
 	wailsApp.RegisterService(application.NewService(licenseSvc))
+
+	// Forward UI license validation requests to the Go service. The frontend
+	// fires Events.Emit("license:validate", { sessionToken }) and we answer
+	// by running Validate and re-emitting license:changed.
+	wailsApp.Event.On("license:validate", func(event *application.CustomEvent) {
+		var payload struct {
+			SessionToken string `json:"sessionToken"`
+		}
+		if event.Data != nil {
+			if raw, err := json.Marshal(event.Data); err == nil {
+				_ = json.Unmarshal(raw, &payload)
+			}
+		}
+		res, verr := licenseSvc.Validate(context.Background(), payload.SessionToken)
+		if verr != nil {
+			log.Printf("license:validate error: %v", verr)
+			emitter.Emit("license:error", map[string]any{"message": verr.Error()})
+			return
+		}
+		licenseSvc.EmitChanged(res)
+	})
 
 	// Preset service for widget presets (WidgetStudio only)
 	presetSvc := app.NewPresetService(cfgDir, emitter)

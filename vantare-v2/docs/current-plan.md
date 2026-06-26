@@ -194,7 +194,7 @@ Controles live restaurados dentro de Overlays Studio:
 
 ## Objetivo actual
 
-Release 02 Mini-Plan B completado: Go LicenseService con cache local y Supabase Edge Function webhook estructurado. Pendiente Mini-Plan C (UI auth/license) y el mapeo completo de entitlements en el webhook.
+Release 02 Mini-Plan C completado: UI auth/license con login, paywall, banners, account settings, route gating y onboarding integration. Pendiente follow-up del webhook entitlement mapping y gate manual.
 
 Checkpoint funcional `v0.3.9.1` cerrado:
 

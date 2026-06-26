@@ -8,6 +8,20 @@ import (
 	"time"
 )
 
+// EventEmitter is the minimal contract required by Service to notify the UI
+// after license state changes. Wails' application.App satisfies it.
+type EventEmitter interface {
+	Emit(name string, data any)
+}
+
+// LicenseChangedEvent is the Wails event name used to broadcast license
+// state changes to the frontend.
+const LicenseChangedEvent = "license:changed"
+
+// LicenseValidateEvent is the Wails event name used by the frontend to
+// request a fresh license validation cycle.
+const LicenseValidateEvent = "license:validate"
+
 // Service is the main license validation orchestrator. It calls Supabase on
 // the happy path, falls back to the local cache during the configured grace
 // window when Supabase is unreachable, and returns typed states to callers.
@@ -16,19 +30,30 @@ type Service struct {
 	client      supabaseClient
 	cache       *LicenseCache
 	fingerprint func() (string, error)
+	emitter     EventEmitter
 }
 
-// NewService constructs a Service with the given configuration and a
-// fingerprint function. The fingerprint function is injected so callers can
-// override it in tests; in production, pass MachineFingerprint.
-func NewService(cfg Config, fingerprint func() (string, error)) *Service {
+// NewService constructs a Service with the given configuration, an optional
+// event emitter and a fingerprint function. The fingerprint function is
+// injected so callers can override it in tests; in production, pass
+// MachineFingerprint. The emitter may be nil, in which case license:changed
+// events are skipped silently (useful for tests and headless contexts).
+func NewService(cfg Config, emitter EventEmitter, fingerprint func() (string, error)) *Service {
 	if fingerprint == nil {
 		fingerprint = MachineFingerprint
 	}
 	return &Service{
 		cfg:         cfg,
 		fingerprint: fingerprint,
+		emitter:     emitter,
 	}
+}
+
+// WithEmitter sets or replaces the event emitter after construction. Useful
+// when wiring up dependencies in main.go after the service is built.
+func (s *Service) WithEmitter(e EventEmitter) *Service {
+	s.emitter = e
+	return s
 }
 
 // WithClient overrides the Supabase client. Used by tests to inject mocks.
@@ -44,11 +69,39 @@ func (s *Service) WithCache(c *LicenseCache) *Service {
 	return s
 }
 
+// EmitChanged broadcasts the supplied Result as a license:changed event. It is
+// safe to call with a nil emitter (the call is a no-op) and with a nil
+// result (no payload is sent). Exposed publicly so main.go can re-emit after
+// operations like ResetDevice.
+func (s *Service) EmitChanged(res *Result) {
+	if s == nil || s.emitter == nil || res == nil {
+		return
+	}
+	s.emitter.Emit(LicenseChangedEvent, res.ToWire())
+}
+
+func (s *Service) emitChanged(res *Result) {
+	s.EmitChanged(res)
+}
+
 // Validate is the primary entry point. It returns a typed Result describing
 // the current license state. network errors never bubble up as Go errors; they
 // are reflected in Result.Error and folded into StateGrace/StateExpired so
-// the UI can render accordingly.
+// the UI can render accordingly. After a successful validation, the result is
+// broadcast on the license:changed Wails event so the UI updates
+// reactively without an extra round-trip.
 func (s *Service) Validate(ctx context.Context, sessionToken string) (*Result, error) {
+	res, err := s.validate(ctx, sessionToken)
+	if err == nil && res != nil {
+		s.emitChanged(res)
+	}
+	return res, err
+}
+
+// validate contains the validation logic without the event side-effect. Split
+// out so ResetDevice and other callers can reuse it without re-entering the
+// emit cycle.
+func (s *Service) validate(ctx context.Context, sessionToken string) (*Result, error) {
 	if sessionToken == "" {
 		return &Result{State: StateAnonymous, Error: ErrMissingSession}, nil
 	}
@@ -77,19 +130,29 @@ func (s *Service) Validate(ctx context.Context, sessionToken string) (*Result, e
 
 func (s *Service) fromSupabase(info *AccountInfo, fingerprint string) *Result {
 	state := StateAuthenticatedNoEntitlement
-	if len(info.Entitlements) > 0 {
-		state = StateActive
+	entitlements := []Entitlement{}
+	userID := ""
+	email := ""
+	var expiresAt *time.Time
+	if info != nil {
+		if len(info.Entitlements) > 0 {
+			state = StateActive
+			entitlements = info.Entitlements
+		}
+		userID = info.UserID
+		email = info.Email
+		expiresAt = info.ExpiresAt
 	}
 	deviceOK := true
-	if info.ActiveDevice != "" && info.ActiveDevice != fingerprint {
+	if info != nil && info.ActiveDevice != "" && info.ActiveDevice != fingerprint {
 		state = StateDeviceLimit
 		deviceOK = false
 	}
 	res := &Result{
 		State:         state,
-		Entitlements:  info.Entitlements,
-		UserID:        info.UserID,
-		Email:         info.Email,
+		Entitlements:  entitlements,
+		UserID:        userID,
+		Email:         email,
 		DeviceOK:      deviceOK,
 		LastValidated: time.Now().UTC(),
 	}
@@ -97,7 +160,7 @@ func (s *Service) fromSupabase(info *AccountInfo, fingerprint string) *Result {
 	// device-limit state must not be cached because the user is expected to
 	// resolve it via ResetDevice.
 	if state == StateActive && s.cache != nil {
-		if err := s.cache.Write(state, info.Entitlements, info.ExpiresAt); err != nil {
+		if err := s.cache.Write(state, entitlements, expiresAt); err != nil {
 			// Cache failure must not break validation. Surface as a soft error.
 			res.Error = fmt.Errorf("writing license cache: %w", err)
 		}
@@ -184,7 +247,9 @@ func (s *Service) HasEntitlement(ctx context.Context, sessionToken string, e Ent
 }
 
 // ResetDevice calls the Supabase RPC to clear the active device so this
-// machine can register itself as the active one on the next Validate.
+// machine can register itself as the active one on the next Validate. After
+// a successful reset, the service re-validates and broadcasts the new state
+// on license:changed so the UI unlocks immediately.
 func (s *Service) ResetDevice(ctx context.Context, sessionToken string) error {
 	if sessionToken == "" {
 		return ErrMissingSession
@@ -198,7 +263,17 @@ func (s *Service) ResetDevice(ctx context.Context, sessionToken string) error {
 	}
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
-	return s.client.ResetDevice(ctx, sessionToken, fp)
+	if err := s.client.ResetDevice(ctx, sessionToken, fp); err != nil {
+		return err
+	}
+	// Best-effort revalidation so the UI flips out of device-limit. We do not
+	// surface revalidation errors here — ResetDevice already succeeded and
+	// the next frontend refresh will produce the canonical result.
+	res, verr := s.validate(ctx, sessionToken)
+	if verr == nil && res != nil {
+		s.emitChanged(res)
+	}
+	return nil
 }
 
 // LoadCache verifies the cache file is readable. Missing cache is not an

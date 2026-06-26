@@ -26,10 +26,10 @@ type stdlibSupabaseClient struct {
 	httpClient *http.Client
 }
 
-// newStdlibSupabaseClient constructs a stdlib Supabase client. The caller is
+// NewStdlibSupabaseClient constructs a stdlib Supabase client. The caller is
 // responsible for closing any resources on shutdown; the http.Client has no
 // idle connections in tests (httptest.NewServer) and uses a 5s timeout.
-func newStdlibSupabaseClient(baseURL, anonKey string) *stdlibSupabaseClient {
+func NewStdlibSupabaseClient(baseURL, anonKey string) *stdlibSupabaseClient {
 	return &stdlibSupabaseClient{
 		baseURL:    baseURL,
 		anonKey:    anonKey,

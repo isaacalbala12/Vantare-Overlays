@@ -57,3 +57,34 @@ type Config struct {
 	GracePeriod     time.Duration
 	CachePath       string
 }
+
+// LicenseWire is the JSON shape sent to the UI via Wails events. Field names
+// mirror the TypeScript LicenseResult type in frontend/src/lib/license.tsx.
+type LicenseWire struct {
+	State         string        `json:"state"`
+	Entitlements  []Entitlement `json:"entitlements"`
+	UserID        string        `json:"userId"`
+	Email         string        `json:"email"`
+	DeviceOK      bool          `json:"deviceOK"`
+	GraceEndsAt   *time.Time    `json:"graceEndsAt,omitempty"`
+	LastValidated time.Time     `json:"lastValidated"`
+	Error         string        `json:"error,omitempty"`
+}
+
+// ToWire converts a Result into the UI-facing JSON wire format.
+func (r *Result) ToWire() LicenseWire {
+	var errMsg string
+	if r.Error != nil {
+		errMsg = r.Error.Error()
+	}
+	return LicenseWire{
+		State:         string(r.State),
+		Entitlements:  r.Entitlements,
+		UserID:        r.UserID,
+		Email:         r.Email,
+		DeviceOK:      r.DeviceOK,
+		GraceEndsAt:   r.GraceEndsAt,
+		LastValidated: r.LastValidated,
+		Error:         errMsg,
+	}
+}

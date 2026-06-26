@@ -35,7 +35,7 @@ func TestSupabaseClientFetchAccount(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := newStdlibSupabaseClient(server.URL, "anon-key")
+	client := NewStdlibSupabaseClient(server.URL, "anon-key")
 	info, err := client.FetchAccount(context.Background(), "token-123", "fp1")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -58,7 +58,7 @@ func TestSupabaseClientFetchAccountError(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := newStdlibSupabaseClient(server.URL, "anon-key")
+	client := NewStdlibSupabaseClient(server.URL, "anon-key")
 	_, err := client.FetchAccount(context.Background(), "token", "fp")
 	if err == nil {
 		t.Fatal("expected error on 500 status")
@@ -74,7 +74,7 @@ func TestSupabaseClientResetDevice(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := newStdlibSupabaseClient(server.URL, "anon-key")
+	client := NewStdlibSupabaseClient(server.URL, "anon-key")
 	if err := client.ResetDevice(context.Background(), "token", "fp"); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}

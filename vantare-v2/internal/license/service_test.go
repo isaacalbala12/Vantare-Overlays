@@ -96,7 +96,7 @@ func TestValidateStates(t *testing.T) {
 					t.Fatalf("setup cache: %v", err)
 				}
 			}
-			svc := NewService(Config{GracePeriod: 24 * time.Hour}, func() (string, error) { return "fp", nil })
+			svc := NewService(Config{GracePeriod: 24 * time.Hour}, nil, func() (string, error) { return "fp", nil })
 			svc.WithCache(cache)
 			svc.WithClient(&mockSupabaseClient{info: tc.sbInfo, err: tc.sbErr})
 
@@ -112,7 +112,7 @@ func TestValidateStates(t *testing.T) {
 }
 
 func TestValidateMissingSession(t *testing.T) {
-	svc := NewService(Config{}, func() (string, error) { return "fp", nil })
+	svc := NewService(Config{}, nil, func() (string, error) { return "fp", nil })
 	res, err := svc.Validate(context.Background(), "")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -126,7 +126,7 @@ func TestValidateMissingSession(t *testing.T) {
 }
 
 func TestValidateFingerprintError(t *testing.T) {
-	svc := NewService(Config{}, func() (string, error) { return "", errors.New("nope") })
+	svc := NewService(Config{}, nil, func() (string, error) { return "", errors.New("nope") })
 	_, err := svc.Validate(context.Background(), "token")
 	if err == nil {
 		t.Fatal("expected error from fingerprint failure")
@@ -141,7 +141,7 @@ func TestValidateGraceFromExpiredCache(t *testing.T) {
 	if err := cache.Write(StateActive, []Entitlement{EntitlementOverlays}, nil); err != nil {
 		t.Fatalf("write cache: %v", err)
 	}
-	svc := NewService(Config{GracePeriod: 24 * time.Hour}, func() (string, error) { return "fp", nil })
+	svc := NewService(Config{GracePeriod: 24 * time.Hour}, nil, func() (string, error) { return "fp", nil })
 	svc.WithCache(cache)
 	svc.WithClient(&mockSupabaseClient{err: errors.New("network down")})
 
@@ -171,7 +171,7 @@ func TestValidateExpiredAfterGrace(t *testing.T) {
 		t.Fatalf("seed cache: %v", err)
 	}
 
-	svc := NewService(Config{GracePeriod: 24 * time.Hour}, func() (string, error) { return "fp", nil })
+	svc := NewService(Config{GracePeriod: 24 * time.Hour}, nil, func() (string, error) { return "fp", nil })
 	svc.WithCache(cache)
 	svc.WithClient(&mockSupabaseClient{err: errors.New("network down")})
 
@@ -186,7 +186,7 @@ func TestValidateExpiredAfterGrace(t *testing.T) {
 
 func TestHasEntitlementActive(t *testing.T) {
 	future := time.Now().Add(time.Hour).UTC()
-	svc := NewService(Config{}, func() (string, error) { return "fp", nil })
+	svc := NewService(Config{}, nil, func() (string, error) { return "fp", nil })
 	svc.WithClient(&mockSupabaseClient{info: &AccountInfo{
 		UserID:       "u1",
 		Entitlements: []Entitlement{EntitlementBundle},
@@ -205,7 +205,7 @@ func TestHasEntitlementActive(t *testing.T) {
 
 func TestHasEntitlementMissing(t *testing.T) {
 	future := time.Now().Add(time.Hour).UTC()
-	svc := NewService(Config{}, func() (string, error) { return "fp", nil })
+	svc := NewService(Config{}, nil, func() (string, error) { return "fp", nil })
 	svc.WithClient(&mockSupabaseClient{info: &AccountInfo{
 		UserID:       "u1",
 		Entitlements: []Entitlement{EntitlementOverlays},
@@ -223,7 +223,7 @@ func TestHasEntitlementMissing(t *testing.T) {
 }
 
 func TestResetDeviceRequiresSession(t *testing.T) {
-	svc := NewService(Config{}, func() (string, error) { return "fp", nil })
+	svc := NewService(Config{}, nil, func() (string, error) { return "fp", nil })
 	if err := svc.ResetDevice(context.Background(), ""); !errors.Is(err, ErrMissingSession) {
 		t.Fatalf("expected ErrMissingSession, got %v", err)
 	}
@@ -231,7 +231,7 @@ func TestResetDeviceRequiresSession(t *testing.T) {
 
 func TestResetDeviceCallsClient(t *testing.T) {
 	mock := &mockSupabaseClient{}
-	svc := NewService(Config{}, func() (string, error) { return "fp", nil })
+	svc := NewService(Config{}, nil, func() (string, error) { return "fp", nil })
 	svc.WithClient(mock)
 	if err := svc.ResetDevice(context.Background(), "token"); err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -242,7 +242,7 @@ func TestResetDeviceCallsClient(t *testing.T) {
 }
 
 func TestSaveCacheWithoutCache(t *testing.T) {
-	svc := NewService(Config{}, func() (string, error) { return "fp", nil })
+	svc := NewService(Config{}, nil, func() (string, error) { return "fp", nil })
 	err := svc.SaveCache(StateActive, nil, nil)
 	if !errors.Is(err, ErrNoCache) {
 		t.Fatalf("expected ErrNoCache, got %v", err)
