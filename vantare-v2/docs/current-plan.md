@@ -194,6 +194,8 @@ Controles live restaurados dentro de Overlays Studio:
 
 ## Objetivo actual
 
+Release 02 Mini-Plan A: cerrar la arquitectura de auth, Supabase schema y Stripe integration plan, y obtener review GLM antes de escribir codigo de producción.
+
 Checkpoint funcional `v0.3.9.1` cerrado:
 
 - `WidgetStudio` visual rework validado manualmente.
