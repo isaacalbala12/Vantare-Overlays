@@ -272,4 +272,56 @@ describe("useOverlayStudioState", () => {
     expect(Events.Emit).toHaveBeenCalledWith("layout:save", expect.anything());
     vi.useRealTimers();
   });
+
+  it("addWidget añade un widget, lo selecciona y deja el perfil dirty", () => {
+    const { result } = renderHook(() => useOverlayStudioState());
+
+    act(() => {
+      listeners.get("profile:loaded")?.({ data: { profile } });
+    });
+
+    act(() => {
+      result.current.addWidget("pedals");
+    });
+
+    expect(result.current.profile?.widgets.length).toBe(3);
+    const added = result.current.profile?.widgets[2];
+    expect(added?.type).toBe("pedals");
+    expect(added?.id).toBe("pedals");
+    expect(result.current.selectedWidgetId).toBe("pedals");
+    expect(result.current.dirty).toBe(true);
+  });
+
+  it("sincroniza layouts.general.widgets al añadir un widget si el perfil lo tiene", () => {
+    const v2Profile: ProfileConfig = {
+      id: "v2",
+      displayMode: "racing",
+      monitorIndex: 0,
+      widgets: [
+        { id: "delta", type: "delta", enabled: true, position: { x: 0, y: 0, w: 100, h: 40 } },
+      ],
+      layouts: {
+        general: {
+          type: "general",
+          widgets: [
+            { id: "delta", type: "delta", enabled: true, position: { x: 0, y: 0, w: 100, h: 40 } },
+          ],
+        },
+      },
+    };
+
+    const { result } = renderHook(() => useOverlayStudioState());
+
+    act(() => {
+      listeners.get("profile:loaded")?.({ data: { profile: v2Profile } });
+    });
+
+    act(() => {
+      result.current.addWidget("pedals");
+    });
+
+    expect(result.current.profile?.widgets.length).toBe(2);
+    expect(result.current.profile?.layouts?.general?.widgets.length).toBe(2);
+    expect(result.current.profile?.layouts?.general?.widgets[1].type).toBe("pedals");
+  });
 });

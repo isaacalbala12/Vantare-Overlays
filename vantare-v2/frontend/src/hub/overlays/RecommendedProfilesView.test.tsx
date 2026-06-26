@@ -18,7 +18,7 @@ describe("RecommendedProfilesView", () => {
     );
 
     expect(screen.getByRole("heading", { name: "Recomendados por Vantare" })).toBeTruthy();
-    expect(screen.getByText("Racing Básico")).toBeTruthy();
+    expect(screen.getByText("Clean Overlay")).toBeTruthy();
     expect(screen.getAllByTestId("profile-preview").length).toBe(RECOMMENDED_PROFILES.length);
   });
 
@@ -34,7 +34,7 @@ describe("RecommendedProfilesView", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /Guardar Racing Básico como perfil propio/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Guardar Clean Overlay como perfil propio/i }));
     fireEvent.click(screen.getByRole("button", { name: /Volver a Overlays Studio/i }));
 
     expect(onSaveRecommended).toHaveBeenCalledWith(RECOMMENDED_PROFILES[0]);

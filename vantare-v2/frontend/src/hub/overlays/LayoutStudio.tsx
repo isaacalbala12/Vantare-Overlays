@@ -14,6 +14,7 @@ type LayoutStudioProps = {
   onStopOverlay: () => void;
   onSelectWidget: (id: string) => void;
   onChangeProfile: (profile: ProfileConfig) => void;
+  onAddWidget?: (type: string) => void;
   onSave: () => void;
   onBack: () => void;
 };
@@ -28,6 +29,7 @@ export function LayoutStudio({
   onStopOverlay,
   onSelectWidget,
   onChangeProfile,
+  onAddWidget,
   onSave,
   onBack,
 }: LayoutStudioProps) {
@@ -91,6 +93,7 @@ export function LayoutStudio({
           widgets={profile.widgets}
           selectedWidgetId={selectedWidget?.id ?? null}
           onSelectWidget={onSelectWidget}
+          onAddWidget={onAddWidget}
         />
         <PreviewCanvas
           profile={profile}

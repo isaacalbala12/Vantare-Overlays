@@ -150,4 +150,35 @@ describe("LayoutStudio", () => {
 
     expect(onStopOverlay).toHaveBeenCalledTimes(1);
   });
+
+  it("renderiza el botón Añadir widget y propaga la llamada a onAddWidget", () => {
+    const onAddWidget = vi.fn();
+    render(
+      <LayoutStudio
+        profile={profile}
+        selectedWidgetId="delta"
+        dirty={false}
+        saveState="idle"
+        overlayRunning={false}
+        onStartOverlay={vi.fn()}
+        onStopOverlay={vi.fn()}
+        onSelectWidget={vi.fn()}
+        onChangeProfile={vi.fn()}
+        onAddWidget={onAddWidget}
+        onSave={vi.fn()}
+        onBack={vi.fn()}
+      />
+    );
+
+    // Abrir formulario
+    fireEvent.click(screen.getByTestId("studio-show-add-widget"));
+    expect(screen.getByTestId("studio-add-widget-form")).toBeTruthy();
+
+    // Confirmar pedals
+    const select = screen.getByRole("combobox") as HTMLSelectElement;
+    fireEvent.change(select, { target: { value: "pedals" } });
+    fireEvent.click(screen.getByTestId("studio-confirm-add-widget"));
+
+    expect(onAddWidget).toHaveBeenCalledWith("pedals");
+  });
 });

@@ -11,58 +11,198 @@ export type RecommendedProfile = {
 
 export const RECOMMENDED_PROFILES: RecommendedProfile[] = [
   {
-    id: "vantare-racing-basic",
-    name: "Racing Básico",
-    description: "Delta, relative y standings para conducir con información esencial.",
+    id: "vantare-clean-overlay",
+    name: "Clean Overlay",
+    description: "Overlay limpio con delta, relative y standings para correr sin ruido.",
     tag: "racing",
     readOnly: true,
     profile: {
-      id: "vantare-racing-basic",
-      name: "Racing Básico",
+      schemaVersion: 2,
+      id: "vantare-clean-overlay",
+      name: "Clean Overlay",
       displayMode: "racing",
       monitorIndex: 0,
       widgets: [
-        { id: "delta", type: "delta", enabled: true, updateHz: 30, position: { x: 760, y: 40, w: 400, h: 48 } },
-        { id: "relative", type: "relative", enabled: true, updateHz: 15, position: { x: 40, y: 600, w: 320, h: 280 } },
-        { id: "standings", type: "standings", enabled: true, updateHz: 15, position: { x: 1560, y: 40, w: 340, h: 420 } },
+        {
+          id: "delta",
+          type: "delta",
+          enabled: true,
+          updateHz: 30,
+          position: { x: 760, y: 40, w: 400, h: 48 }
+        },
+        {
+          id: "relative",
+          type: "relative",
+          variantId: "variant-relative-default",
+          enabled: true,
+          updateHz: 15,
+          position: { x: 40, y: 600, w: 320, h: 280 }
+        },
+        {
+          id: "standings",
+          type: "standings",
+          enabled: true,
+          updateHz: 15,
+          position: { x: 1368, y: 176, w: 340, h: 420 }
+        }
       ],
-    },
+      layouts: {
+        general: {
+          type: "general",
+          widgets: [
+            {
+              id: "delta",
+              type: "delta",
+              enabled: true,
+              updateHz: 30,
+              position: { x: 760, y: 40, w: 400, h: 48 }
+            },
+            {
+              id: "relative",
+              type: "relative",
+              variantId: "variant-relative-default",
+              enabled: true,
+              updateHz: 15,
+              position: { x: 40, y: 600, w: 320, h: 280 }
+            },
+            {
+              id: "standings",
+              type: "standings",
+              enabled: true,
+              updateHz: 15,
+              position: { x: 1368, y: 176, w: 340, h: 420 }
+            }
+          ]
+        }
+      },
+      variants: [
+        {
+          id: "variant-relative-default",
+          widgetType: "relative",
+          templateId: "relative-vantare-default",
+          themeId: "vantare-racing",
+          name: "Relative Default",
+          columns: [
+            { id: "position", metricId: "position", enabled: true, width: 24 },
+            { id: "class", metricId: "class", enabled: true, width: 6 },
+            { id: "carNumber", metricId: "carNumber", enabled: true, width: 28 },
+            { id: "driverName", metricId: "driverName", enabled: true, width: 120 },
+            { id: "gap", metricId: "gap", enabled: true, width: 48 },
+            { id: "bestLap", metricId: "bestLap", enabled: true, width: 62 },
+            { id: "lastLap", metricId: "lastLap", enabled: true, width: 62 }
+          ]
+        }
+      ]
+    }
   },
   {
-    id: "vantare-stream-clean",
-    name: "Streamer Clean",
-    description: "Layout OBS limpio con datos legibles y poco ruido visual.",
-    tag: "streaming",
+    id: "vantare-lmu-basic",
+    name: "Le Mans Ultimate - Basic",
+    description: "Perfil básico para Le Mans Ultimate con delta, relative, standings y pedals.",
+    tag: "racing",
     readOnly: true,
     profile: {
-      id: "vantare-stream-clean",
-      name: "Streamer Clean",
-      displayMode: "streaming",
-      monitorIndex: 0,
-      widgets: [
-        { id: "standings", type: "standings", enabled: true, updateHz: 15, position: { x: 1450, y: 70, w: 380, h: 500 } },
-        { id: "relative", type: "relative", enabled: true, updateHz: 15, position: { x: 70, y: 650, w: 360, h: 300 } },
-        { id: "telemetry", type: "telemetry", enabled: true, updateHz: 30, position: { x: 760, y: 900, w: 420, h: 120 } },
-      ],
-    },
-  },
-  {
-    id: "vantare-minimal-telemetry",
-    name: "Minimal Telemetry",
-    description: "Solo telemetría esencial para pantallas pequeñas o PCs modestos.",
-    tag: "minimal",
-    readOnly: true,
-    profile: {
-      id: "vantare-minimal-telemetry",
-      name: "Minimal Telemetry",
+      schemaVersion: 2,
+      id: "vantare-lmu-basic",
+      name: "Le Mans Ultimate - Basic",
       displayMode: "racing",
       monitorIndex: 0,
       widgets: [
-        { id: "telemetry-vertical", type: "telemetry-vertical", enabled: true, updateHz: 30, position: { x: 40, y: 380, w: 140, h: 360 } },
-        { id: "pedals", type: "pedals", enabled: true, updateHz: 30, position: { x: 40, y: 760, w: 90, h: 100 } },
+        {
+          id: "delta",
+          type: "delta",
+          variantId: "variant-delta-default",
+          enabled: true,
+          updateHz: 30,
+          position: { x: 760, y: 40, w: 400, h: 48 }
+        },
+        {
+          id: "relative",
+          type: "relative",
+          variantId: "variant-relative-default",
+          enabled: true,
+          updateHz: 15,
+          position: { x: 32, y: 736, w: 320, h: 280 }
+        },
+        {
+          id: "standings",
+          type: "standings",
+          variantId: "variant-standings-default",
+          enabled: true,
+          updateHz: 15,
+          position: { x: 32, y: 72, w: 328, h: 456 }
+        },
+        {
+          id: "pedals",
+          type: "pedals",
+          enabled: false,
+          updateHz: 30,
+          position: { x: 1016, y: 728, w: 90, h: 100 }
+        }
       ],
-    },
-  },
+      layouts: {
+        general: {
+          type: "general",
+          widgets: [
+            {
+              id: "delta",
+              type: "delta",
+              variantId: "variant-delta-default",
+              enabled: true,
+              updateHz: 30,
+              position: { x: 760, y: 40, w: 400, h: 48 }
+            },
+            {
+              id: "relative",
+              type: "relative",
+              variantId: "variant-relative-default",
+              enabled: true,
+              updateHz: 15,
+              position: { x: 32, y: 736, w: 320, h: 280 }
+            },
+            {
+              id: "standings",
+              type: "standings",
+              variantId: "variant-standings-default",
+              enabled: true,
+              updateHz: 15,
+              position: { x: 32, y: 72, w: 328, h: 456 }
+            },
+            {
+              id: "pedals",
+              type: "pedals",
+              enabled: false,
+              updateHz: 30,
+              position: { x: 1016, y: 728, w: 90, h: 100 }
+            }
+          ]
+        }
+      },
+      variants: [
+        {
+          id: "variant-delta-default",
+          widgetType: "delta",
+          templateId: "delta-vantare-default",
+          themeId: "vantare-racing",
+          name: "delta Default"
+        },
+        {
+          id: "variant-relative-default",
+          widgetType: "relative",
+          templateId: "relative-vantare-default",
+          themeId: "vantare-racing",
+          name: "relative Default"
+        },
+        {
+          id: "variant-standings-default",
+          widgetType: "standings",
+          templateId: "standings-vantare-default",
+          themeId: "vantare-racing",
+          name: "standings Default"
+        }
+      ]
+    }
+  }
 ];
 
 export function cloneRecommendedProfile(profile: RecommendedProfile, name: string): ProfileConfig {

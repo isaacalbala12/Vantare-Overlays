@@ -1,15 +1,19 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef } from "react";
 import type { WidgetConfig } from "../../lib/profile";
+import { WIDGET_TYPES } from "../../lib/widget-factory";
 
 type StudioWidgetListProps = {
   widgets: WidgetConfig[];
   selectedWidgetId: string | null;
   onSelectWidget: (id: string) => void;
+  onAddWidget?: (type: string) => void;
 };
 
-export function StudioWidgetList({ widgets, selectedWidgetId, onSelectWidget }: StudioWidgetListProps) {
+export function StudioWidgetList({ widgets, selectedWidgetId, onSelectWidget, onAddWidget }: StudioWidgetListProps) {
   const [filter, setFilter] = useState<"all" | "active">("all");
   const [query, setQuery] = useState("");
+  const [adding, setAdding] = useState(false);
+  const selectRef = useRef<HTMLSelectElement>(null);
 
   const filteredWidgets = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -131,6 +135,58 @@ export function StudioWidgetList({ widgets, selectedWidgetId, onSelectWidget }: 
           </p>
         )}
       </div>
+
+      {onAddWidget && (
+        <div className="border-t border-white/5 p-2 bg-black/20 flex-none mt-auto">
+          {adding ? (
+            <div className="flex gap-2 items-center" data-testid="studio-add-widget-form">
+              <select
+                ref={selectRef}
+                className="flex-1 bg-black/50 border border-white/10 rounded px-2 py-1 font-mono text-[10px] text-white outline-none focus:border-vantare-borderHover"
+                defaultValue="pedals"
+              >
+                {WIDGET_TYPES.map((t) => (
+                  <option key={t} value={t} className="bg-vantare-bg text-white">
+                    {t}
+                  </option>
+                ))}
+              </select>
+              <button
+                key="confirm"
+                type="button"
+                data-testid="studio-confirm-add-widget"
+                onClick={() => {
+                  if (selectRef.current?.value) {
+                    onAddWidget(selectRef.current.value);
+                    setAdding(false);
+                  }
+                }}
+                className="bg-emerald-500 hover:bg-emerald-600 text-white font-mono text-[10px] font-bold px-2.5 py-1 rounded cursor-pointer transition-colors"
+              >
+                +
+              </button>
+              <button
+                key="cancel"
+                type="button"
+                data-testid="studio-cancel-add-widget"
+                onClick={() => setAdding(false)}
+                className="border border-white/10 hover:bg-white/5 text-vantare-textMuted hover:text-white font-mono text-[10px] px-2.5 py-1 rounded cursor-pointer transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              data-testid="studio-show-add-widget"
+              onClick={() => setAdding(true)}
+              className="w-full border border-dashed border-white/10 hover:border-white/20 rounded py-1.5 text-center font-mono text-[10px] uppercase tracking-widest text-vantare-textDim hover:text-white transition-colors cursor-pointer"
+            >
+              + Añadir widget
+            </button>
+          )}
+        </div>
+      )}
     </aside>
   );
 }

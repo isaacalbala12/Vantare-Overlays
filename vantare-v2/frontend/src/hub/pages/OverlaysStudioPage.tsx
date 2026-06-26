@@ -14,7 +14,7 @@ type StudioMode = "home" | "widgets" | "ownProfiles" | "recommended" | "communit
 
 export function OverlaysStudioPage() {
   const [mode, setMode] = useState<StudioMode>("home");
-  const studio = useOverlayStudioState({ autosave: mode !== "widgets" });
+  const studio = useOverlayStudioState({ autosave: false });
   const [notice, setNotice] = useState<string | null>(null);
   const [layoutTarget, setLayoutTarget] = useState<string | null>(null);
   const [overlayStatus, setOverlayStatus] = useState<OverlayStatus | null>(null);
@@ -134,6 +134,7 @@ export function OverlaysStudioPage() {
         onStopOverlay={stopOverlay}
         onSelectWidget={studio.setSelectedWidgetId}
         onChangeProfile={studio.updateDraft}
+        onAddWidget={studio.addWidget}
         onSave={studio.saveProfile}
         onBack={goHome}
       />

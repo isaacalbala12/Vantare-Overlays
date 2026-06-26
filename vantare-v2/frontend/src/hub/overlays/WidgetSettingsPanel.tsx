@@ -2,6 +2,7 @@ import type { ProfileConfig, WidgetConfig } from "../../lib/profile";
 import { PreviewInspector } from "../preview/PreviewInspector";
 import { RelativeSettingsSection } from "./RelativeSettingsSection";
 import { StandingsSettingsSection } from "./StandingsSettingsSection";
+import { PedalsSettingsSection } from "./PedalsSettingsSection";
 
 type WidgetSettingsPanelProps = {
   profile: ProfileConfig;
@@ -62,6 +63,11 @@ export function WidgetSettingsPanel({ profile, widget, onChangeProfile }: Widget
             onChangeProfile={onChangeProfile}
           />
           <StandingsSettingsSection
+            profile={profile}
+            widget={widget}
+            onChangeProfile={onChangeProfile}
+          />
+          <PedalsSettingsSection
             profile={profile}
             widget={widget}
             onChangeProfile={onChangeProfile}

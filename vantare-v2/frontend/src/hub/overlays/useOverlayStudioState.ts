@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Events } from "@wailsio/runtime";
 import type { ProfileConfig, WidgetConfig } from "../../lib/profile";
 import type { ProfileEntry } from "../state/overlay-workbench";
+import { createDefaultWidget } from "../../lib/widget-factory";
 
 type ProfileLoadedEvent = {
   data: unknown;
@@ -106,6 +107,33 @@ export function useOverlayStudioState(options: UseOverlayStudioStateOptions = {}
     });
   }, [updateDraft]);
 
+  const addWidget = useCallback((type: string) => {
+    const current = profileRef.current;
+    if (!current) return;
+    const newWidget = createDefaultWidget(type, current.widgets);
+
+    const nextWidgets = [...current.widgets, newWidget];
+    const nextProfile: ProfileConfig = {
+      ...current,
+      widgets: nextWidgets,
+    };
+
+    if (current.layouts) {
+      nextProfile.layouts = {
+        ...current.layouts,
+      };
+      if (current.layouts.general) {
+        nextProfile.layouts.general = {
+          ...current.layouts.general,
+          widgets: [...(current.layouts.general.widgets ?? []), newWidget],
+        };
+      }
+    }
+
+    updateDraft(nextProfile);
+    setSelectedWidgetId(newWidget.id);
+  }, [updateDraft]);
+
   const saveProfile = useCallback(() => {
     const current = profileRef.current;
     if (!current || !dirty) return;
@@ -174,6 +202,7 @@ export function useOverlayStudioState(options: UseOverlayStudioStateOptions = {}
     setSelectedWidgetId,
     updateDraft,
     updateWidget,
+    addWidget,
     saveProfile,
     undo,
     redo,

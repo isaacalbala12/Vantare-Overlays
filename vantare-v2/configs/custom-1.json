@@ -1,0 +1,141 @@
+{
+  "schemaVersion": 2,
+  "id": "vantare-lmu-basic",
+  "name": "Le Mans Ultimate - Basic",
+  "displayMode": "edit",
+  "monitorIndex": 0,
+  "widgets": [
+    {
+      "id": "delta",
+      "type": "delta",
+      "variantId": "variant-delta-default",
+      "enabled": true,
+      "updateHz": 30,
+      "position": {
+        "x": 760,
+        "y": 40,
+        "w": 400,
+        "h": 48
+      }
+    },
+    {
+      "id": "relative",
+      "type": "relative",
+      "variantId": "variant-relative-default",
+      "enabled": true,
+      "updateHz": 15,
+      "position": {
+        "x": 32,
+        "y": 736,
+        "w": 320,
+        "h": 280
+      }
+    },
+    {
+      "id": "standings",
+      "type": "standings",
+      "variantId": "variant-standings-default",
+      "enabled": true,
+      "updateHz": 15,
+      "position": {
+        "x": 32,
+        "y": 72,
+        "w": 328,
+        "h": 456
+      }
+    },
+    {
+      "id": "pedals",
+      "type": "pedals",
+      "enabled": false,
+      "updateHz": 30,
+      "position": {
+        "x": 1016,
+        "y": 728,
+        "w": 90,
+        "h": 100
+      }
+    }
+  ],
+  "layouts": {
+    "general": {
+      "type": "general",
+      "widgets": [
+        {
+          "id": "delta",
+          "type": "delta",
+          "variantId": "variant-delta-default",
+          "enabled": true,
+          "updateHz": 30,
+          "position": {
+            "x": 760,
+            "y": 40,
+            "w": 400,
+            "h": 48
+          }
+        },
+        {
+          "id": "relative",
+          "type": "relative",
+          "variantId": "variant-relative-default",
+          "enabled": true,
+          "updateHz": 15,
+          "position": {
+            "x": 32,
+            "y": 736,
+            "w": 320,
+            "h": 280
+          }
+        },
+        {
+          "id": "standings",
+          "type": "standings",
+          "variantId": "variant-standings-default",
+          "enabled": true,
+          "updateHz": 15,
+          "position": {
+            "x": 32,
+            "y": 72,
+            "w": 328,
+            "h": 456
+          }
+        },
+        {
+          "id": "pedals",
+          "type": "pedals",
+          "enabled": false,
+          "updateHz": 30,
+          "position": {
+            "x": 1016,
+            "y": 728,
+            "w": 90,
+            "h": 100
+          }
+        }
+      ]
+    }
+  },
+  "variants": [
+    {
+      "id": "variant-delta-default",
+      "widgetType": "delta",
+      "templateId": "delta-vantare-default",
+      "themeId": "vantare-racing",
+      "name": "delta Default"
+    },
+    {
+      "id": "variant-relative-default",
+      "widgetType": "relative",
+      "templateId": "relative-vantare-default",
+      "themeId": "vantare-racing",
+      "name": "relative Default"
+    },
+    {
+      "id": "variant-standings-default",
+      "widgetType": "standings",
+      "templateId": "standings-vantare-default",
+      "themeId": "vantare-racing",
+      "name": "standings Default"
+    }
+  ]
+}

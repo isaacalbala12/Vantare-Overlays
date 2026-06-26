@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, cleanup } from "@testing-library/react";
+import { fireEvent, render, screen, cleanup, act } from "@testing-library/react";
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { Events } from "@wailsio/runtime";
 import { OverlaysStudioPage } from "./OverlaysStudioPage";
@@ -179,7 +179,7 @@ describe("OverlaysStudioPage", () => {
     fireEvent.click(screen.getByRole("button", { name: /Volver a Overlays Studio/i }));
     fireEvent.click(screen.getByRole("button", { name: /Abrir Recomendados por Vantare/i }));
     expect(await screen.findByRole("heading", { name: "Recomendados por Vantare" })).toBeTruthy();
-    expect(screen.getByText("Racing Básico")).toBeTruthy();
+    expect(screen.getByText("Clean Overlay")).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: /Volver a Overlays Studio/i }));
     fireEvent.click(screen.getByRole("button", { name: /Abrir Comunidad/i }));
@@ -204,7 +204,7 @@ describe("OverlaysStudioPage", () => {
     fireEvent.click(await screen.findByRole("button", { name: /Abrir Recomendados por Vantare/i }));
     expect(await screen.findByRole("heading", { name: "Recomendados por Vantare" })).toBeTruthy();
 
-    fireEvent.click(screen.getByRole("button", { name: /Guardar Racing Básico como perfil propio/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Guardar Clean Overlay como perfil propio/i }));
 
     expect(Events.Emit).toHaveBeenCalledWith("hub:save-own-copy", expect.anything());
     const emittedPayload = (Events.Emit as ReturnType<typeof vi.fn>).mock.calls.find(
@@ -215,8 +215,8 @@ describe("OverlaysStudioPage", () => {
     expect(emittedPayload?.profile.id).toMatch(/^custom-/);
     expect(emittedPayload?.profile.source).toEqual({
       kind: "recommended",
-      profileId: "vantare-racing-basic",
-      name: "Racing Básico",
+      profileId: "vantare-clean-overlay",
+      name: "Clean Overlay",
     });
 
     window.prompt = originalPrompt;
@@ -317,5 +317,70 @@ describe("OverlaysStudioPage", () => {
     fireEvent.click(stopBtn);
 
     expect(Events.Emit).toHaveBeenCalledWith("overlay:stop");
+  });
+
+  it("no autosavea en modo layout tras modificar/añadir widget, y requiere guardado explícito", async () => {
+    render(<OverlaysStudioPage />);
+
+    listeners.get("hub:profiles")?.({
+      data: {
+        profiles: [
+          {
+            id: "default-racing",
+            file: "example-racing.json",
+            name: "Default Racing",
+            displayMode: "racing",
+            widgets: 1,
+            profile: loadedProfile,
+          },
+        ],
+      },
+    });
+
+    listeners.get("profile:loaded")?.({ data: { profile: loadedProfile } });
+
+    fireEvent.click(await screen.findByRole("button", { name: /Abrir Mis perfiles/i }));
+    fireEvent.click(await screen.findByRole("button", { name: /Editar Default Racing/i }));
+
+    // El lienzo y controles de LayoutStudio deben estar en pantalla
+    expect(await screen.findByText("Perfiles Específicos")).toBeTruthy();
+
+    // Habilitar fake timers después de resolver todas las búsquedas asíncronas del DOM
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+
+    // Simular adición de un widget (pedals) a través de la UI
+    fireEvent.click(screen.getByTestId("studio-show-add-widget"));
+    const select = screen.getByRole("combobox") as HTMLSelectElement;
+    fireEvent.change(select, { target: { value: "pedals" } });
+
+    // Limpiar mocks antes de la adición para verificar llamadas limpias
+    vi.clearAllMocks();
+
+    fireEvent.click(screen.getByTestId("studio-confirm-add-widget"));
+
+    // Avanzar timers 1200ms (el debounce de autosave es de 800ms)
+    await act(async () => {
+      vi.advanceTimersByTime(1200);
+    });
+
+    // 1. Confirmar que NO se ha llamado a layout:save automáticamente
+    const saveCalls = (Events.Emit as ReturnType<typeof vi.fn>).mock.calls.filter(
+      (call) => call[0] === "layout:save"
+    );
+    expect(saveCalls.length).toBe(0);
+
+    // 2. Hacer clic en el botón "Guardar" de la cabecera
+    const saveBtn = screen.getByRole("button", { name: "Guardar" });
+    fireEvent.click(saveBtn);
+
+    // Confirmar que SÍ se ha llamado a layout:save de forma explícita
+    expect(Events.Emit).toHaveBeenCalledWith("layout:save", expect.objectContaining({
+      widgets: expect.arrayContaining([
+        expect.objectContaining({ type: "delta" }),
+        expect.objectContaining({ type: "pedals" })
+      ])
+    }));
+
+    vi.useRealTimers();
   });
 });

@@ -111,4 +111,32 @@ describe("WidgetSettingsPanel", () => {
 
     expect(screen.queryByTestId("widget-settings-header")).toBeNull();
   });
+
+  it("shows pedals settings section for a pedals widget", () => {
+    const pedalsProfile: ProfileConfig = {
+      ...profile,
+      widgets: [
+        {
+          id: "pedals",
+          type: "pedals",
+          enabled: true,
+          updateHz: 30,
+          position: { x: 40, y: 760, w: 90, h: 100 },
+        },
+      ],
+    };
+
+    render(
+      <WidgetSettingsPanel
+        profile={pedalsProfile}
+        widget={pedalsProfile.widgets[0]}
+        onChangeProfile={vi.fn()}
+      />,
+    );
+
+    const panel = screen.getByTestId("widget-settings-panel");
+    expect(panel.className).toContain("overflow-y-auto");
+    expect(screen.getByText("Pedales")).toBeTruthy();
+    expect(screen.getByLabelText("Acelerador (throttle)")).toBeTruthy();
+  });
 });
