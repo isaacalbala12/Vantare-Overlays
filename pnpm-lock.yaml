@@ -249,6 +249,9 @@ importers:
 
   vantare-v2/frontend:
     dependencies:
+      '@supabase/supabase-js':
+        specifier: ^2.45.0
+        version: 2.106.2
       '@wailsio/runtime':
         specifier: 3.0.0-alpha.79
         version: 3.0.0-alpha.79

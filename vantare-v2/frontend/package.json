@@ -6,11 +6,13 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:dev": "tsc -b && vite build --mode development",
     "test": "vitest run",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.45.0",
     "@wailsio/runtime": "3.0.0-alpha.79",
     "react": "^19.2.6",
     "react-dom": "^19.2.6"
