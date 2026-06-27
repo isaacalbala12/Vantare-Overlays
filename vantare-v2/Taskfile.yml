@@ -27,6 +27,54 @@ tasks:
     cmds:
       - task: "{{OS}}:package"
 
+  package:all:
+    summary: Reproducible release artifact pipeline (installer + portable zip + checksums + verify)
+    desc: |
+      R03.B entry point. Runs version:sync -> build -> installer -> portable zip
+      -> SHA256 checksums -> version verification.
+      Only valid for the Windows OS target.
+    platforms: [windows]
+    cmds:
+      - task: windows:package:all
+        vars:
+          INSTALL_SCOPE: '{{.INSTALL_SCOPE | default "user"}}'
+    vars:
+      INSTALL_SCOPE: '{{.INSTALL_SCOPE | default "user"}}'
+
+  release:artifacts:
+    summary: Alias of package:all. The canonical R03.B entry point.
+    platforms: [windows]
+    cmds:
+      - task: package:all
+        vars:
+          INSTALL_SCOPE: '{{.INSTALL_SCOPE | default "user"}}'
+    vars:
+      INSTALL_SCOPE: '{{.INSTALL_SCOPE | default "user"}}'
+
+  release:portable:
+    summary: Builds only the portable zip (no installer)
+    platforms: [windows]
+    cmds:
+      - task: windows:release:portable
+
+  release:checksums:
+    summary: Recomputes SHA256 sidecars for the existing artifacts in bin/
+    platforms: [windows]
+    cmds:
+      - task: windows:release:checksums
+
+  release:verify:
+    summary: Verifies that every artifact in bin/ embeds the expected VERSION
+    platforms: [windows]
+    cmds:
+      - task: windows:release:verify
+
+  release:clean:
+    summary: Removes stale files from bin/ that are not official artifacts
+    platforms: [windows]
+    cmds:
+      - task: windows:release:clean
+
   run:
     summary: Runs the application
     cmds:

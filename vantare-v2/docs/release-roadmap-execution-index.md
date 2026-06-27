@@ -137,6 +137,12 @@ Cada plan debe cerrar con:
 - update documental;
 - commit/push/tag si es checkpoint funcional.
 
+## Auditorias globales de calidad
+
+- Primera auditoria global: al cerrar `Release 03` completo, antes de avanzar fuerte en `Release 04`. Alcance minimo: auth/licencias, webhooks, versionado, build/package/updater, seguridad, persistencia local, tests complacientes y deuda P3 acumulada.
+- Segunda auditoria global: `Release 15`, obligatoria antes de aceptar la release candidate final.
+- No lanzar auditorias globales entre miniplanes salvo P0/P1/P2 transversal; usar reviews por feature para evitar ruido mientras el codigo esta en movimiento.
+
 ## Release 15 - Security/code audit gate
 
 Release 15 se ejecuta cuando la mayoria de features de release ya esten implementadas. No sustituye los reviews por feature: es una auditoria transversal final para seguridad, arquitectura, deuda tecnica y refactors profundos controlados.

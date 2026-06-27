@@ -135,6 +135,77 @@ tasks:
       ARG_FLAG: '{{if eq .ARCH "amd64"}}AMD64{{else}}ARM64{{end}}'
       INSTALL_SCOPE: '{{.INSTALL_SCOPE | default "machine"}}'
 
+  package:all:
+    summary: Reproducible release artifact pipeline (installer + portable zip + checksums + verify).
+    desc: |
+      Runs the full R03.B release artifact pipeline for Windows:
+        1. wails3 generate webview2bootstrapper
+        2. NSIS installer via the script tools/build_nsis.ps1
+              -> bin/vantare-amd64-installer.exe
+        3. release_artifacts.ps1 portable-zip
+              -> bin/vantare-portable-amd64.zip (with configs/ + tester README)
+        4. release_artifacts.ps1 sha256
+              -> <artifact>.sha256 for installer, portable zip and portable exe
+        5. release_artifacts.ps1 verify
+              -> checks that every artifact embeds the expected VERSION
+      The NSIS call is delegated to a script so that the real NSIS binary at
+      C:\Program Files (x86)\NSIS\Bin\makensis.exe can be used when the
+      Wails3 makensis shim is unavailable or misconfigured on the host.
+    preconditions:
+      - sh: '[ -f "{{.BIN_DIR}}/vantare.exe" ]'
+        msg: "Run 'task build' first (or 'task package:all' which builds)."
+    deps:
+      - task: build
+    cmds:
+      - powershell -NoProfile -ExecutionPolicy Bypass -File "{{.ROOT_DIR}}\tools\build_nsis.ps1" -RepoRoot "{{.ROOT_DIR}}" -BinDir "{{.BIN_DIR}}" -AppName "{{.APP_NAME}}"
+      - powershell -NoProfile -ExecutionPolicy Bypass -File "{{.ROOT_DIR}}\tools\release_artifacts.ps1" -Operation all -RepoRoot "{{.ROOT_DIR}}" -BinDir "{{.BIN_DIR}}"
+    vars:
+      INSTALL_SCOPE: '{{.INSTALL_SCOPE | default "user"}}'
+
+  release:portable:
+    summary: Builds the portable zip artifact (no installer, no checksum).
+    desc: |
+      Produces bin/vantare-portable-amd64.zip with vantare.exe, the embedded
+      configs/*.json profiles and docs/tester-build-instructions.md as docs/README.txt.
+      Intended for testers who do not want a Windows installer.
+    deps:
+      - task: build
+    cmds:
+      - powershell -NoProfile -ExecutionPolicy Bypass -File "{{.ROOT_DIR}}\tools\release_artifacts.ps1" -Operation portable-zip -RepoRoot "{{.ROOT_DIR}}" -BinDir "{{.BIN_DIR}}"
+
+  release:checksums:
+    summary: Writes SHA256 sidecars for the official release artifacts.
+    desc: |
+      Reads bin/vantare-amd64-installer.exe, bin/vantare-portable-amd64.zip and
+      bin/vantare.exe and writes a <artifact>.sha256 file alongside each one,
+      using certutil.exe (always present on Windows; the script avoids Get-FileHash
+      so it also works in constrained PowerShell hosts).
+      Standalone so it can be re-run after a manual edit of bin/ without rebuilding.
+    preconditions:
+      - sh: '[ -f "{{.BIN_DIR}}/vantare-amd64-installer.exe" ] && [ -f "{{.BIN_DIR}}/vantare-portable-amd64.zip" ] && [ -f "{{.BIN_DIR}}/vantare.exe" ]'
+        msg: "Run 'task windows:package:all' first to generate installer, portable zip and vantare.exe."
+    cmds:
+      - powershell -NoProfile -ExecutionPolicy Bypass -File "{{.ROOT_DIR}}\tools\release_artifacts.ps1" -Operation sha256 -RepoRoot "{{.ROOT_DIR}}" -BinDir "{{.BIN_DIR}}"
+
+  release:verify:
+    summary: Verifies that every official artifact embeds the expected VERSION.
+    desc: |
+      Scans the official release artifacts and confirms the version token
+      'v<VERSION>' is present in the embedded strings. Catches the common bug
+      of publishing a stale installer built before version:sync was run.
+    cmds:
+      - powershell -NoProfile -ExecutionPolicy Bypass -File "{{.ROOT_DIR}}\tools\release_artifacts.ps1" -Operation verify -RepoRoot "{{.ROOT_DIR}}" -BinDir "{{.BIN_DIR}}"
+
+  release:clean:
+    summary: Removes stale or temporary files from bin/ that are not official artifacts.
+    desc: |
+      Removes any file in bin/ that is not one of the official artifacts
+      (vantare.exe, vantare-amd64-installer.exe, vantare-portable-amd64.zip
+      and their .sha256 sidecars). Intended to be run before publishing
+      a new build so old binaries don't ship accidentally.
+    cmds:
+      - powershell -NoProfile -ExecutionPolicy Bypass -File "{{.ROOT_DIR}}\tools\release_artifacts.ps1" -Operation clean-stale -RepoRoot "{{.ROOT_DIR}}" -BinDir "{{.BIN_DIR}}"
+
   create:msix:package:
     summary: Creates an MSIX package
     deps:

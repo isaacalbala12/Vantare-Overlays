@@ -22,6 +22,11 @@ Siguiente trabajo recomendado:
 
 Regla de orquestacion: el agente principal no edita codigo salvo necesidad estricta; genera prompts, revisa reportes y actualiza documentacion. Workers implementan. GLM revisa P0/P1/P2 y cualquier cambio de Go debe exigir las skills de Go indicadas en `docs/release-roadmap-execution-index.md`.
 
+Auditorias globales de calidad:
+- Primera auditoria global: al cerrar `Release 03` completo, antes de avanzar fuerte en `Release 04`. Debe revisar auth/licencias, webhooks, versionado, build/package/updater, seguridad, persistencia local, tests complacientes y deuda P3 acumulada.
+- Segunda auditoria global: `Release 15`, obligatoria antes de aceptar la release candidate final.
+- Entre esos puntos, usar reviews por feature/bloque salvo que aparezca un P0/P1/P2 transversal.
+
 Decisiones de release ya cerradas:
 
 - Stripe directo + Supabase + login obligatorio.
@@ -34,6 +39,40 @@ Decisiones de release ya cerradas:
 - Community layouts/marketplace, cloud sync completo, companion app y plugin system quedan post-release.
 
 ## Estado actual
+
+R03.B - Build artifacts / release packaging completado (2026-06-27):
+- Documento operativo nuevo: `docs/release-artifacts.md` (artefactos oficiales, comandos, verificacion, gap de firma de codigo).
+- Nueva tarea canonica de pipeline: `wails3 task release:artifacts` (alias de `windows:package:all` y `package:all`). Encadena `version:sync` -> `windows:build` -> instalador NSIS -> portable zip -> SHA256 sidecars -> verify de version.
+- Tareas auxiliares: `windows:release:portable`, `windows:release:checksums`, `windows:release:verify`, `windows:release:clean` (todas expuestas tambien en raiz).
+- Scripts nuevos en `tools/` (PowerShell 5.1+, sin dependencias externas):
+  - `tools/build_nsis.ps1`: resuelve el NSIS real (evita el shim de wails3 que falla con 0x2) y construye el instalador.
+  - `tools/release_artifacts.ps1`: portable zip (con `configs/*.json` y tester README), SHA256 via `certutil.exe` (siempre disponible en Windows), verificacion de version embebida (UTF-8 en `.exe`, UTF-16 LE en NSIS installer resource).
+- Runbook actualizado: `docs/release-beta-operations-runbook.md` seccion 4 ahora apunta a `release:artifacts` como flujo canonico y elimina el `Get-FileHash` manual.
+- Verificacion end-to-end ejecutada en este host: pipeline produce `bin/vantare-amd64-installer.exe` (6.86 MB), `bin/vantare-portable-amd64.zip` (5.07 MB), `bin/vantare.exe` (12.98 MB) y sus 3 checksums SHA256. `verify` confirma que `v0.3.10.0` esta embebido en `vantare.exe` y `0.3.10.0` en el recurso de version PE del installer.
+- Stale `bin/temp-wails-proj-amd64-installer.exe` del 15/06 eliminado por `release:clean`.
+- Lo que queda pendiente: firma de codigo (R03.H/14). CI de release (R03.C) completado.
+
+R03.C - GitHub Actions release build completado (2026-06-27):
+- Creado workflow `.github/workflows/release.yml` en la raiz real del repo Git (`Vantare-Overlays/`).
+- Triggers: push de tag `v*` (crea release automaticamente) y `workflow_dispatch` (build manual; release opcional y solo permitida sobre un tag).
+- Runner Windows: instala Go `1.25.0`, pnpm `10`, Node `22`, NSIS `3.12.0` via Chocolatey y Wails v3 CLI `v3.0.0-alpha.98-tui` via `go install` (todo pinned).
+- Gate de tests/lint (P2-1 del review adversarial, corregido 2026-06-27): el job `build` ejecuta `go test ./...`, `pnpm install`, `pnpm test` y `pnpm lint` desde `vantare-v2/` y `vantare-v2/frontend/` antes de `wails3 task release:clean`/`release:artifacts`. Si cualquier gate falla, no se generan artefactos ni se publica release. No se duplica `pnpm build` (ya corre indirectamente via `wails3 task release:artifacts`).
+- Ejecuta en `vantare-v2/`: `wails3 task release:clean`, `wails3 task release:artifacts`, `wails3 task release:verify`.
+- Verifica estrictamente que existan los 6 archivos oficiales (3 artefactos + 3 checksums) antes de continuar.
+- Subida de artifacts de GitHub Actions y, en tags `v*`, creacion de GitHub Release con `gh release create` subiendo los 6 archivos oficiales.
+- Permisos minimos: `contents: read` por defecto; solo el job `release` usa `contents: write`. No se imprimen secretos; no se modifica `VERSION` en CI.
+- Documentacion actualizada: `docs/release-artifacts.md` (seccion 4.1 de CI) y `docs/release-beta-operations-runbook.md` (seccion 4 con flujo local y flujo CI). Review adversarial en `docs/adversarial-review.md` con P2-1 cerrado.
+- Checks: `git diff --check` limpio; validacion YAML OK; `go test ./...` OK (cached); `pnpm --dir frontend test` 568 tests OK; `pnpm --dir frontend lint` OK (solo warning de `.eslintignore` deprecado, no error).
+- P3 restantes del review (no bloqueantes): P3-1 manejo de release ya existente, P3-2 globo `bin/*` en `gh release create`, P3-3 verificacion de version de NSIS instalada, P3-4 nota de `SHA256SUMS.txt` en `release-artifacts.md`. Recomendado aplicar P3-1/P3-2 antes de release publica estable.
+
+R03.B - P2 follow-ups completados (2026-06-27):
+- `tools/release_artifacts.ps1` `Test-ArtifactVersion`: reescrita la lectura con `[System.IO.File]::OpenRead` + `Stream.Read` acotado a 16 MiB (no `ReadAllBytes`). El handle se libera en `finally` aunque la lectura devuelva menos bytes de los pedidos. Logica UTF-8 / UTF-16 y mensajes de exito/mismatch intactos.
+- `tools/release_artifacts.ps1` `Invoke-CleanStale`: `$RepoRoot` y `$BinDir` se canonicalizan con `[System.IO.Path]::GetFullPath`. Se rechaza (throw) cualquier `$BinDir` que no sea `<RepoRoot>\bin` ni un subdirectorio de `<RepoRoot>\bin`. Confirmado en prueba negativa con `-BinDir configs` y prueba positiva con `-BinDir bin/subdir-test`. `release:clean` no puede borrar fuera de `bin/`.
+- `build/windows/Taskfile.yml` `release:checksums`: anadida precondicion `[ -f "{{.BIN_DIR}}/vantare.exe" ]` con mensaje claro apuntando a `windows:package:all`. Validado en prueba negativa (moviendo `vantare.exe` y restaurandolo).
+- P3 trivial aplicado en el mismo bloque: la descripcion de `release:checksums` ya no menciona `Get-FileHash` sino `certutil.exe` (alineado con el script).
+- P3 trivial en `docs/release-artifacts.md` seccion 2: la precondicion de `makensis` ahora enumera explicitamente las tres fuentes aceptadas (PATH, ruta estandar, ruta alternativa en `%ProgramFiles(x86)%\NSIS\Bin`).
+- Checks verdes: `git diff --check` limpio, `wails3 task release:clean`, `release:artifacts`, `release:verify`, `release:checksums`, expand del portable zip confirma estructura `vantare.exe + configs/*.json + docs/README.txt`, `go test ./...` cached OK.
+- P3 fuera de alcance (queda para decision posterior): `version:sync` dirty detection.
 
 R03.A - Version source of truth completado (2026-06-27):
 - Creado archivo `VERSION` en la raíz como única fuente de verdad para la versión de la suite (`0.3.10.0`).

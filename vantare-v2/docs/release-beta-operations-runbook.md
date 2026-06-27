@@ -91,18 +91,52 @@ Vantare Suite cuenta con 4 workflows en `.github/workflows/` para notificar a lo
 
 Para distribuir la versión a los testers de forma segura y profesional:
 
-1. **Compilar el Paquete de Distribución**:
-   - Genera el instalador de Windows (NSIS) y el ejecutable portable. Asegúrate de que la carpeta `configs/` que contiene los perfiles predeterminados se empaqueta junto al portable.
-2. **Calcular el Hash de Verificación (SHA-256)**:
-   - En la terminal de PowerShell del entorno de compilación, ejecuta:
+> **R03.B:** la generación de artefactos está automatizada. Ejecuta una sola tarea y obtienes los archivos oficiales con sus checksums. Ver `docs/release-artifacts.md` para el detalle técnico.
+> **R03.C:** el workflow `.github/workflows/release.yml` ejecuta el mismo pipeline en GitHub Actions y, en tags `v*`, crea la Release con los assets automáticamente.
+
+### Opción A: build local (para validación previa al tag)
+
+1. **Generar los Artefactos Oficiales**:
+   - En la raíz de `vantare-v2/`, ejecuta:
      ```powershell
-     Get-FileHash .\bin\vantare-amd64-installer.exe -Algorithm SHA256 | Format-List
+     wails3 task release:clean        # elimina archivos obsoletos de bin/
+     wails3 task release:artifacts    # build + installer + portable + SHA256 + verify
      ```
-   - Guarda el hash resultante (una cadena hexadecimal de 64 caracteres) para incluirlo en el anuncio de Discord. Esto permite a los testers verificar la integridad de su descarga.
-3. **Subir los Archivos**:
-   - Sube el instalador (`vantare-amd64-installer.exe`) y el archivo portable comprimido (`.zip`) a las Releases de GitHub o a un almacenamiento en la nube seguro (Google Drive, Dropbox, etc.).
-4. **Publicar la build**:
-   - Ejecuta el workflow de `Discord build available` (manualmente desde GitHub o usando el comando `gh` de la sección anterior) aportando la versión, el enlace de descarga obtenido y el hash SHA-256.
+   - El comando produce automáticamente:
+     - `bin\vantare-amd64-installer.exe` (instalador NSIS)
+     - `bin\vantare-portable-amd64.zip` (zip portable con `configs/*.json` + `docs/README.txt`)
+     - `bin\vantare.exe` (binario base, ~13 MB)
+     - `bin\vantare-amd64-installer.exe.sha256`, `bin\vantare-portable-amd64.zip.sha256`, `bin\vantare.exe.sha256`
+   - El paso `verify` confirma que el binario y el installer contienen la cadena de versión correcta y falla con código de salida distinto de 0 si no la encuentra. Si falla, NO publiques.
+
+### Opción B: build desde GitHub Actions (oficial para testers)
+
+1. **Pushea el tag**:
+   ```bash
+   git tag -a v0.3.10.0 -m "Release v0.3.10.0"
+   git push origin v0.3.10.0
+   ```
+2. El workflow `Release build` se dispara automaticamente, genera los 6 artefactos y crea la GitHub Release con los assets.
+3. Si no quieres crear una release (por ejemplo, para probar el build), usa `workflow_dispatch` en una rama o en un tag sin marcar `create_release`.
+
+### Recoger el Hash SHA-256 para el Anuncio de Discord
+
+- Si usaste CI, descarga el `.sha256` desde la Release de GitHub o desde el artifact del workflow.
+- Si hiciste build local, el pipeline ya escribió los checksums en `bin\*.sha256`. Lee el del installer:
+  ```powershell
+  Get-Content .\bin\vantare-amd64-installer.exe.sha256
+  ```
+- Copia el valor hexadecimal (64 caracteres) para incluirlo en el anuncio. Esto permite a los testers verificar la integridad de su descarga con `certutil.exe -hashfile` o `Get-FileHash`.
+
+### Subir los Archivos
+
+- En CI, los assets ya se suben a la Release de GitHub automaticamente. Mantener los nombres exactos es importante: el autoupdater (`internal/updater/github.go`) busca el asset `vantare-amd64-installer.exe` y su `*.sha256` por nombre literal.
+- Si haces distribucion manual, sube el instalador, el portable zip y los 3 checksums `.sha256` a un almacenamiento seguro.
+
+### Publicar la build
+
+- Ejecuta el workflow de `Discord build available` (manualmente desde GitHub o usando el comando `gh` de la sección anterior) aportando la versión, el enlace de descarga obtenido de la Release de GitHub y el hash SHA-256.
+- El workflow `Discord release announcement` ya se disparó automaticamente al pushear el tag `v*`.
 
 ---
 

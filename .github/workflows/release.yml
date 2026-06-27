@@ -1,0 +1,198 @@
+name: Release build
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      create_release:
+        description: "Create GitHub Release (only allowed when running on a tag)"
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+env:
+  GO_VERSION: "1.25.0"
+  WAILS_VERSION: "v3.0.0-alpha.98-tui"
+  NODE_VERSION: "22"
+  PNPM_VERSION: "10"
+  NSIS_VERSION: "3.12.0"
+  VANTARE_DIR: "vantare-v2"
+
+jobs:
+  build:
+    name: Build Windows release artifacts
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: powershell
+        working-directory: ${{ env.VANTARE_DIR }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: ${{ env.VANTARE_DIR }}/go.mod
+          cache-dependency-path: ${{ env.VANTARE_DIR }}/go.sum
+
+      - name: Add Go bin to PATH
+        run: echo "$env:USERPROFILE\go\bin" | Out-File -FilePath $env:GITHUB_PATH -Append
+
+      - name: Cache Wails CLI
+        uses: actions/cache@v4
+        with:
+          path: ~\go\bin\wails3.exe
+          key: ${{ runner.os }}-wails3-${{ env.WAILS_VERSION }}
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install NSIS
+        run: choco install nsis --version=${{ env.NSIS_VERSION }} --no-progress --yes
+
+      - name: Install Wails v3 CLI
+        run: |
+          if (-not (Get-Command wails3 -ErrorAction SilentlyContinue)) {
+            go install github.com/wailsapp/wails/v3/cmd/wails3@${{ env.WAILS_VERSION }}
+          } else {
+            Write-Host "wails3 already present in PATH"
+          }
+
+      - name: Gate - Go tests
+        run: go test ./...
+
+      - name: Gate - Frontend deps
+        working-directory: ${{ env.VANTARE_DIR }}/frontend
+        run: pnpm install
+
+      - name: Gate - Frontend tests
+        working-directory: ${{ env.VANTARE_DIR }}/frontend
+        run: pnpm test
+
+      - name: Gate - Frontend lint
+        working-directory: ${{ env.VANTARE_DIR }}/frontend
+        run: pnpm lint
+
+      - name: Build release artifacts
+        run: |
+          wails3 task release:clean
+          wails3 task release:artifacts
+          wails3 task release:verify
+
+      - name: Verify artifact set
+        run: |
+          $files = @(
+            "bin/vantare.exe",
+            "bin/vantare.exe.sha256",
+            "bin/vantare-amd64-installer.exe",
+            "bin/vantare-amd64-installer.exe.sha256",
+            "bin/vantare-portable-amd64.zip",
+            "bin/vantare-portable-amd64.zip.sha256"
+          )
+          foreach ($f in $files) {
+            if (-not (Test-Path -LiteralPath $f)) { throw "Missing artifact: $f" }
+          }
+          Write-Host "All 6 official artifacts present."
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-artifacts-${{ github.ref_name }}
+          path: |
+            ${{ env.VANTARE_DIR }}/bin/vantare.exe
+            ${{ env.VANTARE_DIR }}/bin/vantare.exe.sha256
+            ${{ env.VANTARE_DIR }}/bin/vantare-amd64-installer.exe
+            ${{ env.VANTARE_DIR }}/bin/vantare-amd64-installer.exe.sha256
+            ${{ env.VANTARE_DIR }}/bin/vantare-portable-amd64.zip
+            ${{ env.VANTARE_DIR }}/bin/vantare-portable-amd64.zip.sha256
+          if-no-files-found: error
+
+  release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
+      (github.event_name == 'workflow_dispatch' && startsWith(github.ref, 'refs/tags/v') && inputs.create_release)
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Download release artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: release-artifacts-${{ github.ref_name }}
+          path: ${{ env.VANTARE_DIR }}/bin
+
+      - name: Extract changelog section
+        id: changelog
+        run: |
+          TAG="${{ github.ref_name }}"
+          python3 - <<PY
+          import os
+          import re
+          import sys
+
+          tag = os.environ.get("TAG", "")
+          changelog_path = "vantare-v2/docs/changelog.md"
+          fallback = f"Release {tag}"
+          body = fallback
+
+          if os.path.exists(changelog_path):
+              with open(changelog_path, "r", encoding="utf-8") as fh:
+                  changelog = fh.read()
+              pattern = re.compile(
+                  rf"^##\s+{re.escape(tag)}\s*$([\s\S]*?)(?=^##\s+v|\Z)",
+                  re.MULTILINE,
+              )
+              match = pattern.search(changelog)
+              if match:
+                  section = match.group(1).strip()
+                  if section:
+                      body = section
+                  else:
+                      print(f"::warning::Changelog section for {tag} is empty")
+              else:
+                  print(f"::warning::Could not find changelog section for {tag}")
+          else:
+              print(f"::warning::Changelog not found at {changelog_path}")
+
+          with open("changelog_body.md", "w", encoding="utf-8") as fh:
+              fh.write(body)
+
+          output_path = os.environ.get("GITHUB_OUTPUT", "/dev/null")
+          with open(output_path, "a", encoding="utf-8") as fh:
+              fh.write("body<<EOF\n")
+              fh.write(body)
+              fh.write("\nEOF\n")
+          PY
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ github.ref_name }}" \
+            --title "Vantare ${{ github.ref_name }}" \
+            --notes-file changelog_body.md \
+            ${{ env.VANTARE_DIR }}/bin/*
