@@ -1,5 +1,8 @@
 version: '3'
 
+vars:
+  VITE_HOST: '{{.WAILS_VITE_HOST | default "127.0.0.1"}}'
+
 tasks:
   go:mod:tidy:
     summary: Runs `go mod tidy`
@@ -202,22 +205,22 @@ tasks:
   frontend:dev:npm:
     dir: frontend
     cmds:
-      - npm run dev -- --port {{.VITE_PORT}} --strictPort
+      - npm run dev -- --host {{.VITE_HOST}} --port {{.VITE_PORT}} --strictPort
 
   frontend:dev:yarn:
     dir: frontend
     cmds:
-      - yarn dev --port {{.VITE_PORT}} --strictPort
+      - yarn dev --host {{.VITE_HOST}} --port {{.VITE_PORT}} --strictPort
 
   frontend:dev:pnpm:
     dir: frontend
     cmds:
-      - pnpm dev --port {{.VITE_PORT}} --strictPort
+      - pnpm dev --host {{.VITE_HOST}} --port {{.VITE_PORT}} --strictPort
 
   frontend:dev:bun:
     dir: frontend
     cmds:
-      - bun run dev --port {{.VITE_PORT}} --strictPort
+      - bun run dev -- --host {{.VITE_HOST}} --port {{.VITE_PORT}} --strictPort
 
   update:build-assets:
     summary: Updates the build assets

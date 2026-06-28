@@ -4,6 +4,7 @@ vars:
   APP_NAME: "vantare"
   BIN_DIR: "bin"
   PACKAGE_MANAGER: 'pnpm'
+  VITE_HOST: '{{.WAILS_VITE_HOST | default "127.0.0.1"}}'
   VITE_PORT: '{{.WAILS_VITE_PORT | default 9245}}'
   APP_VERSION:
     sh: go run build/sync_version.go -print
