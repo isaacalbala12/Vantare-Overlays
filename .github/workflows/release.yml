@@ -74,12 +74,16 @@ jobs:
             Write-Host "wails3 already present in PATH"
           }
 
-      - name: Gate - Go tests
-        run: go test ./...
-
       - name: Gate - Frontend deps
         working-directory: ${{ env.VANTARE_DIR }}/frontend
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
+
+      - name: Gate - Frontend build
+        working-directory: ${{ env.VANTARE_DIR }}/frontend
+        run: pnpm build
+
+      - name: Gate - Go tests
+        run: go test ./...
 
       - name: Gate - Frontend tests
         working-directory: ${{ env.VANTARE_DIR }}/frontend
