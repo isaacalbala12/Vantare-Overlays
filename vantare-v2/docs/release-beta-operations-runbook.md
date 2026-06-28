@@ -113,6 +113,36 @@ Todos los workflows de Discord ahora detectan `github.run_attempt > 1` y se salt
 - **Opción de emergencia:** ve a la ejecución anterior en GitHub Actions, ábrela y ejecuta `Re-run failed jobs`. El workflow advertirá que se salta el envío; no volverá a publicar.
 - Si realmente necesitas enviar el mismo mensaje de nuevo, cambia levemente el input (por ejemplo, añade una nota) o elimina la ejecución anterior para que `run_attempt` vuelva a ser 1.
 
+### Tag-guard para workflows de Discord no-release (R03.H)
+
+Los workflows `Discord beta progress` y `Discord known issues` **no deben dispararse cuando el push es de un tag**. Su trigger normal es por `push` filtrado por `paths`, pero un push de tag activa el evento `push` aunque los `paths` no coincidan, y eso generaba mensajes colaterales al publicar una release.
+
+- A partir de R03.H, ambos workflows llevan un guard a nivel de job (`if: github.ref_type != 'tag'`) más un step explicativo (`::notice::`) que anuncia el salto. Si el trigger es un tag, el workflow se salta el envío y termina en verde sin postear nada a Discord.
+- El workflow `Discord release announcement` (que es el del release) sigue disparándose normalmente con `push: tags: v*` y con `workflow_dispatch`.
+- El workflow `Discord build available` solo se dispara por `workflow_dispatch` (no tiene `push`), por lo que no le afecta el guard.
+
+### Política: no crear GitHub Release por cada commit
+
+- Una GitHub Release solo se crea cuando hay un tag `v*` legítimo que cumple el checklist del runbook.
+- No se taggea por cada commit a `master`. Los commits se acumulan y el tag se publica cuando hay una versión coherente con `VERSION`, `changelog.md` y los gates locales (tests, lint, build, smoke manual).
+- `release.yml` se ejecuta solo en `push: tags: v*` (crea release) o en `workflow_dispatch` con `create_release: true` sobre un tag (re-crea/actualiza). Un `workflow_dispatch` sobre `master` solo genera los artefactos como GitHub Actions artifact y no toca GitHub Releases.
+
+### `release.yml` idempotente (R03.H)
+
+El job `release` detecta si la GitHub Release del tag ya existe:
+
+- Si **no existe**: ejecuta `gh release create "$TAG" --title "Vantare $TAG" --notes-file changelog_body.md` enumerando los 6 assets oficiales (sin glob amplio). Falla con `::error::` si falta cualquiera de los 6.
+- Si **ya existe**: ejecuta `gh release edit "$TAG" --title ... --notes-file changelog_body.md` y luego `gh release upload "$TAG" <asset> --clobber` por cada uno de los 6 assets. `--clobber` borra el asset previo del mismo nombre antes de subir el nuevo; si el upload falla, los originales se pierden (esto es comportamiento documentado de `gh`).
+- Verificación final: `gh release view "$TAG" --json tagName,name,assets --jq ...` imprime el número de assets para confirmar el estado.
+
+Con esto, un re-run del workflow sobre un tag ya publicado pasa a verde sin intervención manual.
+
+### Releases históricas y firma de código
+
+- **Releases históricas sin `.sha256`**: las GitHub Releases publicadas antes de R03.B no incluyen el sidecar `*.sha256`. El updater detecta el checksum ausente y cae al flujo de descarga sin verificación (degradación aceptable para tags legacy). Esto se documenta como TD-028. Si necesitas verificar integridad de un binario histórico, debes usar el hash publicado en Discord o calcularlo manualmente con `Get-FileHash`/`certutil -hashfile`.
+- **Beta privada sin firma de código**: la beta distribuye binarios sin firma Authenticode. Windows SmartScreen mostrará el aviso "App desconocida"; los testers ya están informados (el mensaje de `discord-build-available.yml` lo recuerda) y deben hacer clic en "More info" -> "Run anyway". Es un trade-off explícito para acelerar feedback.
+- **Release público requiere Authenticode**: antes del primer release público (R15 RC o equivalente) hay que firmar tanto `vantare.exe` como `vantare-amd64-installer.exe` con un certificado Authenticode válido. Ver TD-027. Sin firma, los usuarios finales no podrán ejecutar el binario sin pasos manuales y la reputación de SmartScreen queda dañada.
+
 ---
 
 ## 4. Checklist de Empaquetado y Distribución de Builds

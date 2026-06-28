@@ -11,8 +11,14 @@ permissions:
 
 jobs:
   announce:
+    if: github.ref_type != 'tag'
     runs-on: ubuntu-latest
     steps:
+      - name: Skip on tag push to avoid duplicate release announcements
+        if: github.ref_type == 'tag'
+        run: |
+          echo "::notice::Skipping Discord known issues because the trigger was a tag push (ref=${{ github.ref }}, ref_type=${{ github.ref_type }}). Use 'Discord release announcement' or 'Discord build available' for tag-driven releases."
+
       - name: Warn on rerun to avoid duplicate Discord messages
         if: github.run_attempt > 1
         run: |

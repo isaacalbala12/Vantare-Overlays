@@ -43,22 +43,22 @@ Documento vivo para centralizar deuda tecnica aceptada, P2/P3 diferidos y follow
 - Severidad: P3
 - Area: ci/release
 - Origen: review R03.C
-- Estado: abierto
-- Release objetivo: R03.E o antes de primer tag publico estable
+- Estado: cerrado (R03.H)
+- Release objetivo: R03.H (cumplido)
 - Motivo para diferir: un re-run sobre una release ya creada falla de forma visible, no corrompe artefactos.
-- Fix esperado: usar `gh release view` + `gh release upload --clobber`, o estrategia equivalente.
-- Riesgo si se ignora: reintentos de CI sobre tags existentes quedan en rojo y requieren intervencion manual.
+- Fix aplicado: `release.yml` ahora detecta la existencia con `gh release view <tag>`. Si la release existe, hace `gh release edit --title --notes-file` + `gh release upload --clobber` por cada uno de los 6 assets. Si no existe, `gh release create` con los 6 assets enumerados. Re-runs sobre un tag ya publicado pasan a verde sin intervencion manual. Aviso: si el upload con `--clobber` falla, los assets originales se pierden (documentado en el workflow).
+- Cierre: 2026-06-28, commit pendiente del worker R03.H.
 
 ### TD-004 - Publicacion explicita de assets de release
 
 - Severidad: P3
 - Area: ci/release
 - Origen: review R03.C
-- Estado: abierto
-- Release objetivo: R03.E o antes de release publico
+- Estado: cerrado (R03.H)
+- Release objetivo: R03.H (cumplido)
 - Motivo para diferir: el artifact actual contiene exactamente los 6 archivos oficiales.
-- Fix esperado: enumerar los 6 assets esperados en `gh release create/upload` en vez de usar glob amplio.
-- Riesgo si se ignora: un archivo extra futuro en `bin/` podria publicarse sin decision explicita.
+- Fix aplicado: `release.yml` ahora enumera explicitamente los 6 assets oficiales (3 artefactos + 3 checksums) tanto en `gh release create` como en `gh release upload --clobber`. No se usa glob amplio (`bin/*`). Verificacion previa falla rapido con `::error::` si falta alguno.
+- Cierre: 2026-06-28, commit pendiente del worker R03.H.
 
 ### TD-005 - Verificacion estricta de version NSIS en CI
 
@@ -301,6 +301,37 @@ Documento vivo para centralizar deuda tecnica aceptada, P2/P3 diferidos y follow
 - Motivo para diferir: la idempotencia actual usa `github.run_attempt`, que solo cubre re-runs del mismo workflow run. No evita que un operador dispare el mismo workflow dos veces con los mismos inputs.
 - Fix esperado: anadir un mecanismo de deduplicacion basado en contenido (p. ej. buscar el mensaje reciente via Discord bot API o guardar un marker file/hash).
 - Riesgo si se ignora: mensajes duplicados si un operador dispara manualmente varias veces seguidas.
+
+### TD-027 - Firma de codigo (Authenticode/certificado) ausente
+
+- Severidad: P2
+- Area: release/security
+- Origen: smoke R03.G + cierre R03.H
+- Estado: abierto
+- Release objetivo: obligatorio antes de release publico (R15 RC o equivalente); NO bloquea beta privada
+- Motivo para diferir: la beta privada distribuye binarios sin firmar y los testers ya estan informados del aviso de Windows SmartScreen. Es un trade-off explicito y aceptado para acelerar feedback de testers.
+- Fix esperado:
+  1. Adquirir un certificado de firma de codigo (Authenticode) valido para Vantare (EV o standard code signing segun presupuesto y requisitos de SmartScreen reputation).
+  2. Provisionar el certificado y su contrasena como secretos en GitHub Actions (no commitear nada).
+  3. Integrar el paso de firma en `release.yml` despues de `wails3 task release:artifacts` y antes de `gh release upload`, tanto para `vantare.exe` como para `vantare-amd64-installer.exe` (instalador NSIS tambien debe estar firmado para SmartScreen).
+  4. Documentar en `docs/release-beta-operations-runbook.md` la politica de firma y renovacion del certificado.
+  5. Verificar manualmente que el binario firmado pasa el chequeo de SmartScreen sin el aviso de "App desconocida".
+- Riesgo si se ignora en beta privada: los testers ven el aviso habitual de SmartScreen ("More info" -> "Run anyway"). Aceptado.
+- Riesgo si se ignora en release publico: distribucion hostil (los usuarios finales no pueden ejecutar el binario sin pasos manuales), reputacion de SmartScreen dañada, posible bloqueo por antivirus.
+
+### TD-028 - Releases historicas sin `.sha256` no compatibles con InstallVerified
+
+- Severidad: P3
+- Area: updater/release
+- Origen: smoke R03.G
+- Estado: abierto
+- Release objetivo: post-release / auditoria global
+- Motivo para diferir: las GitHub Releases publicadas antes de R03.B no incluyen el sidecar `*.sha256`. El updater detecta el checksum ausente y cae al flujo de descarga sin verificacion, que es degradacion aceptable para los tags legacy pero debe documentarse.
+- Fix esperado:
+  1. Confirmar la lista exacta de tags historicos sin `.sha256` (etiquetas publicadas antes de la disponibilidad del pipeline `release:artifacts`).
+  2. Definir politica: o se re-publican retroactivamente con sus checksums (manualmente), o se documenta explicitamente en `discord-build-available.yml` y en el runbook que esos tags no son actualizables con verificacion.
+  3. Considerar un fallback en `UpdaterService.InstallVerifiedCtx` que muestre un aviso claro al usuario cuando el checksum falta en la release.
+- Riesgo si se ignora: testers que vengan de una release historica pueden actualizar a una moderna sin verificacion, abriendo la puerta a un MITM contra el endpoint de releases si el canal se ve comprometido (baja probabilidad porque GitHub Releases va sobre HTTPS, pero el control de integridad se pierde).
 
 ### TD-001 - Gate de tests en workflow de release
 

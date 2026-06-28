@@ -50,7 +50,7 @@ R03.B - Build artifacts / release packaging completado (2026-06-27):
 - Runbook actualizado: `docs/release-beta-operations-runbook.md` seccion 4 ahora apunta a `release:artifacts` como flujo canonico y elimina el `Get-FileHash` manual.
 - Verificacion end-to-end ejecutada en este host: pipeline produce `bin/vantare-amd64-installer.exe` (6.86 MB), `bin/vantare-portable-amd64.zip` (5.07 MB), `bin/vantare.exe` (12.98 MB) y sus 3 checksums SHA256. `verify` confirma que `v0.3.10.0` esta embebido en `vantare.exe` y `0.3.10.0` en el recurso de version PE del installer.
 - Stale `bin/temp-wails-proj-amd64-installer.exe` del 15/06 eliminado por `release:clean`.
-- Lo que queda pendiente: firma de codigo (R03.H/14). CI de release (R03.C) completado.
+- Lo que queda pendiente: firma de codigo Authenticode (R03.H documenta la decision; la implementacion queda para R15/RC publica antes del release publico). CI de release (R03.C) completado.
 
 R03.C - GitHub Actions release build completado (2026-06-27):
 - Creado workflow `.github/workflows/release.yml` en la raiz real del repo Git (`Vantare-Overlays/`).
@@ -77,6 +77,27 @@ R03.D - Updater runtime hardening: correcciones de review R03.D aplicadas (2026-
 - Checks: `gofmt` OK; `go test ./internal/updater/... ./internal/app/...` OK; `go test ./...` OK; `go vet ./internal/updater/... ./internal/app/...` OK; `git diff --check` limpio.
 - Verificacion manual pendiente: smoke test end-to-end descargando un release real.
 - Riesgo residual: `go test -race` no ejecutado en este host porque requiere CGO_ENABLED=1 (no disponible en el entorno Windows actual).
+
+R03.G - Smoke real tras R03.F completado (2026-06-28):
+- Smoke ejecutado contra los 4 frentes: A local (`wails3 task release:artifacts` produce los 6 archivos oficiales y `release:verify` confirma version embebida), B CI build sin release (`workflow_dispatch` sin `create_release`, valida gates + artefactos sin tocar GitHub Releases), C Discord minimo (`workflow_dispatch` sobre `discord-release.yml` con tag valido contra webhook de pruebas), D updater contra prerelease real (`v0.3.10.0-smoke-tag` publicado como prerelease y consumido por el binario para verificar `CheckUpdatesCtx` + `InstallVerifiedCtx`).
+- Hallazgos del smoke que motivan R03.H:
+  1. Push del tag `v0.3.10.0-smoke-tag` disparo `discord-beta-progress.yml` y `discord-known-issues.yml` por su filtro de `paths`, generando mensajes colaterales no relacionados con el release.
+  2. Re-correr `release.yml` contra un tag cuya release ya existe falla con exit code distinto de 0 (`gh release create` aborta porque la release ya existe), obligando a intervencion manual.
+  3. Las GitHub Releases historicas (anteriores a R03.B) no incluyen `*.sha256` sidecar; el `InstallVerified` del updater no puede validar checksum contra esas releases.
+  4. Firma de codigo (Authenticode/certificado) sigue pendiente: bloquea release publico, no bloquea beta privada.
+
+R03.H - Cierre de Release 03 tras smoke + decision firma de codigo (2026-06-28):
+- Workflows modificados: `.github/workflows/discord-beta-progress.yml`, `.github/workflows/discord-known-issues.yml`, `.github/workflows/release.yml`.
+- Tag-guard en Discord no-release: ambos workflows saltan el envio cuando `github.ref_type == 'tag'` (job-level `if` + step explicativo con `::notice::`). Push normal a `master` y `workflow_dispatch` siguen funcionando.
+- `release.yml` idempotente: el job `release` ahora detecta si la GitHub Release ya existe. Si existe, hace `gh release edit --notes-file` + `gh release upload --clobber` por cada uno de los 6 assets oficiales. Si no existe, crea la release enumerando los 6 assets explicitamente (sin glob amplio). El `create` deja de fallar en re-runs sobre tags ya publicados.
+- TD-003 (GitHub Release idempotente) y TD-004 (publicacion explicita de assets) cerrados. TD-005 (NSIS version pin) y TD-002 (verificacion de checksums sidecar) siguen abiertos para R03+.
+- Decision de firma de codigo documentada:
+  - Beta privada: se distribuye sin firma (Authenticode ausente). Windows SmartScreen mostrara el aviso habitual; los testers ya lo conocen y el `discord-build-available.yml` lo recuerda en el mensaje.
+  - Releases historicas sin `.sha256`: `InstallVerified` no es compatible contra ellas; el updater cae al flujo sin verificacion si el asset checksum falta (degradacion documentada, no rompe el update).
+  - Release publico (R15 o equivalente): requiere certificado Authenticode valido y pipeline de firma integrado en `release.yml` antes del `gh release upload` o del paso NSIS. TD nuevo (TD-027) registra el gap.
+- Politica explicita: no se crea una GitHub Release por cada commit. Solo cuando hay un tag `v*` legitimo que cumple el checklist del runbook.
+- Checks: `git diff --check` limpio; YAML de los 3 workflows valido; dry-run estatico del bloque bash (ambas ramas `create` y `upload --clobber`) verificado; no se ejecutaron workflows reales ni se envio Discord.
+- Riesgos restantes: ejecutar un smoke real en GitHub Actions con webhooks de Discord para validar la combinacion tag-guard + release idempotente (TD-024); validar `gh release upload --clobber` en un re-run real antes del primer tag publico (cubierto por TD-003 cerrado pero pendiente de verificacion real).
 
 R03.E - Discord release notification hardening completado (2026-06-28):
 - Workflows modificados (sin crear nuevos): `.github/workflows/discord-release.yml`, `.github/workflows/discord-build-available.yml`, `.github/workflows/discord-beta-progress.yml`, `.github/workflows/discord-known-issues.yml`.
