@@ -172,7 +172,8 @@ describe("CompositeApp", () => {
     });
 
     tick(100);
-    expect(screen.getByTestId("edit-mode-chip")).toBeTruthy();
+    expect(screen.queryByTestId("edit-mode-chip")).toBeNull();
+    expect(screen.getByTestId("edit-mode-hint")).toBeTruthy();
     expect(screen.getByTestId("edit-frame-relative")).toBeTruthy();
   });
 
@@ -197,15 +198,15 @@ describe("CompositeApp", () => {
     });
 
     tick(100);
-    expect(screen.queryByTestId("edit-mode-chip")).toBeNull();
+    expect(screen.queryByTestId("edit-mode-hint")).toBeNull();
 
     dispatch("overlay:edit-mode-changed", { mode: "edit" });
     tick(100);
-    expect(screen.getByTestId("edit-mode-chip")).toBeTruthy();
+    expect(screen.getByTestId("edit-mode-hint")).toBeTruthy();
 
     dispatch("overlay:edit-mode-changed", { mode: "racing" });
     tick(100);
-    expect(screen.queryByTestId("edit-mode-chip")).toBeNull();
+    expect(screen.queryByTestId("edit-mode-hint")).toBeNull();
   });
 
   it("does not emit profile:request on layout:saved while in edit mode", () => {

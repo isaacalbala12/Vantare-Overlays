@@ -158,16 +158,9 @@ export function CompositeApp() {
           })}
 
       {editMode && (
-        <>
-          <div className="fixed top-4 left-4 z-50 select-none" data-testid="edit-mode-chip">
-            <span className="text-[10px] font-mono text-vantare-red-400 bg-black/60 px-2 py-1 rounded border border-white/10">
-              EDIT MODE
-            </span>
-          </div>
-          <div className="fixed bottom-4 left-4 text-[10px] text-white/30 select-none" data-testid="edit-mode-hint">
-            Ctrl+Shift+E para salir · arrastra y redimensiona
-          </div>
-        </>
+        <div className="fixed bottom-4 left-4 text-[10px] text-white/30 select-none" data-testid="edit-mode-hint">
+          Ctrl+Shift+E para salir · arrastra y redimensiona
+        </div>
       )}
     </div>
   );

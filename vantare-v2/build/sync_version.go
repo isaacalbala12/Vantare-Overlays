@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -83,7 +84,7 @@ func updateMainGo(path string, version string) error {
 	}
 
 	newContent := re.ReplaceAll(content, []byte(fmt.Sprintf(`var version = "v%s"`, version)))
-	return os.WriteFile(path, newContent, 0644)
+	return writeFileIfChanged(path, newContent, 0644)
 }
 
 func updateConfigYml(path string, version string) error {
@@ -98,7 +99,7 @@ func updateConfigYml(path string, version string) error {
 	}
 
 	newContent := re.ReplaceAll(content, []byte(fmt.Sprintf(`  version: "%s"`, version)))
-	return os.WriteFile(path, newContent, 0644)
+	return writeFileIfChanged(path, newContent, 0644)
 }
 
 func updateInfoJson(path string, version string) error {
@@ -140,7 +141,7 @@ func updateInfoJson(path string, version string) error {
 	}
 	newContent = append(newContent, '\n')
 
-	return os.WriteFile(path, newContent, 0644)
+	return writeFileIfChanged(path, newContent, 0644)
 }
 
 func updateProjectNsi(path string, version string) error {
@@ -155,5 +156,16 @@ func updateProjectNsi(path string, version string) error {
 	}
 
 	newContent := re.ReplaceAll(content, []byte(fmt.Sprintf(`!define INFO_PRODUCTVERSION "%s"`, version)))
-	return os.WriteFile(path, newContent, 0644)
+	return writeFileIfChanged(path, newContent, 0644)
+}
+
+func writeFileIfChanged(path string, content []byte, perm os.FileMode) error {
+	existing, err := os.ReadFile(path)
+	if err == nil && bytes.Equal(existing, content) {
+		return nil
+	}
+	if err != nil && !os.IsNotExist(err) {
+		return err
+	}
+	return os.WriteFile(path, content, perm)
 }

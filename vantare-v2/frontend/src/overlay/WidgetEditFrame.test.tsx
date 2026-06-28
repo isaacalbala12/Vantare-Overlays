@@ -36,10 +36,28 @@ describe("WidgetEditFrame", () => {
     const handle = screen.getByTestId("resize-handle-w1");
     fireEvent.mouseDown(handle, { clientX: 110, clientY: 60 });
     fireEvent.mouseMove(window, { clientX: 130, clientY: 80 });
+    const frame = screen.getByTestId("edit-frame-w1");
+    expect(frame.style.width).toBe("120px");
+    expect(frame.style.height).toBe("70px");
     fireEvent.mouseUp(window);
     expect(onChange).toHaveBeenCalled();
     const rect = onChange.mock.calls[0][1];
     expect(rect.w).toBeGreaterThan(100);
     expect(rect.h).toBeGreaterThan(50);
+  });
+
+  it("moves the frame by writing DOM position during drag", () => {
+    const onChange = vi.fn();
+    render(<WidgetEditFrame widget={makeWidget()} onChange={onChange} />);
+    const frame = screen.getByTestId("edit-frame-w1");
+
+    fireEvent.mouseDown(frame, { clientX: 10, clientY: 10 });
+    fireEvent.mouseMove(window, { clientX: 35, clientY: 45 });
+
+    expect(frame.style.left).toBe("35px");
+    expect(frame.style.top).toBe("45px");
+
+    fireEvent.mouseUp(window);
+    expect(onChange).toHaveBeenCalledWith("w1", expect.objectContaining({ x: 35, y: 45 }));
   });
 });

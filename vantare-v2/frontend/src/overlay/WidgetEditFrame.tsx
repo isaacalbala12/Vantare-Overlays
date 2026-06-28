@@ -21,6 +21,14 @@ function clampRect(rect: Rect): Rect {
   return { x, y, w, h };
 }
 
+function writeFrameRect(el: HTMLElement | null, rect: Rect) {
+  if (!el) return;
+  el.style.left = `${rect.x}px`;
+  el.style.top = `${rect.y}px`;
+  el.style.width = `${rect.w}px`;
+  el.style.height = `${rect.h}px`;
+}
+
 type WidgetEditFrameProps = {
   widget: WidgetConfig;
   onChange: (widgetId: string, rect: Rect) => void;
@@ -73,7 +81,7 @@ export function WidgetEditFrame({ widget, onChange }: WidgetEditFrameProps) {
         w: startRect.w,
         h: startRect.h,
       });
-      setPreviewRect(lastRect);
+      writeFrameRect(frameRef.current, lastRect);
     }
 
     function onMouseUp() {
@@ -103,7 +111,7 @@ export function WidgetEditFrame({ widget, onChange }: WidgetEditFrameProps) {
         w: Math.round(startRect.w + dw),
         h: Math.round(startRect.h + dh),
       });
-      setPreviewRect(lastRect);
+      writeFrameRect(frameRef.current, lastRect);
     }
 
     function onMouseUp() {
