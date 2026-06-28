@@ -84,6 +84,36 @@ Decisiones de release ya cerradas:
 
 ## Estado actual
 
+## Beta urgente adelantada desde roadmap futuro
+
+Decision operativa (2026-06-28):
+
+- Todo lo que bloquee una beta usable para testers se adelanta aunque estuviera previsto en `Release 04+`.
+- La razon debe quedar documentada en este plan para distinguir **scope urgente de beta** de rework estructural de release oficial.
+- El alcance debe seguir siendo pequeno: arreglar el flujo necesario para que testers puedan usar la app, no abrir un redisenyo general.
+
+Items adelantados:
+
+1. **Overlay edit mode in-place por hotkey** — adelantado desde `Release 04 - Preview avanzada y LayoutStudio profesional`.
+   - Motivo: los testers necesitan poder ajustar posicion/tamano mientras ven el overlay real, no solo dentro del canvas de la app.
+   - Estado: implementado y revisado con P3 documentados en `docs/technical-debt.md`.
+   - Contrato vivo: `ModeRacing` y `ModeEdit` del overlay desktop Wails son fullscreen con `layoutOrigin={0,0}`; no se usa shrink-wrap en ese camino.
+
+2. **Fix fullscreen del overlay desktop** — estabilizacion urgente de beta.
+   - Motivo: el refactor de edit mode reintrodujo una caja parcial/shrink-wrap en runtime desktop, rompiendo el uso basico del overlay.
+   - Estado: fix implementado por worker y review `ACCEPT WITH P3`; P3 registrados como TD-037/038/039.
+   - Verificacion manual obligatoria antes de distribuir: abrir overlay normal, confirmar fullscreen click-through, entrar/salir con `Ctrl+Shift+E`, confirmar que no queda caja parcial.
+
+3. **Dev server estable para iteracion** — estabilizacion de tooling urgente.
+   - Motivo: `wails3 task dev` podia abrir WebView con HTTP 502 porque Vite escuchaba en `localhost`/IPv6 mientras Wails proxyeaba contra `127.0.0.1`.
+   - Estado: `Taskfile.yml` y `build/Taskfile.yml` fijan `VITE_HOST=127.0.0.1` por defecto; se puede overridear con `WAILS_VITE_HOST`.
+   - Verificacion: log de Wails debe mostrar `vite "--host" "127.0.0.1" "--port" "9245"` y `Connected to frontend dev server`.
+
+4. **Perfil activo de overlay** — adelantado desde UX futura de perfiles.
+   - Motivo: las hotkeys (`Ctrl+Shift+V`, `Ctrl+Shift+E`) necesitan una fuente de verdad clara; hoy no hay boton visible para marcar que perfil usaran las macros.
+   - Estado: plan solicitado a worker en `docs/superpowers/plans/2026-06-28-active-overlay-profile.md` (pendiente de recibir/implementar).
+   - Criterio de beta: `Mis perfiles` debe permitir `Activar` un perfil y mostrar badge `Activo`; hotkeys y `Abrir overlay` deben usar ese perfil activo.
+
 Fix P0 residual overlayRunning (Overlay Edit Mode) cerrado (2026-06-28):
 - Cierre externo de ventana (Alt+F4 / WindowClosing) limpia `overlayRunning=false` y resetea el perfil a racing mode mediante el closure `stopOverlay` en `cmd/vantare/main.go`, con guard para evitar doble reset cuando el path normal ya limpio el flag.
 - Errores de `StartOverlay` (handler `overlay:start`) y `StartActiveOverlay` (hotkey Ctrl+Shift+E / `handleToggleEditMode`) sincronizan `overlayRunning=false` cuando no queda ventana, evitando flag `true` colgante sin ventana.
