@@ -434,3 +434,36 @@ Documento vivo para centralizar deuda tecnica aceptada, P2/P3 diferidos y follow
 - Motivo para diferir: no rompe la app; el caso mas relevante es `engineer-notifications`, que puede aparecer como frame editable vacio en edit mode.
 - Fix esperado: unificar el mapa de componentes usado por `CompositeApp`, `WidgetEditFrame` y `WidgetRenderer`, o anadir `engineer-notifications` a `shared-widget-map` con transporte desactivado/seguro para edit mode.
 - Riesgo si se ignora: algunos widgets se pueden mover/redimensionar como caja, pero no se renderizan visualmente dentro del chrome de edicion.
+
+### TD-037 - `applyShrinkWrap` queda sin consumidor productivo tras fullscreen racing/edit
+
+- Severidad: P3
+- Area: overlay/window
+- Origen: review final fix fullscreen desktop overlay (2026-06-28)
+- Estado: abierto
+- Release objetivo: auditoria global post-stream / R04
+- Motivo para diferir: el fix correcto para el stream fue mantener `ModeRacing` y `ModeEdit` fullscreen. Tras ese cambio, `internal/window/manager.go` conserva `applyShrinkWrap`, pero el review no detecto ningun camino productivo que lo invoque.
+- Fix esperado: decidir si `applyShrinkWrap` sigue siendo utilidad real para algun modo futuro/shrink-wrap desktop y documentarlo en el codigo, o eliminarlo junto con tests muertos si ya no tiene consumidor.
+- Riesgo si se ignora: confusion futura; un worker podria reutilizar `applyShrinkWrap` en racing/edit y reintroducir el bug de caja parcial.
+
+### TD-038 - Plan historico de overlay edit mode menciona racing shrink-wrap
+
+- Severidad: P3
+- Area: docs/plans
+- Origen: review final fix fullscreen desktop overlay (2026-06-28)
+- Estado: abierto
+- Release objetivo: auditoria documental post-stream
+- Motivo para diferir: `docs/superpowers/plans/2026-06-28-overlay-in-place-edit-mode-hotkey.md` es un plan historico, no el contrato vivo. El contrato vivo ya esta corregido en `docs/widget-rendering-preview-contract.md` y `docs/widget-preview-bug-log.md`.
+- Fix esperado: anadir una nota de superseded/correccion en el plan historico indicando que `ModeRacing` ya no usa shrink-wrap y debe devolver origen cero en desktop Wails.
+- Riesgo si se ignora: un worker que lea solo el plan historico puede aplicar la decision antigua y reintroducir la regresion.
+
+### TD-039 - `WindowLocalPos` sin consumidor productivo claro
+
+- Severidad: P3
+- Area: overlay/window
+- Origen: review final fix fullscreen desktop overlay (2026-06-28)
+- Estado: abierto
+- Release objetivo: auditoria global post-stream / R04
+- Motivo para diferir: el helper es inofensivo y ahora delega en `LayoutOrigin`, que devuelve origen cero para racing/edit. No bloquea el stream ni el fix fullscreen.
+- Fix esperado: buscar consumidores reales; si no existen, eliminarlo. Si se mantiene para un futuro modo shrink-wrap, documentar el contrato y anadir test que diferencie fullscreen vs shrink-wrap.
+- Riesgo si se ignora: superficie de API interna confusa y propensa a maluso en futuros cambios de coordenadas.
