@@ -2,7 +2,10 @@
 
 > Date: 2026-06-26.
 > Scope: users, entitlements, devices, Stripe customers/subscriptions, license events.
-> Status: design-only; migrations will be created in Mini-Plan B.
+> Status: schema is locked to the Release 02 mini-plan. The plan matrix visible
+> in the app is documented in `docs/stripe-integration-plan.md` and derived by
+> `internal/license.ClassifyPlan` + `frontend/src/lib/plan.ts`. Do not introduce
+> new entitlement keys without updating both the Go and TS classifiers.
 
 ## Tables
 

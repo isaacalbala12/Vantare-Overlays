@@ -56,7 +56,48 @@ describe("AccountSettings", () => {
     render(<AccountSettings />);
     expect(screen.getByText(/cuenta/i)).toBeTruthy();
     expect(screen.getByText(/isaac@example.com/)).toBeTruthy();
-    expect(screen.getByText(/active/i)).toBeTruthy();
+    expect(screen.getByTestId("account-plan").textContent).toMatch(/Suite/);
+    expect(screen.getByTestId("account-status").textContent).toMatch(/Activo/);
+  });
+
+  it("renders Free plan label when there are no entitlements", () => {
+    mockUseLicense(null);
+    render(<AccountSettings />);
+    expect(screen.getByTestId("account-plan").textContent).toMatch(/Free/);
+    expect(screen.getByTestId("account-status").textContent).toMatch(
+      /Sin suscripción/,
+    );
+  });
+
+  it("renders the block warning when the license is blocked", () => {
+    mockUseLicense({
+      state: "expired",
+      entitlements: ["overlays"],
+      userId: "u",
+      email: "exp@example.com",
+      deviceOK: true,
+    });
+    render(<AccountSettings />);
+    expect(screen.getByTestId("account-status").textContent).toMatch(
+      /Bloqueado/,
+    );
+    expect(screen.getByText(/suscripción bloqueada/i)).toBeTruthy();
+  });
+
+  it("renders the grace window when state is grace", () => {
+    mockUseLicense({
+      state: "grace",
+      entitlements: ["overlays"],
+      userId: "u",
+      email: "g@example.com",
+      deviceOK: true,
+      graceEndsAt: "2026-12-31T23:59:59Z",
+    });
+    render(<AccountSettings />);
+    expect(screen.getByTestId("account-status").textContent).toMatch(
+      /Periodo de gracia/,
+    );
+    expect(screen.getByText(/gracia hasta/i)).toBeTruthy();
   });
 
   it("renders dash placeholders when no result", () => {
@@ -96,17 +137,23 @@ describe("AccountSettings", () => {
     expect(emitMock).toHaveBeenCalledWith("license:reset-device", { sessionToken: "mock-token" });
   });
 
-  it("renders entitlements list", () => {
+  it("renders the entitlements list sorted and identifiable", () => {
     mockUseLicense({
       state: "active",
-      entitlements: ["overlays", "engineer", "bundle"],
+      entitlements: ["engineer", "overlays", "bundle"],
       userId: "u",
       email: "u@example.com",
       deviceOK: true,
     });
     render(<AccountSettings />);
-    expect(screen.getByText(/overlays/i)).toBeTruthy();
-    expect(screen.getByText(/engineer/i)).toBeTruthy();
-    expect(screen.getByText(/bundle/i)).toBeTruthy();
+    expect(
+      screen.getByTestId("account-entitlement-bundle"),
+    ).toBeTruthy();
+    expect(
+      screen.getByTestId("account-entitlement-engineer"),
+    ).toBeTruthy();
+    expect(
+      screen.getByTestId("account-entitlement-overlays"),
+    ).toBeTruthy();
   });
 });

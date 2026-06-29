@@ -8,12 +8,17 @@
 
 ### Release Tiers (after beta)
 
-| Product | Price (monthly) | Product Key |
-|---|---|---|
-| Vantare Overlays | 5 EUR | `overlays` |
-| Vantare Engineer | 5 EUR | `engineer` |
-| Vantare Bundle (Overlays + Engineer) | 8.99 EUR | `bundle` |
-| Assetto Corsa Lua/CSP Pack | 20 EUR one-time | `ac_lua_pack` |
+| Plan | Price | Product Key | Includes |
+| --- | --- | --- | --- |
+| Free | 0 EUR | _(no entitlement)_ | Basic overlays, mock/demo, limited profiles |
+| Overlays | 5 EUR/mo | `overlays` | Overlays Studio, premium overlay presets |
+| Engineer | 5 EUR/mo | `engineer` | Engineer app/module |
+| Suite | 8.99 EUR/mo | `bundle` | Overlays + Engineer together |
+| Assetto Corsa Lua/CSP Pack | 20 EUR one-time | `ac_lua_pack` | Lua/CSP overlay pack (download entitlement only) |
+
+> The pair `overlays + engineer` is treated as `Suite` in the UI even without
+> an explicit `bundle` row, so a tester upgrading plans does not regress the
+> status label during the transition.
 
 ### Beta Tiers (first 6 months)
 
@@ -26,6 +31,24 @@
 | Visionary Backer | 50 EUR | `visionary_backer` | Above |
 
 Each tier maps to one or more `product_key` entitlements stored in Supabase.
+
+### UI Plan Mapping
+
+The visible label shown to the user is derived from the entitlements via
+`internal/license.ClassifyPlan` (and the TS mirror in `frontend/src/lib/plan.ts`).
+The mapping is locked to the table above:
+
+- `bundle`, `beta_access`, `founder`, `pro_founder`, `visionary_backer`, or
+  `overlays + engineer` together → `Suite`
+- `overlays` (alone) or `supporter` → `Overlays`
+- `engineer` (alone) → `Engineer`
+- `ac_lua_pack` only → `Free` (add-on, does not unlock the app)
+- no entitlement → `Free`
+- any other key → `unknown` (visible to flag stale data, never silently free)
+
+The user-facing status collapses the runtime `state` into five buckets:
+`active`, `grace`, `blocked` (covers `expired`, `device-limit`,
+`authenticated-no-entitlement`), `free`, `anonymous`.
 
 ## Webhook Events
 

@@ -11,6 +11,9 @@ export function LoginScreen({ onLoggedIn }: LoginScreenProps) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [oauthPending, setOauthPending] = useState<"google" | "discord" | null>(
+    null,
+  );
 
   const handleSubmit = useCallback(
     async (e: FormEvent) => {
@@ -33,7 +36,9 @@ export function LoginScreen({ onLoggedIn }: LoginScreenProps) {
   const handleOAuth = useCallback(
     async (provider: "google" | "discord") => {
       setError(null);
+      setOauthPending(provider);
       const { error: msg } = await signInWithOAuth(provider);
+      setOauthPending(null);
       if (msg) {
         setError(msg);
       }
@@ -53,6 +58,12 @@ export function LoginScreen({ onLoggedIn }: LoginScreenProps) {
         <h1 className="text-center font-mono text-sm uppercase tracking-widest">
           Iniciar sesión
         </h1>
+        <p
+          data-testid="login-primary-hint"
+          className="text-center font-mono text-[10px] text-vantare-textDim"
+        >
+          Google es el acceso recomendado para la beta pública.
+        </p>
         {error ? (
           <p
             data-testid="login-error"
@@ -61,6 +72,22 @@ export function LoginScreen({ onLoggedIn }: LoginScreenProps) {
             {error}
           </p>
         ) : null}
+        <button
+          type="button"
+          data-testid="login-google-primary"
+          onClick={() => handleOAuth("google")}
+          disabled={oauthPending !== null}
+          className="w-full rounded bg-white py-2 font-mono text-xs font-bold uppercase tracking-widest text-black hover:opacity-90 disabled:opacity-50"
+        >
+          {oauthPending === "google" ? "Abriendo Google..." : "Continuar con Google"}
+        </button>
+        <div className="flex items-center gap-2">
+          <div className="h-px flex-1 bg-white/10" />
+          <span className="font-mono text-[9px] uppercase text-vantare-textDim">
+            o
+          </span>
+          <div className="h-px flex-1 bg-white/10" />
+        </div>
         <label className="block space-y-1">
           <span className="font-mono text-[10px] uppercase text-vantare-textDim">
             Email
@@ -95,17 +122,11 @@ export function LoginScreen({ onLoggedIn }: LoginScreenProps) {
         <div className="flex gap-2 pt-2">
           <button
             type="button"
-            onClick={() => handleOAuth("google")}
-            className="flex-1 rounded border border-white/10 py-2 font-mono text-[10px] uppercase hover:bg-white/5"
-          >
-            Google
-          </button>
-          <button
-            type="button"
             onClick={() => handleOAuth("discord")}
-            className="flex-1 rounded border border-white/10 py-2 font-mono text-[10px] uppercase hover:bg-white/5"
+            disabled={oauthPending !== null}
+            className="flex-1 rounded border border-white/10 py-2 font-mono text-[10px] uppercase hover:bg-white/5 disabled:opacity-50"
           >
-            Discord
+            {oauthPending === "discord" ? "Abriendo..." : "Discord"}
           </button>
         </div>
       </form>

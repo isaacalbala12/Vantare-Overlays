@@ -61,8 +61,19 @@ describe("LoginScreen", () => {
       {},
     );
     render(<LoginScreen onLoggedIn={vi.fn()} />);
-    fireEvent.click(screen.getByRole("button", { name: /google/i }));
+    fireEvent.click(
+      screen.getByRole("button", { name: /continuar con google/i }),
+    );
     expect(signInWithOAuth).toHaveBeenCalledWith("google");
+  });
+
+  it("shows the primary Google button and a hint that Google is recommended", () => {
+    render(<LoginScreen onLoggedIn={vi.fn()} />);
+    expect(screen.getByTestId("login-google-primary")).toBeTruthy();
+    expect(screen.getByTestId("login-primary-hint")).toBeTruthy();
+    expect(
+      screen.getByText(/google es el acceso recomendado/i),
+    ).toBeTruthy();
   });
 
   it("triggers discord oauth when discord button is clicked", () => {
@@ -70,7 +81,7 @@ describe("LoginScreen", () => {
       {},
     );
     render(<LoginScreen onLoggedIn={vi.fn()} />);
-    fireEvent.click(screen.getByRole("button", { name: /discord/i }));
+    fireEvent.click(screen.getByRole("button", { name: /^discord$/i }));
     expect(signInWithOAuth).toHaveBeenCalledWith("discord");
   });
 });

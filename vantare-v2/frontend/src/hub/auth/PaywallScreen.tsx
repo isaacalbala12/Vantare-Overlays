@@ -1,21 +1,36 @@
-import { useCallback, useState } from "react";
-import { PAYWALL_PLANS } from "./paywall-plans";
+import { useCallback, useMemo, useState } from "react";
+import { FOUNDER_PLANS, PAYWALL_PLANS } from "./paywall-plans";
+import type { LicenseResult } from "../../lib/license-types";
+import {
+  buildSummary,
+  PLAN_LABELS,
+  PLAN_STATUS_LABELS,
+} from "../../lib/plan";
 
 type PaywallScreenProps = {
   email: string;
+  result?: LicenseResult | null;
 };
 
-export function PaywallScreen({ email }: PaywallScreenProps) {
+// PaywallScreen se muestra cuando el usuario está autenticado pero no tiene
+// entitlements (o los perdió). La beta pública aún no expone Stripe Checkout
+// embebido: el botón "Suscribirse" deja el flujo a la URL externa del portal
+// cuando esté disponible; mientras tanto muestra un aviso claro.
+export function PaywallScreen({ email, result }: PaywallScreenProps) {
   const [pendingPlan, setPendingPlan] = useState<string | null>(null);
 
-  const handleSubscribe = useCallback(
-    (planKey: string) => {
-      // Mini-Plan C v1 does not yet open Stripe Checkout. We surface a clear
-      // "coming soon" message instead of silently logging PII to the console.
-      setPendingPlan(planKey);
-    },
-    [],
+  const summary = useMemo(
+    () =>
+      buildSummary(result?.state ?? null, result?.entitlements ?? []),
+    [result?.state, result?.entitlements],
   );
+
+  const handleSubscribe = useCallback((planKey: string) => {
+    // No fake checkout: dejamos el plan seleccionado y mostramos el aviso
+    // público. Cuando se configure el portal real de Stripe, este handler
+    // será el único punto a tocar.
+    setPendingPlan(planKey);
+  }, []);
 
   return (
     <div
@@ -25,8 +40,15 @@ export function PaywallScreen({ email }: PaywallScreenProps) {
       <h1 className="mb-2 font-mono text-sm uppercase tracking-widest">
         Elige tu plan
       </h1>
-      <p className="mb-6 font-mono text-[10px] text-vantare-textDim">
+      <p className="mb-2 font-mono text-[10px] text-vantare-textDim">
         Sesión iniciada como <span className="text-white">{email}</span>
+      </p>
+      <p
+        data-testid="paywall-status"
+        className="mb-6 font-mono text-[10px] uppercase tracking-widest text-vantare-textMuted"
+      >
+        Estado: {PLAN_LABELS[summary.label]} ·{" "}
+        {PLAN_STATUS_LABELS[summary.status]}
       </p>
       {pendingPlan ? (
         <p
@@ -34,16 +56,31 @@ export function PaywallScreen({ email }: PaywallScreenProps) {
           className="mb-6 rounded border border-white/10 bg-[#111] px-4 py-2 font-mono text-[10px] text-vantare-textDim"
         >
           Pago en línea próximamente para el plan{" "}
-          <span className="text-white">{pendingPlan}</span>.
+          <span className="text-white">{pendingPlan}</span>. El alta y
+          renovación se harán desde el portal externo de Vantare cuando esté
+          activo para la beta pública.
         </p>
       ) : null}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {PAYWALL_PLANS.map((plan) => (
           <div
             key={plan.key}
-            className="w-64 rounded-lg border border-white/10 bg-[#111] p-4"
+            data-testid={`paywall-plan-${plan.key}`}
+            className={[
+              "w-64 rounded-lg border bg-[#111] p-4",
+              plan.recommended
+                ? "border-vantare-red-500"
+                : "border-white/10",
+            ].join(" ")}
           >
-            <h2 className="font-mono text-xs uppercase">{plan.name}</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="font-mono text-xs uppercase">{plan.name}</h2>
+              {plan.recommended ? (
+                <span className="font-mono text-[9px] uppercase text-vantare-red-400">
+                  Recomendado
+                </span>
+              ) : null}
+            </div>
             <p className="font-mono text-[10px] text-vantare-textDim">
               {plan.price}
             </p>
@@ -60,13 +97,42 @@ export function PaywallScreen({ email }: PaywallScreenProps) {
             <button
               type="button"
               onClick={() => handleSubscribe(plan.key)}
-              className="w-full rounded border border-white/20 py-1.5 font-mono text-[10px] uppercase hover:bg-white/5"
+              disabled={plan.key === "free"}
+              className="w-full rounded border border-white/20 py-1.5 font-mono text-[10px] uppercase hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Suscribirse
+              {plan.key === "free" ? "Plan actual" : "Suscribirse"}
             </button>
           </div>
         ))}
       </div>
+      <details className="mt-8 w-full max-w-3xl text-vantare-textMuted">
+        <summary className="cursor-pointer font-mono text-[10px] uppercase tracking-widest">
+          Tiers de fundador (histórico)
+        </summary>
+        <div className="mt-3 grid gap-3 md:grid-cols-2">
+          {FOUNDER_PLANS.map((plan) => (
+            <div
+              key={plan.key}
+              className="rounded border border-white/10 bg-[#0d0d0d] p-3"
+            >
+              <h3 className="font-mono text-[11px] uppercase">{plan.name}</h3>
+              <p className="font-mono text-[10px] text-vantare-textDim">
+                {plan.price}
+              </p>
+              <ul className="mt-2 space-y-1">
+                {plan.features.map((f) => (
+                  <li
+                    key={f}
+                    className="font-mono text-[10px] text-vantare-textDim"
+                  >
+                    {f}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </details>
     </div>
   );
 }
